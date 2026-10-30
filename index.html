@@ -230,7 +230,6 @@ main { padding-block: 24px 36px; }
   var MARCAS_FAMOSAS = ['Carrier', 'Mirage', 'LG', 'York', 'Trane', 'Midea', 'Daikin', 'Samsung', 'Panasonic', 'Mitsubishi', 'Hisense', 'Gree', 'Whirlpool', 'Electrolux', 'Fujitsu', 'TCL', 'Prime', 'Rheem', 'Aux', 'Chigo'];
   var MARCAS_OTRAS = ['Amana', 'Bryant', 'Daewoo', 'Fedders', 'Friedrich', 'GE', 'Haier', 'Kenmore', 'Kelvinator', 'Philco', 'Sanyo', 'Sharp', 'Toshiba', 'Westinghouse', 'Winia', 'Otra'];
   
-  // Capacidades organizadas por Toneladas y BTU
   var CAPACIDADES_TON = [
     '1.0 Tonelada (12,000 BTU)',
     '1.5 Toneladas (18,000 BTU)',
@@ -263,21 +262,70 @@ main { padding-block: 24px 36px; }
   var uid = function (p) { return p + '_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); };
   var plural = function (n, a, b) { return n + ' ' + (n === 1 ? a : b); };
 
-  /* ---------- estado ---------- */
+  /* ---------- estado y auditoría por nombres ---------- */
   var DB = null, currentUser = null;
   var S = { equipos: [], servicios: [], view: 'equipos', q: '', aula: '', estado: 'todos', tipo: 'todos', desde: '', hasta: '',
     ready: false, backend: '', error: '', sheet: null, confirm: null, busy: false, rE: false, rS: false };
 
+  // Función para extraer o formatear el nombre (Primer Nombre y Primer Apellido) a partir del correo o cuenta
+  function obtenerNombreUsuario(user) {
+    if (!user) return 'Usuario Invitado';
+    var email = user.email || '';
+    var partes = email.split('@')[0].replace(/[._-]/g, ' ');
+    var palabras = partes.split(' ').filter(Boolean);
+    if (palabras.length >= 2) {
+      return palabras[0].charAt(0).toUpperCase() + palabras[0].slice(1) + ' ' + palabras[1].charAt(0).toUpperCase() + palabras[1].slice(1);
+    } else if (palabras.length === 1) {
+      return palabras[0].charAt(0).toUpperCase() + palabras[0].slice(1);
+    }
+    return email;
+  }
+
+  // Registrar movimiento en consola y base de datos con nombre y apellido
+  async function registrarAuditoria(accion, detalle) {
+    var nombreCompleto = obtenerNombreUsuario(currentUser);
+    var mensajeLog = '[AUDITORÍA] ' + nombreCompleto + ' ' + accion + ': ' + detalle;
+    console.log(mensajeLog);
+    
+    if (DB && currentUser) {
+      try {
+        await DB.collection('auditoria').add({
+          usuario: nombreCompleto,
+          email: currentUser.email,
+          accion: accion,
+          detalle: detalle,
+          fecha: new Date().toISOString()
+        });
+      } catch (e) {
+        // Silencioso para no interrumpir flujo
+      }
+    }
+  }
+
   async function put(col, obj) {
     if (S.backend === 'db') {
       obj.actualizadoPor = currentUser ? currentUser.uid : 'desconocido';
+      var esNuevo = !await DB.collection(col).doc(obj.id).get().then(function(d){ return d.exists; });
       await DB.collection(col).doc(obj.id).set(obj);
+      
+      var tipoNombre = col === 'equipos' ? 'el equipo "' + obj.nombre + '"' : 'un servicio de tipo ' + obj.tipo;
+      registrarAuditoria(esNuevo ? 'acaba de crear' : 'acaba de actualizar', tipoNombre);
       return;
     }
   }
+
   async function del(col, id) {
-    if (S.backend === 'db') { await DB.collection(col).doc(id).delete(); return; }
+    if (S.backend === 'db') {
+      var docRef = await DB.collection(col).doc(id).get();
+      var data = docRef.exists ? docRef.data() : null;
+      var nombreItem = data ? (data.nombre || data.tipo || id) : id;
+
+      await DB.collection(col).doc(id).delete();
+      registrarAuditoria('acaba de eliminar', (col === 'equipos' ? 'el equipo ' : 'el registro ') + '"' + nombreItem + '"');
+      return;
+    }
   }
+
   function failMsg(err) {
     var c = err && err.code;
     if (c === 'permission-denied') return 'Tu cuenta no tiene permiso para guardar cambios.';
@@ -367,7 +415,7 @@ main { padding-block: 24px 36px; }
     var m = $('#main'), html = '';
     if (!S.ready) { m.innerHTML = '<p class="banner">Sincronizando con base de datos en la nube…</p>'; return; }
     if (S.error) html += '<p class="banner bad">' + esc(S.error) + '</p>';
-    html += '<p class="banner"><span>Sesión corporativa activa · Firestore Cloud</span> <span style="font-family:var(--font-mono);font-size:12px;color:var(--accent);">Seguro</span></p>';
+    html += '<p class="banner"><span>Sesión corporativa: <b>' + esc(obtenerNombreUsuario(currentUser)) + '</b></span> <span style="font-family:var(--font-mono);font-size:12px;color:var(--accent);">Seguro</span></p>';
     if (!S.equipos.length) html += emptyAll();
     else html += S.view === 'equipos' ? viewEquipos() : viewServicios();
     m.innerHTML = html;
@@ -543,7 +591,6 @@ main { padding-block: 24px 36px; }
       '<optgroup label="⭐ Marcas Principales">' + marcasFamosasOpts.map(function(m) { return '<option value="' + esc(m) + '"' + (m === marcaVal ? ' selected' : '') + '>' + esc(m) + '</option>'; }).join('') + '</optgroup>' +
       '<optgroup label="🔧 Otras Marcas">' + marcasOtrasOpts.map(function(m) { return '<option value="' + esc(m) + '"' + (m === marcaVal ? ' selected' : '') + '>' + esc(m) + '</option>'; }).join('') + '</optgroup>';
 
-    // Selector desplegable de Capacidad por Toneladas
     var capVal = e.capacidad || '1.5 Toneladas (18,000 BTU)';
     var capOpts = [
       '1.0 Tonelada (12,000 BTU)',
@@ -555,9 +602,7 @@ main { padding-block: 24px 36px; }
       '5.0 Toneladas (60,000 BTU)',
       'Otra / Personalizada'
     ];
-    if (capVal && capOpts.indexOf(capVal) === -1) {
-      capOpts.unshift(capVal);
-    }
+    if (capVal && capOpts.indexOf(capVal) === -1) { capOpts.unshift(capVal); }
     var capOptionsHtml = '<option value="">Selecciona la capacidad</option>' +
       capOpts.map(function(c) { return '<option value="' + esc(c) + '"' + (c === capVal ? ' selected' : '') + '>' + esc(c) + '</option>'; }).join('');
 
@@ -570,11 +615,8 @@ main { padding-block: 24px 36px; }
       '<div class="grid2">' + fld('Aula / Zona', 'aula', e.aula || '', { req: 1, list: 'dl-aulas', ph: 'Aula 101' }) + fld('Edificio o planta', 'edificio', e.edificio || '', { ph: 'Edificio A' }) + '</div>' +
       '<div class="grid2"><div class="fld"><label for="x-marca">Marca <span class="req">*</span></label><select id="x-marca" name="marca">' + marcasOptionsHtml + '</select><p class="err" data-err="marca" hidden></p></div>' + fld('Modelo', 'modelo', e.modelo || '') + '</div>' +
       '<div class="grid2">' + fld('Número de serie', 'serie', e.serie || '') + sel('Tipo de equipo', 'tipo', tipoVal, tipos) + '</div>' +
-      
-      // Campo de Capacidad en Toneladas desplegable
       '<div class="grid2"><div class="fld"><label for="x-capacidad">Capacidad (Toneladas / BTU)</label><select id="x-capacidad" name="capacidad">' + capOptionsHtml + '</select><p class="err" data-err="capacidad" hidden></p></div>' +
       fld('Refrigerante', 'refrigerante', e.refrigerante || '', { list: 'dl-ref', ph: 'R-410A' }) + '</div>' +
-
       fld('Fecha de instalación', 'instalacion', e.instalacion || '', { type: 'date' }) +
       fld('Notas y observaciones', 'notas', e.notas || '', { area: 1, ph: 'Ubicación exacta, accesos, requerimientos especiales' }) +
       dlist('dl-aulas', aulas()) + dlist('dl-ref', REFRIG) +
@@ -631,7 +673,7 @@ main { padding-block: 24px 36px; }
     var eq = S.equipos.find(function (x) { return x.id === v('equipoId'); });
     var old = S.sheet.id ? S.servicios.find(function (x) { return x.id === S.sheet.id; }) : null;
     var costo = v('costo'), n = costo === '' ? null : Number(costo);
-    var obj = { id: old ? old.id : uid('s'), equipoId: v('equipoId'), aula: eq ? eq.aula : (old ? old.aula : ''), fecha: v('fecha'), tipo: v('tipo'), estado: v('estado') || 'Completado', trabalho: v('trabajo'), refacciones: v('refacciones'), tecnico: v('tecnico'), costo: (n == null || isNaN(n)) ? null : n, proximo: v('proximo'), folio: v('folio'), actualizado: new Date().toISOString() };
+    var obj = { id: old ? old.id : uid('s'), equipoId: v('equipoId'), aula: eq ? eq.aula : (old ? old.aula : ''), fecha: v('fecha'), tipo: v('tipo'), estado: v('estado') || 'Completado', trabajo: v('trabajo'), refacciones: v('refacciones'), tecnico: v('tecnico'), costo: (n == null || isNaN(n)) ? null : n, proximo: v('proximo'), folio: v('folio'), actualizado: new Date().toISOString() };
     var btn = f.querySelector('[type=submit]'); btn.disabled = true;
     try { await put('servicios', obj); toast('Servicio guardado correctamente'); openSheet({ type: 'eq', id: obj.equipoId }); }
     catch (err) { btn.disabled = false; toast(failMsg(err)); }
@@ -787,6 +829,9 @@ main { padding-block: 24px 36px; }
       currentUser = user;
       DB = firebase.firestore();
       S.backend = 'db';
+
+      var nombreUsuario = obtenerNombreUsuario(user);
+      console.log('[SISTEMA] Sesión iniciada correctamente por: ' + nombreUsuario);
 
       var sub = function (col, flag) {
         DB.collection(col).onSnapshot(function (snap) {
