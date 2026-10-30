@@ -87,7 +87,7 @@ main { padding-block: 24px 36px; }
 .grp { margin-bottom: 32px; }
 .grp > h2 { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin-bottom: 12px; }
 .plate { display: inline-block; padding: 3px 12px; background: var(--surface-2); border: 1.5px solid var(--line); border-radius: 6px; font: 700 18px var(--font-display); letter-spacing: .08em; text-transform: uppercase; color: #fff; }
-.plate.sm { font-size: 13px; padding: 1px 8px; }
+.plate.sm { font-size: 12px; padding: 2px 8px; font-family: var(--font-mono); }
 .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); gap: 16px; }
 
 /* Tarjeta de Equipo Estilo Empresarial */
@@ -115,16 +115,26 @@ main { padding-block: 24px 36px; }
 .tag.corr::before { background: var(--warn); }
 .tag.rep::before { background: var(--bad); }
 
-/* Listado de Servicios */
-.log { display: grid; gap: 10px; }
-.sv { display: grid; grid-template-columns: 110px minmax(0, 1.8fr) minmax(0, 1fr) 100px; grid-template-areas: "date main meta cost"; gap: 8px 16px; align-items: center; width: 100%; padding: 14px 18px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; text-align: left; }
+/* Listado de Servicios Corregido y Limpio (Sin encimarse) */
+.log { display: grid; gap: 12px; }
+.sv { display: flex; flex-direction: column; gap: 10px; width: 100%; padding: 16px 18px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; text-align: left; transition: border-color .2s; }
 .sv:hover { border-color: var(--accent); }
-.sv-date { grid-area: date; font: 700 18px var(--font-display); letter-spacing: .03em; color: #fff; }
-.sv-main { grid-area: main; display: flex; flex-direction: column; gap: 2px; }
-.sv-eq { font-weight: 600; color: #fff; }
-.sv-work { color: var(--ink-2); font-size: 13px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-.sv-meta { grid-area: meta; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; font-size: 13px; }
-.sv-cost { grid-area: cost; text-align: right; font-family: var(--font-mono); font-weight: 600; color: var(--accent); }
+.sv-header { display: flex; justify-content: space-between; align-items: center; gap: 10px; border-bottom: 1px solid var(--line); padding-bottom: 8px; }
+.sv-date { font: 700 16px var(--font-display); letter-spacing: .03em; color: #fff; }
+.sv-cost { font-family: var(--font-mono); font-weight: 600; color: var(--accent); font-size: 15px; }
+.sv-body { display: flex; flex-direction: column; gap: 6px; }
+.sv-eq { font: 700 18px var(--font-display); color: #fff; letter-spacing: .02em; }
+.sv-info-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; font-size: 13px; }
+.sv-work { color: var(--ink-2); font-size: 14px; line-height: 1.4; margin-top: 2px; }
+
+@media (min-width: 640px) {
+  .sv { display: grid; grid-template-columns: 130px minmax(0, 1.8fr) minmax(0, 1.2fr) 110px; grid-template-areas: "date main meta cost"; align-items: center; gap: 12px 16px; }
+  .sv-header { display: contents; border: none; padding: 0; }
+  .sv-date { grid-area: date; font-size: 18px; }
+  .sv-body { grid-area: main; display: flex; flex-direction: column; gap: 3px; }
+  .sv-meta { grid-area: meta; display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
+  .sv-cost { grid-area: cost; text-align: right; }
+}
 
 /* Sheet Lateral Estilo Panel Pro */
 .overlay { position: fixed; inset: 0; z-index: 30; background: var(--scrim); backdrop-filter: blur(4px); display: flex; justify-content: flex-end; }
@@ -278,7 +288,6 @@ main { padding-block: 24px 36px; }
     var k = 'sinprox', label = 'Sin próxima fecha', rel = '';
     if (next) {
       var d = diffDays(next, todayIso());
-      // Vencido si han pasado más de 60 días (2 meses) desde la fecha estimada
       if (d < -60) { k = 'vencido'; label = 'Servicio vencido'; rel = 'vencido hace ' + plural(-d, 'día', 'días'); }
       else if (d < 0) { k = 'vencido'; label = 'Servicio vencido'; rel = 'vencido hace ' + plural(-d, 'día', 'días'); }
       else if (d <= 30) { k = 'proximo'; label = 'Próximo servicio'; rel = d === 0 ? 'hoy' : 'en ' + plural(d, 'día', 'días'); }
@@ -420,13 +429,25 @@ main { padding-block: 24px 36px; }
     if (!list.length) return html + (S.servicios.length ? noResults() : '<div class="empty"><h2>Sin servicios registrados</h2><p>Registra el primer mantenimiento para construir la bitácora histórica.</p><div><button type="button" class="btn primary" data-action="new-sv">+ Registrar servicio</button></div></div>');
     return html + '<div class="log">' + list.map(function (x) {
       var s = x.s, e = x.e;
-      return '<button type="button" class="sv" data-action="open-eq" data-id="' + esc(s.equipoId) + '">' +
-        '<span class="sv-date">' + fmtF(s.fecha) + '</span>' +
-        '<span class="sv-main"><span class="sv-eq">' + esc(e ? e.nombre : 'Equipo eliminado') + '</span>' +
-        '<span><span class="plate sm">' + esc(s.aula || (e && e.aula) || 'Sin aula') + '</span></span>' +
-        (s.trabajo ? '<span class="sv-work">' + esc(s.trabajo) + '</span>' : '') + '</span>' +
-        '<span class="sv-meta">' + tag(s.tipo) + (s.estado === 'Pendiente' ? '<span class="badge warn">Pendiente</span>' : '') + (s.tecnico ? '<span style="color:var(--ink-2);font-size:12px;">' + esc(s.tecnico) + '</span>' : '') + '</span>' +
-        '<span class="sv-cost">' + (s.costo != null && s.costo !== '' ? money(s.costo) : '—') + '</span></button>';
+      return '<div class="sv">' +
+        '<div class="sv-header">' +
+          '<span class="sv-date">' + fmtF(s.fecha) + '</span>' +
+          '<span class="sv-cost">' + (s.costo != null && s.costo !== '' ? money(s.costo) : '—') + '</span>' +
+        '</div>' +
+        '<div class="sv-body">' +
+          '<span class="sv-eq">' + esc(e ? e.nombre : 'Equipo eliminado') + '</span>' +
+          '<div class="sv-info-row">' +
+            '<span class="plate sm">' + esc(s.aula || (e && e.aula) || 'Sin aula') + '</span>' +
+            tag(s.tipo) +
+            (s.estado === 'Pendiente' ? '<span class="badge warn">Pendiente</span>' : '') +
+          '</div>' +
+          (s.trabajo ? '<span class="sv-work">' + esc(s.trabajo) + '</span>' : '') +
+          (s.tecnico ? '<span style="color:var(--ink-2);font-size:12px;margin-top:2px;">Técnico: ' + esc(s.tecnico) + '</span>' : '') +
+        '</div>' +
+        '<div style="display:flex;justify-content:flex-end;margin-top:4px;">' +
+          '<button type="button" class="btn small primary" data-action="open-eq" data-id="' + esc(s.equipoId) + '">Ver Equipo</button>' +
+        '</div>' +
+      '</div>';
     }).join('') + '</div>';
   }
 
@@ -529,7 +550,6 @@ main { padding-block: 24px 36px; }
   function formSv(s, eqId) {
     var fecha = s ? s.fecha : todayIso();
     var tipo = s ? s.tipo : 'Preventivo';
-    // Estimado predeterminado a 2 meses (2 meses exactos / 60 días) para mantenimiento preventivo
     var prox = s ? (s.proximo || '') : addMonths(fecha, 2);
     var cur = s ? s.equipoId : (eqId || '');
     var eqs = S.equipos.slice().sort(function (a, b) { return natural(a.aula, b.aula) || natural(a.nombre, b.nombre); });
@@ -700,7 +720,6 @@ main { padding-block: 24px 36px; }
     if (t.id === 'x-proximo') { t.dataset.touched = '1'; return; }
     if (t.id === 'x-fecha' || t.id === 'x-tipo') {
       var p = $('#x-proximo'); if (!p || p.dataset.touched === '1') return;
-      // Cálculo automático predeterminado a 2 meses en servicios preventivos
       p.value = $('#x-tipo').value === 'Preventivo' ? addMonths($('#x-fecha').value, 2) : '';
     }
   });
