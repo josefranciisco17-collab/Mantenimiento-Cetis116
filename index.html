@@ -1,0 +1,782 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Bitácora de Climas</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root {
+  /* Layout: masthead, then a sticky search band (search + view tabs), then either the equipment ledger grouped by aula or the chronological service log. Detail and forms open in a side sheet (full screen on phones). */
+  --bg: #EDF1F3;
+  --surface: #FFFFFF;
+  --surface-2: #E3E9ED;
+  --ink: #13222A;
+  --ink-2: #4F626C;
+  --line: #C9D5DB;
+  --accent: #0A6C80;
+  --accent-ink: #FFFFFF;
+  --accent-soft: #D5ECF1;
+  --ok: #1D774A;
+  --ok-soft: #DAF0E3;
+  --warn: #8F5700;
+  --warn-soft: #FAEAC6;
+  --bad: #AE2A21;
+  --bad-soft: #F8D9D5;
+  --scrim: rgba(10, 22, 28, .5);
+  --font-display: 'Barlow Condensed', 'Arial Narrow', system-ui, sans-serif;
+  --font-body: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0E171C; --surface: #152229; --surface-2: #1C2D35; --ink: #E6EEF1; --ink-2: #9DB0B9; --line: #2A3F49;
+    --accent: #4CC3D6; --accent-ink: #04222A; --accent-soft: #14343C;
+    --ok: #5FD08F; --ok-soft: #16301F; --warn: #F0B650; --warn-soft: #3A2B0E; --bad: #FF8A80; --bad-soft: #3F1B18;
+    --scrim: rgba(0, 0, 0, .62);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0E171C; --surface: #152229; --surface-2: #1C2D35; --ink: #E6EEF1; --ink-2: #9DB0B9; --line: #2A3F49;
+  --accent: #4CC3D6; --accent-ink: #04222A; --accent-soft: #14343C;
+  --ok: #5FD08F; --ok-soft: #16301F; --warn: #F0B650; --warn-soft: #3A2B0E; --bad: #FF8A80; --bad-soft: #3F1B18;
+  --scrim: rgba(0, 0, 0, .62);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 var(--font-body); }
+body.lock { overflow: hidden; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+h1, h2, h3, p { margin: 0; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+.inner { max-width: 1040px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+
+/* Masthead */
+.top { padding-block: 22px 16px; }
+.top .inner { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px 24px; }
+.brand { min-width: 0; }
+.brand h1 { font: 700 clamp(32px, 6vw, 44px)/1 var(--font-display); letter-spacing: .01em; text-transform: uppercase; text-wrap: balance; }
+.brand p { color: var(--ink-2); margin-top: 4px; }
+.top-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+
+/* Buttons */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 40px; padding: 8px 16px; border: 1.5px solid var(--line); border-radius: 4px; background: var(--surface); font-weight: 500; }
+.btn:hover { border-color: var(--ink-2); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.btn.primary:hover { filter: brightness(1.08); }
+.btn.danger { color: var(--bad); border-color: var(--bad); background: transparent; }
+.btn.danger.solid { background: var(--bad); color: var(--bg); }
+.btn.small { min-height: 32px; padding: 4px 12px; font-size: 14px; }
+.btn[disabled] { opacity: .55; cursor: default; }
+.link { background: none; border: 0; padding: 4px 0; color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
+
+/* Search band */
+.band { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); border-bottom: 1px solid var(--line); }
+.band .inner { display: flex; flex-direction: column; gap: 10px; padding-block: 10px 12px; }
+.search { position: relative; display: block; }
+.search svg { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); width: 22px; height: 22px; color: var(--ink-2); pointer-events: none; }
+.search input { width: 100%; height: 54px; padding: 0 14px 0 46px; font-size: 17px; background: var(--surface); border: 2px solid var(--line); border-radius: 6px; }
+.search input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.search input::placeholder { color: var(--ink-2); opacity: .85; }
+.tabs { display: flex; gap: 4px; padding: 3px; background: var(--surface-2); border-radius: 6px; align-self: flex-start; max-width: 100%; }
+.tabs button { min-height: 36px; padding: 4px 16px; border: 0; border-radius: 4px; background: transparent; font-weight: 500; color: var(--ink-2); }
+.tabs button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 2px rgba(0, 0, 0, .12); }
+.tabs .n { font-family: var(--font-mono); font-size: 12px; margin-left: 4px; color: var(--ink-2); }
+
+main { padding-block: 16px 24px; }
+.banner { margin-bottom: 14px; padding: 10px 14px; background: var(--surface-2); border-radius: 4px; color: var(--ink-2); font-size: 14px; }
+.banner.bad { background: var(--bad-soft); color: var(--bad); }
+.note { color: var(--ink-2); padding: 24px 0; }
+
+/* Filters */
+.filters { display: flex; flex-direction: column; gap: 12px; margin-bottom: 12px; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { min-height: 34px; padding: 3px 12px; border: 1.5px solid var(--line); border-radius: 999px; background: var(--surface); font-size: 14px; }
+.chip b { font: 500 12px var(--font-mono); margin-left: 6px; color: var(--ink-2); }
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.chip[aria-pressed="true"] b { color: inherit; }
+.selects { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px 14px; }
+.sel { display: flex; flex-direction: column; gap: 2px; font-size: 12px; color: var(--ink-2); text-transform: uppercase; letter-spacing: .06em; min-width: 0; }
+.sel select, .sel input { min-height: 38px; padding: 4px 10px; background: var(--surface); border: 1.5px solid var(--line); border-radius: 4px; font-size: 15px; text-transform: none; letter-spacing: 0; color: var(--ink); max-width: 100%; }
+.count { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 4px 16px; color: var(--ink-2); font-size: 14px; margin-bottom: 14px; }
+.count .tot { font-variant-numeric: tabular-nums; }
+
+/* Aula groups and equipment cards */
+.grp { margin-bottom: 26px; }
+.grp > h2 { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; margin-bottom: 10px; font-size: 14px; font-weight: 400; color: var(--ink-2); }
+.plate { display: inline-block; padding: 1px 10px; border: 1.5px solid var(--ink); border-radius: 2px; font: 600 20px/1.3 var(--font-display); letter-spacing: .06em; text-transform: uppercase; color: var(--ink); }
+.plate.sm { font-size: 14px; padding: 0 7px; border-width: 1px; letter-spacing: .05em; }
+.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 12px; }
+.eq { display: flex; flex-direction: column; min-width: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; }
+.eq-open { flex: 1; display: flex; flex-direction: column; gap: 6px; min-width: 0; padding: 14px; border: 0; background: none; text-align: left; border-radius: 6px 6px 0 0; }
+.eq-open:hover .eq-name { text-decoration: underline; text-underline-offset: 3px; }
+.eq-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+.eq-name { font: 600 22px/1.1 var(--font-display); letter-spacing: .01em; min-width: 0; overflow-wrap: anywhere; }
+.eq-sub { color: var(--ink-2); font-size: 14px; overflow-wrap: anywhere; }
+.eq-meta { display: grid; gap: 2px; margin-top: 4px; font-size: 14px; font-variant-numeric: tabular-nums; }
+.eq-meta .k, .k { display: inline-block; min-width: 62px; color: var(--ink-2); font-size: 12px; text-transform: uppercase; letter-spacing: .06em; }
+.via { font-size: 13px; color: var(--accent); }
+.eq-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 14px; border-top: 1px solid var(--line); min-height: 48px; }
+.mono { font-family: var(--font-mono); font-size: 13px; color: var(--ink-2); overflow-wrap: anywhere; min-width: 0; }
+
+mark { background: var(--accent-soft); color: inherit; border-radius: 2px; padding: 0 1px; box-shadow: inset 0 -2px 0 var(--accent); }
+
+/* Badges and tags */
+.badge { display: inline-flex; align-items: center; gap: 6px; padding: 1px 9px; border-radius: 999px; font-size: 12px; font-weight: 600; white-space: nowrap; background: var(--surface-2); color: var(--ink-2); }
+.badge::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.badge.ok { background: var(--ok-soft); color: var(--ok); }
+.badge.warn { background: var(--warn-soft); color: var(--warn); }
+.badge.bad { background: var(--bad-soft); color: var(--bad); }
+.tag { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 500; white-space: nowrap; }
+.tag::before { content: ""; width: 9px; height: 9px; border-radius: 2px; background: var(--ink-2); }
+.tag.prev::before { background: var(--accent); }
+.tag.corr::before { background: var(--warn); }
+.tag.rep::before { background: var(--bad); }
+
+/* Service log rows */
+.log { display: grid; gap: 8px; }
+.sv { display: grid; grid-template-columns: 104px minmax(0, 1.6fr) minmax(0, 1fr) 96px; grid-template-areas: "date main meta cost"; gap: 4px 16px; align-items: start; width: 100%; padding: 12px 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; text-align: left; }
+.sv:hover { border-color: var(--ink-2); }
+.sv-date { grid-area: date; font: 600 18px/1.2 var(--font-display); letter-spacing: .02em; font-variant-numeric: tabular-nums; }
+.sv-main { grid-area: main; display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.sv-eq { font-weight: 600; overflow-wrap: anywhere; }
+.sv-work { color: var(--ink-2); font-size: 14px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
+.sv-meta { grid-area: meta; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; min-width: 0; font-size: 14px; }
+.sv-tec { color: var(--ink-2); overflow-wrap: anywhere; }
+.sv-cost { grid-area: cost; text-align: right; font-variant-numeric: tabular-nums; font-weight: 500; }
+@media (max-width: 720px) {
+  .sv { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "date cost" "main main" "meta meta"; }
+  .sv-meta { flex-direction: row; flex-wrap: wrap; align-items: center; gap: 4px 12px; }
+}
+
+.empty { max-width: 520px; padding: 36px 0; display: flex; flex-direction: column; gap: 10px; align-items: flex-start; }
+.empty h2 { font: 700 32px/1.1 var(--font-display); text-transform: uppercase; text-wrap: balance; }
+.empty p { color: var(--ink-2); }
+.empty .row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+.empty.small { padding: 24px 0; }
+.empty.small h2 { font-size: 26px; }
+
+footer { padding-block: 8px 48px; color: var(--ink-2); font-size: 13px; }
+footer .inner { display: flex; flex-wrap: wrap; gap: 6px 20px; border-top: 1px solid var(--line); padding-top: 14px; }
+
+/* Side sheet */
+.overlay { position: fixed; inset: 0; z-index: 20; background: var(--scrim); display: flex; justify-content: flex-end; }
+.sheet { width: min(600px, 100%); height: 100%; overflow-y: auto; overscroll-behavior: contain; background: var(--bg); padding: calc(16px + env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) calc(28px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); box-shadow: -8px 0 30px rgba(0, 0, 0, .25); }
+.sheet-h { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+.sheet-h h2 { font: 700 30px/1.05 var(--font-display); text-transform: uppercase; overflow-wrap: anywhere; text-wrap: balance; }
+.x { flex: none; width: 40px; height: 40px; border: 1.5px solid var(--line); border-radius: 4px; background: var(--surface); font-size: 20px; line-height: 1; }
+.det-top { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-bottom: 14px; }
+.attrs { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 160px), 1fr)); gap: 12px 16px; margin: 0 0 14px; padding: 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; }
+.attrs div { min-width: 0; }
+.attrs dt { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-2); }
+.attrs dd { margin: 0; overflow-wrap: anywhere; }
+.notes { margin-bottom: 14px; padding: 10px 14px; background: var(--surface-2); border-radius: 4px; color: var(--ink-2); font-size: 14px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.acts { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 22px; }
+.confirm { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; padding: 10px 12px; margin-bottom: 14px; border: 1.5px solid var(--bad); border-radius: 4px; color: var(--bad); }
+.confirm span { flex: 1 1 200px; }
+.hist-t { font: 600 22px/1.1 var(--font-display); text-transform: uppercase; letter-spacing: .03em; margin-bottom: 10px; }
+.hist { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.hi { padding: 12px 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; display: grid; gap: 8px; }
+.hi-h { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; }
+.hi-date { font: 600 20px/1.1 var(--font-display); letter-spacing: .02em; }
+.hi-h .sp { flex: 1; }
+.hi p { overflow-wrap: anywhere; }
+.hi dl { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 140px), 1fr)); gap: 6px 14px; margin: 0; font-size: 14px; }
+.hi dt { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-2); }
+.hi dd { margin: 0; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
+.hist-empty { padding: 18px; border: 1.5px dashed var(--line); border-radius: 6px; color: var(--ink-2); }
+
+/* Forms */
+.form { display: grid; gap: 14px; }
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: 14px; }
+.fld { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.fld label { font-size: 13px; font-weight: 600; }
+.fld .req { color: var(--bad); }
+.fld input, .fld select, .fld textarea { width: 100%; min-height: 42px; padding: 8px 10px; font-size: 16px; background: var(--surface); border: 1.5px solid var(--line); border-radius: 4px; }
+.fld textarea { min-height: 96px; resize: vertical; }
+.fld input:focus, .fld select:focus, .fld textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.fld [aria-invalid="true"] { border-color: var(--bad); }
+.err { color: var(--bad); font-size: 13px; }
+.hint { color: var(--ink-2); font-size: 13px; }
+.form-acts { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+
+.toast { position: fixed; z-index: 30; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); transform: translate(-50%, 20px); max-width: calc(100% - 32px); padding: 10px 16px; border-radius: 6px; background: var(--ink); color: var(--bg); font-size: 14px; opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; }
+.toast.show { opacity: 1; transform: translate(-50%, 0); }
+@media (prefers-reduced-motion: reduce) { .toast { transition: none; } }
+</style>
+
+<header class="top">
+  <div class="inner">
+    <div class="brand">
+      <h1>Bitácora de Climas</h1>
+      <p>Mantenimiento preventivo, correctivo y reparaciones de aires acondicionados</p>
+    </div>
+    <div class="top-actions">
+      <button type="button" class="btn primary" data-action="new-eq">+ Equipo</button>
+      <button type="button" class="btn" data-action="new-sv">+ Servicio</button>
+    </div>
+  </div>
+</header>
+
+<div class="band">
+  <div class="inner">
+    <label class="search">
+      <span class="sr">Buscar equipo o aula</span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+      <input id="q" type="search" placeholder="Buscar por equipo, aula, marca, serie o técnico" autocomplete="off" enterkeyhint="search">
+    </label>
+    <div class="tabs">
+      <button type="button" id="tab-equipos" data-action="tab" data-v="equipos" aria-pressed="true">Equipos<span class="n"></span></button>
+      <button type="button" id="tab-servicios" data-action="tab" data-v="servicios" aria-pressed="false">Servicios<span class="n"></span></button>
+    </div>
+  </div>
+</div>
+
+<main><div class="inner" id="main"></div></main>
+<footer><div class="inner" id="foot"></div></footer>
+<div id="sheet-root"></div>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function () {
+  'use strict';
+  var $ = function (s, r) { return (r || document).querySelector(s); };
+  var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
+  var norm = function (s) { return String(s == null ? '' : s).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase(); };
+  var natural = function (a, b) { return String(a).localeCompare(String(b), 'es', { numeric: true, sensitivity: 'base' }); };
+
+  var TIPOS = ['Preventivo', 'Correctivo', 'Reparación', 'Instalación', 'Diagnóstico'];
+  var TIPO_CLS = { 'Preventivo': 'prev', 'Correctivo': 'corr', 'Reparación': 'rep' };
+  var TIPOS_EQ = ['Minisplit', 'Cassette', 'Piso-techo', 'Paquete', 'Ventana', 'Otro'];
+  var REFRIG = ['R-410A', 'R-32', 'R-22', 'R-134a', 'R-290', 'R-407C'];
+  var LS_KEY = 'bitacora-climas-v1';
+
+  /* ---------- fechas ---------- */
+  var pad = function (n) { return String(n).padStart(2, '0'); };
+  var isoOf = function (d) { return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); };
+  var parse = function (iso) { if (!iso) return null; var p = String(iso).split('-').map(Number); return new Date(p[0], p[1] - 1, p[2]); };
+  var today = function () { var d = new Date(); return new Date(d.getFullYear(), d.getMonth(), d.getDate()); };
+  var todayIso = function () { return isoOf(today()); };
+  var addDays = function (iso, n) { var d = parse(iso) || today(); d.setDate(d.getDate() + n); return isoOf(d); };
+  var addMonths = function (iso, n) {
+    var d = parse(iso); if (!d) return '';
+    var day = d.getDate(); d.setDate(1); d.setMonth(d.getMonth() + n);
+    var last = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+    d.setDate(Math.min(day, last)); return isoOf(d);
+  };
+  var diffDays = function (a, b) { return Math.round((parse(a) - parse(b)) / 86400000); };
+  var fmtF = function (iso) { var d = parse(iso); return d ? new Intl.DateTimeFormat('es-MX', { day: 'numeric', month: 'short', year: 'numeric' }).format(d).replace(/\./g, '') : ''; };
+  var fmtL = function (iso) { var d = parse(iso); return d ? new Intl.DateTimeFormat('es-MX', { day: 'numeric', month: 'long', year: 'numeric' }).format(d) : ''; };
+  var money = function (n) { return (n == null || n === '') ? '' : new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(n); };
+  var uid = function (p) { return p + '_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); };
+  var plural = function (n, a, b) { return n + ' ' + (n === 1 ? a : b); };
+
+  /* ---------- estado ---------- */
+  var DB = null, DL = null;
+  var S = { equipos: [], servicios: [], view: 'equipos', q: '', aula: '', estado: 'todos', tipo: 'todos', desde: '', hasta: '',
+    ready: false, backend: '', error: '', sheet: null, confirm: null, canDownload: false, busy: false, rE: false, rS: false };
+
+  function lsLoad() { try { var j = JSON.parse(localStorage.getItem(LS_KEY) || 'null'); if (j) { S.equipos = j.equipos || []; S.servicios = j.servicios || []; } } catch (e) {} }
+  function lsSave() { try { localStorage.setItem(LS_KEY, JSON.stringify({ equipos: S.equipos, servicios: S.servicios })); } catch (e) { toast('No se pudo guardar en este navegador.'); } }
+
+  async function put(col, obj) {
+    if (S.backend === 'db') { await DB.collection(col).doc(obj.id).set(obj); return; }
+    var arr = S[col], i = arr.findIndex(function (x) { return x.id === obj.id; });
+    if (i >= 0) arr[i] = obj; else arr.push(obj);
+    lsSave(); render();
+  }
+  async function del(col, id) {
+    if (S.backend === 'db') { await DB.collection(col).doc(id).delete(); return; }
+    S[col] = S[col].filter(function (x) { return x.id !== id; }); lsSave(); render();
+  }
+  function failMsg(err) {
+    var c = err && err.code;
+    if (c === 'invalid_argument') return 'Tu cuenta no tiene permiso para guardar cambios en esta bitácora.';
+    if (c === 'quota_exceeded') return 'Se llenó el almacenamiento de la bitácora.';
+    return 'No se pudo guardar. Intenta de nuevo.';
+  }
+
+  var tt;
+  function toast(msg) { var t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(tt); tt = setTimeout(function () { t.classList.remove('show'); }, 3400); }
+
+  /* ---------- datos derivados ---------- */
+  function svOf(eqId) { return S.servicios.filter(function (s) { return s.equipoId === eqId; }).sort(function (a, b) { return (b.fecha || '').localeCompare(a.fecha || ''); }); }
+  function estadoEq(e) {
+    var ss = svOf(e.id);
+    if (!ss.length) return { k: 'nuevo', label: 'Sin servicios', last: null, next: null, rel: '' };
+    var pend = ss.some(function (s) { return s.estado === 'Pendiente'; });
+    var done = ss.filter(function (s) { return s.estado !== 'Pendiente'; });
+    var last = done[0] || null;
+    var wn = done.find(function (s) { return s.proximo; });
+    var next = wn ? wn.proximo : null;
+    var k = 'sinprox', label = 'Sin próxima fecha', rel = '';
+    if (next) {
+      var d = diffDays(next, todayIso());
+      if (d < 0) { k = 'vencido'; label = 'Servicio vencido'; rel = 'hace ' + plural(-d, 'día', 'días'); }
+      else if (d <= 30) { k = 'proximo'; label = 'Próximo servicio'; rel = d === 0 ? 'hoy' : 'en ' + plural(d, 'día', 'días'); }
+      else { k = 'ok'; label = 'Al corriente'; rel = 'en ' + plural(d, 'día', 'días'); }
+    }
+    if (pend && k !== 'vencido') { k = 'pendiente'; label = 'Servicio pendiente'; }
+    return { k: k, label: label, last: last, next: next, rel: rel };
+  }
+  var BADGE = { vencido: 'bad', proximo: 'warn', pendiente: 'warn', ok: 'ok', nuevo: '', sinprox: '' };
+  var badge = function (st) { return '<span class="badge ' + (BADGE[st.k] || '') + '">' + esc(st.label) + '</span>'; };
+  var tag = function (t) { return '<span class="tag ' + (TIPO_CLS[t] || '') + '">' + esc(t) + '</span>'; };
+
+  function terms() { return norm(S.q).split(/\s+/).filter(Boolean); }
+  function eqHay(e) { return norm([e.nombre, e.aula, e.edificio, e.marca, e.modelo, e.serie, e.tipo, e.capacidad, e.refrigerante, e.notas].join(' ')); }
+  function svHay(s, e) { return norm([s.tipo, s.estado, s.trabajo, s.refacciones, s.tecnico, s.folio, s.aula, e ? e.nombre : '', e ? e.aula : '', fmtF(s.fecha), fmtL(s.fecha), s.fecha].join(' ')); }
+
+  function hl(text) {
+    text = text == null ? '' : String(text);
+    var T = terms(); if (!T.length || !text) return esc(text);
+    var n = '', map = [], i, j, c;
+    for (i = 0; i < text.length; i++) { c = norm(text[i]); for (j = 0; j < c.length; j++) { n += c[j]; map.push(i); } }
+    var on = new Array(text.length).fill(false);
+    T.forEach(function (t) { var p = 0; while ((p = n.indexOf(t, p)) > -1) { for (var k = p; k < p + t.length; k++) on[map[k]] = true; p += t.length; } });
+    var out = '', open = false;
+    for (i = 0; i < text.length; i++) {
+      if (on[i] && !open) { out += '<mark>'; open = true; }
+      if (!on[i] && open) { out += '</mark>'; open = false; }
+      out += esc(text[i]);
+    }
+    return open ? out + '</mark>' : out;
+  }
+
+  function eqList() {
+    var T = terms(), out = [];
+    S.equipos.forEach(function (e) {
+      if (S.aula && norm(e.aula) !== norm(S.aula)) return;
+      var ss = svOf(e.id), h = eqHay(e), via = [], ok = true;
+      if (T.length) {
+        var hs = ss.map(function (s) { return { s: s, h: svHay(s, e) }; });
+        var all = h + ' ' + hs.map(function (x) { return x.h; }).join(' ');
+        ok = T.every(function (t) { return all.indexOf(t) > -1; });
+        if (ok && !T.every(function (t) { return h.indexOf(t) > -1; })) {
+          via = hs.filter(function (x) { return T.some(function (t) { return x.h.indexOf(t) > -1; }); }).map(function (x) { return x.s; }).slice(0, 2);
+        }
+      }
+      if (ok) out.push({ e: e, st: estadoEq(e), via: via });
+    });
+    return out;
+  }
+  function svList() {
+    var T = terms(), byId = {};
+    S.equipos.forEach(function (e) { byId[e.id] = e; });
+    var out = [];
+    S.servicios.forEach(function (s) {
+      var e = byId[s.equipoId];
+      if (S.aula && norm(s.aula) !== norm(S.aula) && !(e && norm(e.aula) === norm(S.aula))) return;
+      if (S.tipo !== 'todos' && s.tipo !== S.tipo) return;
+      if (S.desde && (s.fecha || '') < S.desde) return;
+      if (S.hasta && (s.fecha || '') > S.hasta) return;
+      if (T.length) { var h = svHay(s, e) + ' ' + (e ? eqHay(e) : ''); if (!T.every(function (t) { return h.indexOf(t) > -1; })) return; }
+      out.push({ s: s, e: e });
+    });
+    out.sort(function (a, b) { return (b.s.fecha || '').localeCompare(a.s.fecha || ''); });
+    return out;
+  }
+  function aulas() { return Array.from(new Set(S.equipos.map(function (e) { return (e.aula || '').trim(); }).filter(Boolean))).sort(natural); }
+
+  /* ---------- render principal ---------- */
+  function render() {
+    var a = document.activeElement, id = a && a.id && a.id !== 'q' ? a.id : '';
+    if (S.aula && aulas().every(function (x) { return norm(x) !== norm(S.aula); })) S.aula = '';
+    renderBand(); renderMain(); renderFoot(); renderSheet(false);
+    if (id) { var n = document.getElementById(id); if (n && n !== document.activeElement) n.focus(); }
+  }
+  function renderBand() {
+    $('#tab-equipos .n').textContent = S.equipos.length;
+    $('#tab-servicios .n').textContent = S.servicios.length;
+    ['equipos', 'servicios'].forEach(function (v) { $('#tab-' + v).setAttribute('aria-pressed', S.view === v ? 'true' : 'false'); });
+  }
+  function renderMain() {
+    var m = $('#main'), html = '';
+    if (!S.ready) { m.innerHTML = '<p class="note">Cargando bitácora…</p>'; return; }
+    if (S.error) html += '<p class="banner bad">' + esc(S.error) + '</p>';
+    if (S.backend === 'local') html += '<p class="banner">No se pudo conectar el almacenamiento en la nube. Los datos se guardan solo en este navegador.</p>';
+    if (!S.equipos.length) html += emptyAll();
+    else html += S.view === 'equipos' ? viewEquipos() : viewServicios();
+    m.innerHTML = html;
+  }
+  function emptyAll() {
+    return '<div class="empty"><h2>Aún no hay equipos registrados</h2>' +
+      '<p>Registra cada aire acondicionado con su aula y después anota cada servicio que le hagas. Con el buscador encuentras cualquier equipo por nombre, aula, marca o número de serie.</p>' +
+      '<div class="row"><button type="button" class="btn primary" data-action="new-eq">Registrar primer equipo</button>' +
+      '<button type="button" class="btn" data-action="seed"' + (S.busy ? ' disabled' : '') + '>Cargar datos de ejemplo</button></div></div>';
+  }
+  function aulaSelect() {
+    return '<label class="sel"><span>Aula</span><select id="f-aula"><option value="">Todas</option>' +
+      aulas().map(function (a) { return '<option value="' + esc(a) + '"' + (norm(a) === norm(S.aula) ? ' selected' : '') + '>' + esc(a) + '</option>'; }).join('') + '</select></label>';
+  }
+  function chip(group, k, label, n) {
+    var cur = group === 'estado' ? S.estado : S.tipo;
+    return '<button type="button" class="chip" id="chip-' + group + '-' + k + '" data-action="chip-' + group + '" data-v="' + k + '" aria-pressed="' + (cur === k) + '">' + esc(label) + (n == null ? '' : '<b>' + n + '</b>') + '</button>';
+  }
+  function noResults() {
+    return '<div class="empty small"><h2>Sin resultados</h2><p>Prueba con el nombre del equipo, el aula, la marca, el número de serie o el técnico.</p>' +
+      '<div class="row"><button type="button" class="btn" data-action="clear">Quitar búsqueda y filtros</button></div></div>';
+  }
+  function exportBtn() { return S.canDownload ? '<button type="button" class="link" data-action="export">Exportar CSV</button>' : ''; }
+
+  function viewEquipos() {
+    var list = eqList();
+    var c = { todos: list.length, vencido: 0, proximo: 0, pendiente: 0, nuevo: 0 };
+    list.forEach(function (it) { if (c[it.st.k] != null) c[it.st.k]++; });
+    var shown = S.estado === 'todos' ? list : list.filter(function (it) { return it.st.k === S.estado; });
+    var html = '<div class="filters"><div class="chips" role="group" aria-label="Filtrar por estado">' +
+      chip('estado', 'todos', 'Todos', c.todos) + chip('estado', 'vencido', 'Vencidos', c.vencido) + chip('estado', 'proximo', 'Próximos 30 días', c.proximo) +
+      chip('estado', 'pendiente', 'Pendientes', c.pendiente) + chip('estado', 'nuevo', 'Sin servicios', c.nuevo) + '</div>' +
+      '<div class="selects">' + aulaSelect() + '</div></div>' +
+      '<div class="count"><span>Mostrando ' + shown.length + ' de ' + plural(S.equipos.length, 'equipo', 'equipos') + '</span>' + exportBtn() + '</div>';
+    if (!shown.length) return html + noResults();
+    var groups = {};
+    shown.forEach(function (it) { var k = norm(it.e.aula) || '~'; (groups[k] = groups[k] || { name: it.e.aula || 'Sin aula', items: [] }).items.push(it); });
+    Object.keys(groups).sort(function (a, b) { return natural(groups[a].name, groups[b].name); }).forEach(function (k) {
+      var g = groups[k];
+      g.items.sort(function (a, b) { return natural(a.e.nombre, b.e.nombre); });
+      var edif = g.items.map(function (it) { return it.e.edificio; }).find(Boolean);
+      html += '<section class="grp"><h2><span class="plate">' + hl(g.name) + '</span><span>' + (edif ? hl(edif) + ' · ' : '') + plural(g.items.length, 'equipo', 'equipos') + '</span></h2><div class="cards">' + g.items.map(eqCard).join('') + '</div></section>';
+    });
+    return html;
+  }
+  function eqCard(it) {
+    var e = it.e, st = it.st;
+    var sub = [e.marca, e.modelo, e.tipo, e.capacidad].filter(Boolean).join(' · ');
+    return '<article class="eq"><button type="button" class="eq-open" data-action="open-eq" data-id="' + esc(e.id) + '">' +
+      '<span class="eq-top"><span class="eq-name">' + hl(e.nombre) + '</span>' + badge(st) + '</span>' +
+      (sub ? '<span class="eq-sub">' + hl(sub) + '</span>' : '') +
+      '<span class="eq-meta"><span><span class="k">Último</span>' + (st.last ? fmtF(st.last.fecha) + ' · ' + esc(st.last.tipo) : 'sin registro') + '</span>' +
+      '<span><span class="k">Próximo</span>' + (st.next ? fmtF(st.next) + ' (' + st.rel + ')' : 'sin fecha') + '</span></span>' +
+      (it.via.length ? '<span class="via">Coincide en servicios: ' + it.via.map(function (s) { return esc(s.tipo) + ' ' + fmtF(s.fecha); }).join(', ') + '</span>' : '') +
+      '</button><div class="eq-foot"><span class="mono">' + (e.serie ? 'Serie ' + hl(e.serie) : '') + '</span>' +
+      '<button type="button" class="btn small" data-action="new-sv" data-eq="' + esc(e.id) + '">+ Servicio</button></div></article>';
+  }
+
+  function viewServicios() {
+    var list = svList();
+    var total = list.reduce(function (a, x) { return a + (Number(x.s.costo) || 0); }, 0);
+    var html = '<div class="filters"><div class="chips" role="group" aria-label="Filtrar por tipo de servicio">' + chip('tipo', 'todos', 'Todos') +
+      TIPOS.map(function (t) { return chip('tipo', t, t); }).join('') + '</div>' +
+      '<div class="selects">' + aulaSelect() +
+      '<label class="sel"><span>Desde</span><input type="date" id="f-desde" value="' + esc(S.desde) + '"></label>' +
+      '<label class="sel"><span>Hasta</span><input type="date" id="f-hasta" value="' + esc(S.hasta) + '"></label>' +
+      ((S.q || S.aula || S.tipo !== 'todos' || S.desde || S.hasta) ? '<button type="button" class="link" data-action="clear">Limpiar filtros</button>' : '') + '</div></div>' +
+      '<div class="count"><span class="tot">Mostrando ' + list.length + ' de ' + plural(S.servicios.length, 'servicio', 'servicios') + (total ? ' · Total ' + money(total) : '') + '</span>' + exportBtn() + '</div>';
+    if (!list.length) return html + (S.servicios.length ? noResults() : '<div class="empty small"><h2>Todavía no hay servicios</h2><p>Registra el primer servicio de un equipo para empezar el historial.</p><div class="row"><button type="button" class="btn primary" data-action="new-sv">+ Servicio</button></div></div>');
+    return html + '<div class="log">' + list.map(function (x) {
+      var s = x.s, e = x.e;
+      return '<button type="button" class="sv" data-action="open-eq" data-id="' + esc(s.equipoId) + '">' +
+        '<span class="sv-date">' + fmtF(s.fecha) + '</span>' +
+        '<span class="sv-main"><span class="sv-eq">' + hl(e ? e.nombre : 'Equipo eliminado') + '</span>' +
+        '<span><span class="plate sm">' + hl(s.aula || (e && e.aula) || 'Sin aula') + '</span></span>' +
+        (s.trabajo ? '<span class="sv-work">' + hl(s.trabajo) + '</span>' : '') + '</span>' +
+        '<span class="sv-meta">' + tag(s.tipo) + (s.estado === 'Pendiente' ? '<span class="badge warn">Pendiente</span>' : '') + (s.tecnico ? '<span class="sv-tec">' + hl(s.tecnico) + '</span>' : '') + '</span>' +
+        '<span class="sv-cost">' + (s.costo != null && s.costo !== '' ? money(s.costo) : '') + '</span></button>';
+    }).join('') + '</div>';
+  }
+
+  function renderFoot() {
+    var f = $('#foot'), ej = S.equipos.some(function (e) { return e.ejemplo; }) || S.servicios.some(function (s) { return s.ejemplo; });
+    f.innerHTML = '<span>' + (S.backend === 'db' ? 'Los datos se guardan en la nube y se comparten con quien tenga acceso a esta página.' : (S.ready ? 'Los datos se guardan solo en este navegador.' : '')) + '</span>' +
+      (ej ? '<button type="button" class="link" data-action="unseed"' + (S.busy ? ' disabled' : '') + '>Borrar datos de ejemplo</button>' : '');
+  }
+
+  /* ---------- hoja lateral ---------- */
+  function renderSheet(force) {
+    var root = $('#sheet-root'), sh = S.sheet;
+    if (!sh) { root.innerHTML = ''; document.body.classList.remove('lock'); return; }
+    if (/form$/.test(sh.type) && !force) return;
+    var body = '', label = '';
+    if (sh.type === 'eq') {
+      var e = S.equipos.find(function (x) { return x.id === sh.id; });
+      if (!e) { S.sheet = null; root.innerHTML = ''; document.body.classList.remove('lock'); return; }
+      body = detailEq(e); label = e.nombre;
+    } else if (sh.type === 'eq-form') { label = sh.id ? 'Editar equipo' : 'Nuevo equipo'; body = formEq(sh.id ? S.equipos.find(function (x) { return x.id === sh.id; }) : null); }
+    else if (sh.type === 'sv-form') { label = sh.id ? 'Editar servicio' : 'Nuevo servicio'; body = formSv(sh.id ? S.servicios.find(function (x) { return x.id === sh.id; }) : null, sh.eqId); }
+    var scrollTop = root.firstChild && $('.sheet', root) ? $('.sheet', root).scrollTop : 0;
+    root.innerHTML = '<div class="overlay" data-action="overlay"><div class="sheet" role="dialog" aria-modal="true" aria-label="' + esc(label) + '">' + body + '</div></div>';
+    if (!force && scrollTop) $('.sheet', root).scrollTop = scrollTop;
+    document.body.classList.add('lock');
+  }
+  function openSheet(sh) {
+    S.sheet = sh; S.confirm = null; renderSheet(true);
+    var el = $('.sheet [data-first]') || $('.sheet .x'); if (el) el.focus();
+  }
+  function closeSheet() { S.sheet = null; S.confirm = null; renderSheet(true); }
+
+  function closeBtn() { return '<button type="button" class="x" data-action="close-sheet" aria-label="Cerrar">×</button>'; }
+  function detailEq(e) {
+    var st = estadoEq(e), ss = svOf(e.id);
+    var attrs = [['Marca', e.marca], ['Modelo', e.modelo], ['Serie', e.serie], ['Tipo', e.tipo], ['Capacidad', e.capacidad], ['Refrigerante', e.refrigerante], ['Edificio', e.edificio], ['Instalación', e.instalacion ? fmtL(e.instalacion) : '']]
+      .filter(function (a) { return a[1]; }).map(function (a) { return '<div><dt>' + a[0] + '</dt><dd>' + esc(a[1]) + '</dd></div>'; }).join('');
+    var next = st.next ? '<span class="hint">Próximo servicio: ' + fmtL(st.next) + ' (' + st.rel + ')</span>' : '';
+    var conf = S.confirm && S.confirm.kind === 'eq' ?
+      '<div class="confirm" role="alert"><span>Se eliminará este equipo' + (ss.length ? ' y sus ' + plural(ss.length, 'servicio', 'servicios') : '') + '. No se puede deshacer.</span><button type="button" class="btn danger solid small" data-action="del-eq-yes"' + (S.busy ? ' disabled' : '') + '>Sí, eliminar</button><button type="button" class="btn small" data-action="cancel-confirm">Cancelar</button></div>' : '';
+    return '<div class="sheet-h"><div><h2>' + esc(e.nombre) + '</h2></div>' + closeBtn() + '</div>' +
+      '<div class="det-top"><span class="plate">' + esc(e.aula || 'Sin aula') + '</span>' + badge(st) + next + '</div>' +
+      (attrs ? '<dl class="attrs">' + attrs + '</dl>' : '') + (e.notas ? '<p class="notes">' + esc(e.notas) + '</p>' : '') +
+      '<div class="acts"><button type="button" class="btn primary" data-action="new-sv" data-eq="' + esc(e.id) + '" data-first>+ Registrar servicio</button>' +
+      '<button type="button" class="btn" data-action="edit-eq" data-id="' + esc(e.id) + '">Editar equipo</button>' +
+      '<button type="button" class="btn danger" data-action="del-eq-ask">Eliminar</button></div>' + conf +
+      '<h3 class="hist-t">Historial de servicios (' + ss.length + ')</h3>' +
+      (ss.length ? '<ul class="hist">' + ss.map(function (s) { return histItem(s, e); }).join('') + '</ul>' : '<p class="hist-empty">Este equipo todavía no tiene servicios registrados.</p>');
+  }
+  function histItem(s, e) {
+    var conf = S.confirm && S.confirm.kind === 'sv' && S.confirm.id === s.id ?
+      '<div class="confirm" role="alert"><span>¿Eliminar este servicio?</span><button type="button" class="btn danger solid small" data-action="del-sv-yes" data-id="' + esc(s.id) + '"' + (S.busy ? ' disabled' : '') + '>Sí, eliminar</button><button type="button" class="btn small" data-action="cancel-confirm">Cancelar</button></div>' : '';
+    var meta = [['Técnico', s.tecnico], ['Costo', s.costo != null && s.costo !== '' ? money(s.costo) : ''], ['Refacciones', s.refacciones], ['Próximo servicio', s.proximo ? fmtF(s.proximo) : ''], ['Folio', s.folio], ['Aula', s.aula && norm(s.aula) !== norm(e.aula) ? s.aula : '']]
+      .filter(function (a) { return a[1]; }).map(function (a) { return '<div><dt>' + a[0] + '</dt><dd>' + esc(a[1]) + '</dd></div>'; }).join('');
+    return '<li class="hi"><div class="hi-h"><span class="hi-date">' + fmtF(s.fecha) + '</span>' + tag(s.tipo) + (s.estado === 'Pendiente' ? '<span class="badge warn">Pendiente</span>' : '') + '<span class="sp"></span>' +
+      '<button type="button" class="btn small" data-action="edit-sv" data-id="' + esc(s.id) + '">Editar</button>' +
+      '<button type="button" class="btn small danger" data-action="del-sv-ask" data-id="' + esc(s.id) + '">Eliminar</button></div>' +
+      (s.trabajo ? '<p>' + esc(s.trabajo) + '</p>' : '') + (meta ? '<dl>' + meta + '</dl>' : '') + conf + '</li>';
+  }
+
+  function fld(label, name, val, o) {
+    o = o || {};
+    var id = 'x-' + name, t = o.type || 'text';
+    var ctl = o.area ? '<textarea id="' + id + '" name="' + name + '" rows="3"' + (o.ph ? ' placeholder="' + esc(o.ph) + '"' : '') + '>' + esc(val) + '</textarea>' :
+      '<input id="' + id + '" name="' + name + '" type="' + t + '" value="' + esc(val) + '"' + (o.list ? ' list="' + o.list + '"' : '') + (o.ph ? ' placeholder="' + esc(o.ph) + '"' : '') + (o.step ? ' step="' + o.step + '"' : '') + (o.min != null ? ' min="' + o.min + '"' : '') + ' autocomplete="off"' + (o.first ? ' data-first' : '') + '>';
+    return '<div class="fld"><label for="' + id + '">' + label + (o.req ? ' <span class="req">*</span>' : '') + '</label>' + ctl + '<p class="err" data-err="' + name + '" hidden></p></div>';
+  }
+  function sel(label, name, val, opts, o) {
+    o = o || {};
+    return '<div class="fld"><label for="x-' + name + '">' + label + (o.req ? ' <span class="req">*</span>' : '') + '</label><select id="x-' + name + '" name="' + name + '">' +
+      opts.map(function (p) { var v = Array.isArray(p) ? p[0] : p, l = Array.isArray(p) ? p[1] : p; return '<option value="' + esc(v) + '"' + (v === val ? ' selected' : '') + '>' + esc(l) + '</option>'; }).join('') + '</select><p class="err" data-err="' + name + '" hidden></p></div>';
+  }
+  function dlist(id, arr) { return '<datalist id="' + id + '">' + arr.map(function (a) { return '<option value="' + esc(a) + '">'; }).join('') + '</datalist>'; }
+
+  function formEq(e) {
+    e = e || {};
+    var marcas = Array.from(new Set(S.equipos.map(function (x) { return x.marca; }).filter(Boolean))).sort(natural);
+    var tipoVal = e.tipo || 'Minisplit';
+    var tipos = TIPOS_EQ.indexOf(tipoVal) > -1 ? TIPOS_EQ : TIPOS_EQ.concat([tipoVal]);
+    return '<div class="sheet-h"><h2>' + (e.id ? 'Editar equipo' : 'Nuevo equipo') + '</h2>' + closeBtn() + '</div>' +
+      '<form class="form" id="form-eq" novalidate>' +
+      fld('Nombre del equipo', 'nombre', e.nombre || '', { req: 1, ph: 'Minisplit Aula 101', first: 1 }) +
+      '<div class="grid2">' + fld('Aula', 'aula', e.aula || '', { req: 1, list: 'dl-aulas', ph: 'Aula 101' }) + fld('Edificio o planta', 'edificio', e.edificio || '', { ph: 'Edificio A' }) + '</div>' +
+      '<div class="grid2">' + fld('Marca', 'marca', e.marca || '', { list: 'dl-marcas', ph: 'Carrier' }) + fld('Modelo', 'modelo', e.modelo || '') + '</div>' +
+      '<div class="grid2">' + fld('Número de serie', 'serie', e.serie || '') + sel('Tipo de equipo', 'tipo', tipoVal, tipos) + '</div>' +
+      '<div class="grid2">' + fld('Capacidad', 'capacidad', e.capacidad || '', { ph: '18,000 BTU (1.5 ton)' }) + fld('Refrigerante', 'refrigerante', e.refrigerante || '', { list: 'dl-ref', ph: 'R-410A' }) + '</div>' +
+      fld('Fecha de instalación', 'instalacion', e.instalacion || '', { type: 'date' }) +
+      fld('Notas', 'notas', e.notas || '', { area: 1, ph: 'Detalles del equipo, condiciones del lugar, accesos' }) +
+      dlist('dl-aulas', aulas()) + dlist('dl-marcas', marcas) + dlist('dl-ref', REFRIG) +
+      '<div class="form-acts"><button type="submit" class="btn primary">Guardar equipo</button><button type="button" class="btn" data-action="cancel-form">Cancelar</button></div></form>';
+  }
+  function formSv(s, eqId) {
+    var fecha = s ? s.fecha : todayIso();
+    var tipo = s ? s.tipo : 'Preventivo';
+    var prox = s ? (s.proximo || '') : addMonths(fecha, 6);
+    var cur = s ? s.equipoId : (eqId || '');
+    var eqs = S.equipos.slice().sort(function (a, b) { return natural(a.aula, b.aula) || natural(a.nombre, b.nombre); });
+    var opts = [['', 'Selecciona un equipo']].concat(eqs.map(function (e) { return [e.id, e.nombre + ' · ' + (e.aula || 'Sin aula')]; }));
+    var tecs = Array.from(new Set(S.servicios.map(function (x) { return x.tecnico; }).filter(Boolean))).sort(natural);
+    var eq0 = S.equipos.find(function (e) { return e.id === cur; });
+    return '<div class="sheet-h"><h2>' + (s ? 'Editar servicio' : 'Nuevo servicio') + '</h2>' + closeBtn() + '</div>' +
+      '<form class="form" id="form-sv" novalidate>' +
+      sel('Equipo', 'equipoId', cur, opts, { req: 1 }) + '<p class="hint" id="x-aula-hint">' + (eq0 ? 'Aula: ' + esc(eq0.aula || 'sin aula') : '') + '</p>' +
+      '<div class="grid2">' + fld('Fecha del servicio', 'fecha', fecha, { type: 'date', req: 1 }) + sel('Tipo de servicio', 'tipo', tipo, TIPOS, { req: 1 }) + '</div>' +
+      '<div class="grid2">' + sel('Estado', 'estado', s ? (s.estado || 'Completado') : 'Completado', ['Completado', 'Pendiente']) + fld('Folio u orden', 'folio', s ? s.folio || '' : '') + '</div>' +
+      fld('Trabajo realizado', 'trabajo', s ? s.trabajo || '' : '', { area: 1, ph: 'Limpieza de evaporador y condensador, revisión de presiones, limpieza de drenaje' }) +
+      fld('Refacciones o materiales', 'refacciones', s ? s.refacciones || '' : '', { ph: 'Capacitor 35 µF, gas R-410A' }) +
+      '<div class="grid2">' + fld('Técnico', 'tecnico', s ? s.tecnico || '' : '', { list: 'dl-tec' }) + fld('Costo (MXN)', 'costo', s && s.costo != null ? s.costo : '', { type: 'number', step: '0.01', min: 0 }) + '</div>' +
+      '<div class="fld"><label for="x-proximo">Próximo servicio</label><input id="x-proximo" name="proximo" type="date" value="' + esc(prox) + '" data-touched="' + (s ? 1 : 0) + '"><p class="hint">En un preventivo se propone a 6 meses. Puedes cambiarla.</p></div>' +
+      dlist('dl-tec', tecs) +
+      '<div class="form-acts"><button type="submit" class="btn primary">Guardar servicio</button><button type="button" class="btn" data-action="cancel-form">Cancelar</button></div></form>';
+  }
+  function showErrors(f, errs) {
+    f.querySelectorAll('[data-err]').forEach(function (p) { p.hidden = true; var c = f.elements[p.dataset.err]; if (c) c.removeAttribute('aria-invalid'); });
+    var first = null;
+    Object.keys(errs).forEach(function (k) { var p = f.querySelector('[data-err="' + k + '"]'), c = f.elements[k]; if (p) { p.textContent = errs[k]; p.hidden = false; } if (c) { c.setAttribute('aria-invalid', 'true'); first = first || c; } });
+    if (first) first.focus();
+  }
+
+  async function saveEq(f) {
+    var fd = new FormData(f), v = function (k) { return String(fd.get(k) || '').trim(); }, errs = {};
+    if (!v('nombre')) errs.nombre = 'Escribe el nombre del equipo.';
+    if (!v('aula')) errs.aula = 'Indica en qué aula está.';
+    if (Object.keys(errs).length) return showErrors(f, errs);
+    var old = S.sheet.id ? S.equipos.find(function (x) { return x.id === S.sheet.id; }) : null;
+    var obj = { id: old ? old.id : uid('e'), nombre: v('nombre'), aula: v('aula'), edificio: v('edificio'), marca: v('marca'), modelo: v('modelo'), serie: v('serie'), tipo: v('tipo'), capacidad: v('capacidad'), refrigerante: v('refrigerante'), instalacion: v('instalacion'), notas: v('notas'), actualizado: new Date().toISOString() };
+    var btn = f.querySelector('[type=submit]'); btn.disabled = true;
+    try { await put('equipos', obj); toast('Equipo guardado'); openSheet({ type: 'eq', id: obj.id }); }
+    catch (err) { btn.disabled = false; toast(failMsg(err)); }
+  }
+  async function saveSv(f) {
+    var fd = new FormData(f), v = function (k) { return String(fd.get(k) || '').trim(); }, errs = {};
+    if (!v('equipoId')) errs.equipoId = 'Selecciona el equipo.';
+    if (!v('fecha')) errs.fecha = 'Indica la fecha del servicio.';
+    if (Object.keys(errs).length) return showErrors(f, errs);
+    var eq = S.equipos.find(function (x) { return x.id === v('equipoId'); });
+    var old = S.sheet.id ? S.servicios.find(function (x) { return x.id === S.sheet.id; }) : null;
+    var costo = v('costo'), n = costo === '' ? null : Number(costo);
+    var obj = { id: old ? old.id : uid('s'), equipoId: v('equipoId'), aula: eq ? eq.aula : (old ? old.aula : ''), fecha: v('fecha'), tipo: v('tipo'), estado: v('estado') || 'Completado', trabalho: v('trabajo'), refacciones: v('refacciones'), tecnico: v('tecnico'), costo: (n == null || isNaN(n)) ? null : n, proximo: v('proximo'), folio: v('folio'), actualizado: new Date().toISOString() };
+    var btn = f.querySelector('[type=submit]'); btn.disabled = true;
+    try { await put('servicios', obj); toast('Servicio guardado'); openSheet({ type: 'eq', id: obj.equipoId }); }
+    catch (err) { btn.disabled = false; toast(failMsg(err)); }
+  }
+  async function delEq() {
+    var id = S.sheet.id; S.busy = true; renderSheet(true);
+    try {
+      var ss = svOf(id); for (var i = 0; i < ss.length; i++) await del('servicios', ss[i].id);
+      await del('equipos', id); S.busy = false; closeSheet(); toast('Equipo eliminado');
+    } catch (err) { S.busy = false; renderSheet(true); toast(failMsg(err)); }
+  }
+  async function delSv(id) {
+    S.busy = true; renderSheet(true);
+    try { await del('servicios', id); S.busy = false; S.confirm = null; renderSheet(true); toast('Servicio eliminado'); }
+    catch (err) { S.busy = false; renderSheet(true); toast(failMsg(err)); }
+  }
+
+  /* ---------- ejemplos ---------- */
+  async function seed() {
+    if (S.busy) return; S.busy = true; render();
+    var E = [
+      ['Minisplit Aula 101', 'Aula 101', 'Edificio A', 'Carrier', '42QHC018', 'CR2201845', 'Minisplit', '18,000 BTU (1.5 ton)', 'R-410A', '2022-03-14'],
+      ['Minisplit Aula 102', 'Aula 102', 'Edificio A', 'Mirage', 'Magnum 24', 'MG2307712', 'Minisplit', '24,000 BTU (2 ton)', 'R-410A', '2023-01-20'],
+      ['Cassette Biblioteca', 'Biblioteca', 'Edificio B', 'LG', 'ATNQ48GPLA2', 'LG1904425', 'Cassette', '48,000 BTU (4 ton)', 'R-410A', '2019-08-05'],
+      ['Minisplit Laboratorio de cómputo', 'Laboratorio 1', 'Edificio C', 'York', 'YHFE24', 'YK2111093', 'Minisplit', '24,000 BTU (2 ton)', 'R-410A', '2021-11-02'],
+      ['Piso-techo Auditorio', 'Auditorio', 'Edificio B', 'Trane', 'TWH060', 'TR1807551', 'Piso-techo', '60,000 BTU (5 ton)', 'R-22', '2018-05-18'],
+      ['Minisplit Dirección', 'Dirección', 'Edificio A', 'Midea', 'MSAF-12', 'MD2402210', 'Minisplit', '12,000 BTU (1 ton)', 'R-32', '2024-02-27']
+    ];
+    var ids = E.map(function () { return uid('e'); });
+    var D = function (n) { return addDays(todayIso(), n); };
+    var SV = [
+      [0, -190, 'Preventivo', 'Limpieza de evaporador y condensador, lavado de filtros, revisión de presiones y limpieza de drenaje.', 'Luis Hernández', 650, 6, ''],
+      [0, -420, 'Correctivo', 'Cambio de capacitor de arranque del compresor.', 'Luis Hernández', 480, 0, 'Capacitor 35 µF'],
+      [1, -45, 'Preventivo', 'Mantenimiento general, limpieza profunda de serpentines y revisión eléctrica.', 'Marco Ruiz', 700, 6, ''],
+      [1, 3, 'Correctivo', 'Ruido en motor del ventilador interior. Programado para revisión.', 'Marco Ruiz', null, 0, '', 'Pendiente'],
+      [2, -20, 'Reparación', 'Fuga de refrigerante en válvula de servicio. Soldadura, vacío y recarga de gas.', 'Luis Hernández', 2850, 0, 'Gas R-410A 1.2 kg, varilla de plata'],
+      [2, -300, 'Preventivo', 'Limpieza de cassette, charola y bomba de condensados.', 'Marco Ruiz', 1200, 6, ''],
+      [3, -170, 'Preventivo', 'Limpieza de unidad interior y exterior, lavado con hidrolavadora y revisión de voltajes.', 'Marco Ruiz', 650, 6, ''],
+      [3, -60, 'Correctivo', 'Tarjeta electrónica sin respuesta. Reemplazo de tarjeta de control.', 'Luis Hernández', 3200, 0, 'Tarjeta universal'],
+      [4, -100, 'Preventivo', 'Cambio de bandas, limpieza de filtros y serpentines, revisión de amperaje.', 'Marco Ruiz', 1850, 6, 'Bandas tipo A']
+    ];
+    try {
+      for (var i = 0; i < E.length; i++) {
+        var x = E[i];
+        await put('equipos', { id: ids[i], nombre: x[0], aula: x[1], edificio: x[2], marca: x[3], modelo: x[4], serie: x[5], tipo: x[6], capacidad: x[7], refrigerante: x[8], instalacion: x[9], notas: '', ejemplo: true, actualizado: new Date().toISOString() });
+      }
+      for (var j = 0; j < SV.length; j++) {
+        var s = SV[j], fecha = D(s[1]);
+        await put('servicios', { id: uid('s'), equipoId: ids[s[0]], aula: E[s[0]][1], fecha: fecha, tipo: s[2], estado: s[8] || 'Completado', trabajo: s[3], refacciones: s[7], tecnico: s[4], costo: s[5], proximo: s[6] ? addMonths(fecha, s[6]) : '', folio: '', ejemplo: true, actualizado: new Date().toISOString() });
+      }
+      toast('Se cargaron datos de ejemplo');
+    } catch (err) { toast(failMsg(err)); }
+    S.busy = false; render();
+  }
+  async function unseed() {
+    if (S.busy) return; S.busy = true; render();
+    try {
+      var ss = S.servicios.filter(function (s) { return s.ejemplo; }), ee = S.equipos.filter(function (e) { return e.ejemplo; });
+      for (var i = 0; i < ss.length; i++) await del('servicios', ss[i].id);
+      for (var j = 0; j < ee.length; j++) {
+        var rest = svOf(ee[j].id); for (var k = 0; k < rest.length; k++) await del('servicios', rest[k].id);
+        await del('equipos', ee[j].id);
+      }
+      toast('Datos de ejemplo borrados');
+    } catch (err) { toast(failMsg(err)); }
+    S.busy = false; render();
+  }
+
+  /* ---------- exportar ---------- */
+  var csv = function (rows) { return rows.map(function (r) { return r.map(function (c) { c = c == null ? '' : String(c); return /[",\n\r]/.test(c) ? '"' + c.replace(/"/g, '""') + '"' : c; }).join(','); }).join('\r\n'); };
+  async function exportCsv() {
+    if (!DL) return;
+    var rows, name;
+    if (S.view === 'servicios') {
+      rows = [['Fecha', 'Equipo', 'Aula', 'Edificio', 'Marca', 'Modelo', 'Serie', 'Tipo', 'Estado', 'Trabajo realizado', 'Refacciones', 'Técnico', 'Costo', 'Próximo servicio', 'Folio']];
+      svList().forEach(function (x) { var s = x.s, e = x.e || {}; rows.push([s.fecha, e.nombre || '', s.aula || e.aula || '', e.edificio || '', e.marca || '', e.modelo || '', e.serie || '', s.tipo, s.estado, s.trabajo, s.refacciones, s.tecnico, s.costo, s.proximo, s.folio]); });
+      name = 'servicios-' + todayIso() + '.csv';
+    } else {
+      rows = [['Equipo', 'Aula', 'Edificio', 'Marca', 'Modelo', 'Serie', 'Tipo', 'Capacidad', 'Refrigerante', 'Instalación', 'Estado', 'Último servicio', 'Próximo servicio']];
+      eqList().filter(function (it) { return S.estado === 'todos' || it.st.k === S.estado; }).forEach(function (it) { var e = it.e; rows.push([e.nombre, e.aula, e.edificio, e.marca, e.modelo, e.serie, e.tipo, e.capacidad, e.refrigerante, e.instalacion, it.st.label, it.st.last ? it.st.last.fecha : '', it.st.next || '']); });
+      name = 'equipos-' + todayIso() + '.csv';
+    }
+    try { await DL.save({ filename: name, data: '﻿' + csv(rows) }); }
+    catch (err) { if (!err || err.code !== 'declined') toast('No se pudo exportar el archivo.'); }
+  }
+
+  /* ---------- eventos ---------- */
+  function clearAll() { S.q = ''; S.aula = ''; S.estado = 'todos'; S.tipo = 'todos'; S.desde = ''; S.hasta = ''; $('#q').value = ''; }
+  function openSvForm(eqId) {
+    if (!S.equipos.length) { toast('Primero registra un equipo.'); openSheet({ type: 'eq-form' }); return; }
+    openSheet({ type: 'sv-form', eqId: eqId || '' });
+  }
+  document.addEventListener('click', function (ev) {
+    var el = ev.target.closest('[data-action]'); if (!el) return;
+    var a = el.dataset.action;
+    if (a === 'overlay') { if (ev.target === el) closeSheet(); return; }
+    switch (a) {
+      case 'tab': S.view = el.dataset.v; render(); break;
+      case 'new-eq': openSheet({ type: 'eq-form' }); break;
+      case 'new-sv': openSvForm(el.dataset.eq); break;
+      case 'open-eq': openSheet({ type: 'eq', id: el.dataset.id }); break;
+      case 'edit-eq': openSheet({ type: 'eq-form', id: el.dataset.id }); break;
+      case 'edit-sv': { var s = S.servicios.find(function (x) { return x.id === el.dataset.id; }); if (s) openSheet({ type: 'sv-form', id: s.id, eqId: s.equipoId }); break; }
+      case 'close-sheet': closeSheet(); break;
+      case 'cancel-form': { var sh = S.sheet, back = sh && (sh.type === 'sv-form' ? sh.eqId : sh.id); if (back && S.equipos.some(function (e) { return e.id === back; })) openSheet({ type: 'eq', id: back }); else closeSheet(); break; }
+      case 'del-eq-ask': S.confirm = { kind: 'eq' }; renderSheet(true); break;
+      case 'del-eq-yes': delEq(); break;
+      case 'del-sv-ask': S.confirm = { kind: 'sv', id: el.dataset.id }; renderSheet(true); break;
+      case 'del-sv-yes': delSv(el.dataset.id); break;
+      case 'cancel-confirm': S.confirm = null; renderSheet(true); break;
+      case 'chip-estado': S.estado = el.dataset.v; render(); break;
+      case 'chip-tipo': S.tipo = el.dataset.v; render(); break;
+      case 'clear': clearAll(); render(); break;
+      case 'seed': seed(); break;
+      case 'unseed': unseed(); break;
+      case 'export': exportCsv(); break;
+    }
+  });
+  function onSearch(ev) { S.q = ev.target.value; renderBand(); renderMain(); }
+  $('#q').addEventListener('input', onSearch);
+  $('#q').addEventListener('search', onSearch);
+  document.addEventListener('change', function (ev) {
+    var t = ev.target;
+    if (t.id === 'f-aula') { S.aula = t.value; render(); }
+    else if (t.id === 'f-desde') { S.desde = t.value; render(); }
+    else if (t.id === 'f-hasta') { S.hasta = t.value; render(); }
+    else if (t.id === 'x-equipoId') { var e = S.equipos.find(function (x) { return x.id === t.value; }); $('#x-aula-hint').textContent = e ? 'Aula: ' + (e.aula || 'sin aula') : ''; }
+  });
+  document.addEventListener('input', function (ev) {
+    var t = ev.target;
+    if (t.id === 'x-proximo') { t.dataset.touched = '1'; return; }
+    if (t.id === 'x-fecha' || t.id === 'x-tipo') {
+      var p = $('#x-proximo'); if (!p || p.dataset.touched === '1') return;
+      p.value = $('#x-tipo').value === 'Preventivo' ? addMonths($('#x-fecha').value, 6) : '';
+    }
+  });
+  document.addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    if (ev.target.id === 'form-eq') saveEq(ev.target);
+    else if (ev.target.id === 'form-sv') saveSv(ev.target);
+  });
+  document.addEventListener('keydown', function (ev) { if (ev.key === 'Escape' && S.sheet) closeSheet(); });
+
+  /* ---------- arranque ---------- */
+  async function init() {
+    render();
+    var cap = null;
+    try { cap = window.claude && window.claude.use ? await window.claude.use('db') : null; } catch (e) { cap = null; }
+    if (cap) {
+      DB = cap; S.backend = 'db';
+      var sub = function (col, flag) {
+        DB.collection(col).onSnapshot(function (snap) {
+          S[col] = snap.docs.map(function (d) { return Object.assign({}, d.data(), { id: d.id }); });
+          S[flag] = true; S.ready = S.rE && S.rS; render();
+        }, function (err) { S.error = 'No se pudieron cargar los datos (' + ((err && err.code) || 'error') + ').'; S.ready = true; render(); });
+      };
+      sub('equipos', 'rE'); sub('servicios', 'rS');
+    } else { S.backend = 'local'; lsLoad(); S.ready = true; render(); }
+    try { var dl = window.claude && window.claude.use ? await window.claude.use('downloads') : null; if (dl) { DL = dl; S.canDownload = true; render(); } } catch (e) {}
+  }
+  init();
+})();
+</script>
+
+</body></html>
