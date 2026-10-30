@@ -3,25 +3,25 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Acceso Corporativo - Bitácora de Climas</title>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+  <title>Acceso Corporativo · Mantenimiento de Aires Acondicionados</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap">
   <style>
     :root {
-      --bg: #0E171C;
-      --surface: #152229;
-      --surface-2: #1C2D35;
+      --bg: #0B131A;
+      --surface: #131E26;
+      --surface-2: #1B2934;
       --ink: #E6EEF1;
-      --ink-2: #9DB0B9;
-      --line: #2A3F49;
-      --accent: #4CC3D6;
-      --accent-ink: #04222A;
-      --accent-soft: #14343C;
-      --ok: #5FD08F;
-      --ok-soft: #16301F;
-      --bad: #FF8A80;
-      --bad-soft: #3F1B18;
+      --ink-2: #92A6B2;
+      --line: #2A3F4E;
+      --accent: #06B6D4;
+      --accent-ink: #041E26;
+      --accent-soft: rgba(6, 182, 212, 0.15);
+      --ok: #10B981;
+      --ok-soft: rgba(16, 185, 129, 0.15);
+      --bad: #EF4444;
+      --bad-soft: rgba(239, 68, 68, 0.15);
       --font-display: 'Barlow Condensed', sans-serif;
-      --font-body: 'IBM Plex Sans', sans-serif;
+      --font-body: 'Plus Jakarta Sans', sans-serif;
     }
     * { box-sizing: border-box; }
     body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 var(--font-body); display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; }
@@ -29,36 +29,36 @@
     .wrapper { width: 100%; max-width: 440px; }
     
     .brand-header { text-align: center; margin-bottom: 24px; }
-    .brand-header h1 { font-family: var(--font-display); font-size: 36px; text-transform: uppercase; letter-spacing: .02em; margin: 0; color: var(--accent); }
-    .brand-header p { color: var(--ink-2); font-size: 14px; margin-top: 4px; text-transform: uppercase; letter-spacing: .08em; }
+    .brand-header h1 { font-family: var(--font-display); font-size: 30px; text-transform: uppercase; letter-spacing: .02em; margin: 0; color: #FFFFFF; text-wrap: balance; line-height: 1.1; }
+    .brand-header p { color: var(--accent); font-size: 13px; font-weight: 600; margin-top: 6px; text-transform: uppercase; letter-spacing: .08em; }
 
-    .card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 28px; box-shadow: 0 12px 32px rgba(0,0,0,.4); }
+    .card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 28px; box-shadow: 0 12px 32px rgba(0,0,0,.4); }
     
-    .tabs { display: grid; grid-template-columns: 1fr 1fr; background: var(--surface-2); padding: 4px; border-radius: 6px; margin-bottom: 24px; gap: 4px; }
-    .tab-btn { background: transparent; border: 0; padding: 10px; font-weight: 600; color: var(--ink-2); font-size: 14px; border-radius: 4px; cursor: pointer; text-transform: uppercase; letter-spacing: .05em; transition: all .2s; }
-    .tab-btn.active { background: var(--surface); color: var(--ink); box-shadow: 0 2px 4px rgba(0,0,0,.2); }
+    .tabs { display: grid; grid-template-columns: 1fr 1fr; background: var(--surface-2); padding: 4px; border-radius: 8px; margin-bottom: 24px; gap: 4px; border: 1px solid var(--line); }
+    .tab-btn { background: transparent; border: 0; padding: 10px; font-weight: 600; color: var(--ink-2); font-size: 13px; border-radius: 6px; cursor: pointer; text-transform: uppercase; letter-spacing: .05em; transition: all .2s; }
+    .tab-btn.active { background: var(--accent); color: var(--accent-ink); box-shadow: 0 2px 8px rgba(6,182,212,.3); }
 
     .form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
-    label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-2); }
+    label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--ink-2); }
     
     .input-wrapper { position: relative; display: flex; align-items: center; }
-    input { width: 100%; height: 48px; padding: 0 44px 0 14px; background: var(--bg); border: 1.5px solid var(--line); border-radius: 6px; color: var(--ink); font-size: 16px; }
+    input { width: 100%; height: 48px; padding: 0 44px 0 14px; background: var(--bg); border: 1.5px solid var(--line); border-radius: 8px; color: var(--ink); font-size: 15px; }
     input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
 
     .toggle-password { position: absolute; right: 12px; background: none; border: 0; cursor: pointer; color: var(--ink-2); display: flex; align-items: center; justify-content: center; padding: 4px; }
     .toggle-password:hover { color: var(--accent); }
     .toggle-password svg { width: 20px; height: 20px; }
 
-    .btn { width: 100%; height: 50px; background: var(--accent); color: var(--accent-ink); border: 0; border-radius: 6px; font-weight: 700; font-size: 16px; text-transform: uppercase; letter-spacing: .05em; margin-top: 8px; cursor: pointer; transition: filter .2s; }
+    .btn { width: 100%; height: 50px; background: var(--accent); color: var(--accent-ink); border: 0; border-radius: 8px; font-weight: 700; font-size: 15px; text-transform: uppercase; letter-spacing: .05em; margin-top: 8px; cursor: pointer; transition: filter .2s; }
     .btn:hover { filter: brightness(1.1); }
     .btn:disabled { opacity: .6; cursor: not-allowed; }
 
     .actions-row { display: flex; justify-content: space-between; align-items: center; margin-top: 14px; font-size: 13px; }
-    .link-btn { background: none; border: 0; color: var(--accent); cursor: pointer; padding: 0; text-decoration: underline; text-underline-offset: 3px; font-size: 13px; }
+    .link-btn { background: none; border: 0; color: var(--accent); cursor: pointer; padding: 0; text-decoration: underline; text-underline-offset: 3px; font-size: 13px; font-weight: 600; }
     
-    .alert { margin-top: 16px; padding: 12px; border-radius: 6px; font-size: 13px; text-align: center; }
-    .alert.error { background: var(--bad-soft); color: var(--bad); border: 1px solid rgba(255,138,128,.3); }
-    .alert.success { background: var(--ok-soft); color: var(--ok); border: 1px solid rgba(95,208,143,.3); }
+    .alert { margin-top: 16px; padding: 12px; border-radius: 8px; font-size: 13px; text-align: center; }
+    .alert.error { background: var(--bad-soft); color: var(--bad); border: 1px solid rgba(239,68,68,.3); }
+    .alert.success { background: var(--ok-soft); color: var(--ok); border: 1px solid rgba(16,185,129,.3); }
     
     .form-panel { display: none; }
     .form-panel.active { display: block; }
@@ -68,8 +68,8 @@
 
 <div class="wrapper">
   <div class="brand-header">
-    <h1>Bitácora Climas</h1>
-    <p>Sistema de Mantenimiento y Climatización</p>
+    <h1>Mantenimiento de Aires Acondicionados</h1>
+    <p>CETis 116 - Antonia Nava de Catalán</p>
   </div>
 
   <div class="card">
@@ -90,7 +90,7 @@
           <div class="input-wrapper">
             <input type="password" id="login-password" required placeholder="••••••••">
             <button type="button" class="toggle-password" onclick="togglePassword('login-password', this)" aria-label="Mostrar contraseña">
-              <svg id="eye-icon-login" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
             </button>
           </div>
         </div>
@@ -152,7 +152,6 @@
   firebase.initializeApp(firebaseConfig);
   var auth = firebase.auth();
 
-  // Redirigir automáticamente si ya hay una sesión activa
   auth.onAuthStateChanged(function(user) {
     if (user) {
       window.location.href = 'index.html';
@@ -174,16 +173,13 @@
     }
   }
 
-  // Función para alternar visibilidad de contraseña con ícono de ojo
   function togglePassword(fieldId, btn) {
     var input = document.getElementById(fieldId);
     if (input.type === 'password') {
       input.type = 'text';
-      // Cambiar ícono a ojo tachado (ocultar)
       btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>';
     } else {
       input.type = 'password';
-      // Cambiar ícono a ojo normal (mostrar)
       btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
     }
   }
@@ -199,7 +195,6 @@
     document.getElementById('alert-box').hidden = true;
   }
 
-  // Iniciar Sesión
   function handleLogin(e) {
     e.preventDefault();
     hideAlert();
@@ -227,7 +222,6 @@
       });
   }
 
-  // Registrar Cuenta
   function handleRegister(e) {
     e.preventDefault();
     hideAlert();
@@ -269,7 +263,6 @@
       });
   }
 
-  // Recuperar Contraseña
   function handleForgotPassword() {
     var email = document.getElementById('login-email').value.trim();
     if (!email) {
