@@ -115,7 +115,7 @@ main { padding-block: 24px 36px; }
 .tag.corr::before { background: var(--warn); }
 .tag.rep::before { background: var(--bad); }
 
-/* Listado de Servicios Corregido y Limpio (Sin encimarse) */
+/* Listado de Servicios */
 .log { display: grid; gap: 12px; }
 .sv { display: flex; flex-direction: column; gap: 10px; width: 100%; padding: 16px 18px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; text-align: left; transition: border-color .2s; }
 .sv:hover { border-color: var(--accent); }
@@ -229,6 +229,18 @@ main { padding-block: 24px 36px; }
   
   var MARCAS_FAMOSAS = ['Carrier', 'Mirage', 'LG', 'York', 'Trane', 'Midea', 'Daikin', 'Samsung', 'Panasonic', 'Mitsubishi', 'Hisense', 'Gree', 'Whirlpool', 'Electrolux', 'Fujitsu', 'TCL', 'Prime', 'Rheem', 'Aux', 'Chigo'];
   var MARCAS_OTRAS = ['Amana', 'Bryant', 'Daewoo', 'Fedders', 'Friedrich', 'GE', 'Haier', 'Kenmore', 'Kelvinator', 'Philco', 'Sanyo', 'Sharp', 'Toshiba', 'Westinghouse', 'Winia', 'Otra'];
+  
+  // Capacidades organizadas por Toneladas y BTU
+  var CAPACIDADES_TON = [
+    '1.0 Tonelada (12,000 BTU)',
+    '1.5 Toneladas (18,000 BTU)',
+    '2.0 Toneladas (24,000 BTU)',
+    '2.5 Toneladas (30,000 BTU)',
+    '3.0 Toneladas (36,000 BTU)',
+    '4.0 Toneladas (48,000 BTU)',
+    '5.0 Toneladas (60,000 BTU)'
+  ];
+
   var REFRIG = ['R-410A', 'R-32', 'R-22', 'R-134a', 'R-290', 'R-407C'];
 
   /* ---------- fechas ---------- */
@@ -531,6 +543,24 @@ main { padding-block: 24px 36px; }
       '<optgroup label="⭐ Marcas Principales">' + marcasFamosasOpts.map(function(m) { return '<option value="' + esc(m) + '"' + (m === marcaVal ? ' selected' : '') + '>' + esc(m) + '</option>'; }).join('') + '</optgroup>' +
       '<optgroup label="🔧 Otras Marcas">' + marcasOtrasOpts.map(function(m) { return '<option value="' + esc(m) + '"' + (m === marcaVal ? ' selected' : '') + '>' + esc(m) + '</option>'; }).join('') + '</optgroup>';
 
+    // Selector desplegable de Capacidad por Toneladas
+    var capVal = e.capacidad || '1.5 Toneladas (18,000 BTU)';
+    var capOpts = [
+      '1.0 Tonelada (12,000 BTU)',
+      '1.5 Toneladas (18,000 BTU)',
+      '2.0 Toneladas (24,000 BTU)',
+      '2.5 Toneladas (30,000 BTU)',
+      '3.0 Toneladas (36,000 BTU)',
+      '4.0 Toneladas (48,000 BTU)',
+      '5.0 Toneladas (60,000 BTU)',
+      'Otra / Personalizada'
+    ];
+    if (capVal && capOpts.indexOf(capVal) === -1) {
+      capOpts.unshift(capVal);
+    }
+    var capOptionsHtml = '<option value="">Selecciona la capacidad</option>' +
+      capOpts.map(function(c) { return '<option value="' + esc(c) + '"' + (c === capVal ? ' selected' : '') + '>' + esc(c) + '</option>'; }).join('');
+
     var tipoVal = e.tipo || 'Minisplit';
     var tipos = TIPOS_EQ.indexOf(tipoVal) > -1 ? TIPOS_EQ : TIPOS_EQ.concat([tipoVal]);
 
@@ -540,7 +570,11 @@ main { padding-block: 24px 36px; }
       '<div class="grid2">' + fld('Aula / Zona', 'aula', e.aula || '', { req: 1, list: 'dl-aulas', ph: 'Aula 101' }) + fld('Edificio o planta', 'edificio', e.edificio || '', { ph: 'Edificio A' }) + '</div>' +
       '<div class="grid2"><div class="fld"><label for="x-marca">Marca <span class="req">*</span></label><select id="x-marca" name="marca">' + marcasOptionsHtml + '</select><p class="err" data-err="marca" hidden></p></div>' + fld('Modelo', 'modelo', e.modelo || '') + '</div>' +
       '<div class="grid2">' + fld('Número de serie', 'serie', e.serie || '') + sel('Tipo de equipo', 'tipo', tipoVal, tipos) + '</div>' +
-      '<div class="grid2">' + fld('Capacidad', 'capacidad', e.capacidad || '', { ph: '18,000 BTU (1.5 ton)' }) + fld('Refrigerante', 'refrigerante', e.refrigerante || '', { list: 'dl-ref', ph: 'R-410A' }) + '</div>' +
+      
+      // Campo de Capacidad en Toneladas desplegable
+      '<div class="grid2"><div class="fld"><label for="x-capacidad">Capacidad (Toneladas / BTU)</label><select id="x-capacidad" name="capacidad">' + capOptionsHtml + '</select><p class="err" data-err="capacidad" hidden></p></div>' +
+      fld('Refrigerante', 'refrigerante', e.refrigerante || '', { list: 'dl-ref', ph: 'R-410A' }) + '</div>' +
+
       fld('Fecha de instalación', 'instalacion', e.instalacion || '', { type: 'date' }) +
       fld('Notas y observaciones', 'notas', e.notas || '', { area: 1, ph: 'Ubicación exacta, accesos, requerimientos especiales' }) +
       dlist('dl-aulas', aulas()) + dlist('dl-ref', REFRIG) +
@@ -597,7 +631,7 @@ main { padding-block: 24px 36px; }
     var eq = S.equipos.find(function (x) { return x.id === v('equipoId'); });
     var old = S.sheet.id ? S.servicios.find(function (x) { return x.id === S.sheet.id; }) : null;
     var costo = v('costo'), n = costo === '' ? null : Number(costo);
-    var obj = { id: old ? old.id : uid('s'), equipoId: v('equipoId'), aula: eq ? eq.aula : (old ? old.aula : ''), fecha: v('fecha'), tipo: v('tipo'), estado: v('estado') || 'Completado', trabajo: v('trabajo'), refacciones: v('refacciones'), tecnico: v('tecnico'), costo: (n == null || isNaN(n)) ? null : n, proximo: v('proximo'), folio: v('folio'), actualizado: new Date().toISOString() };
+    var obj = { id: old ? old.id : uid('s'), equipoId: v('equipoId'), aula: eq ? eq.aula : (old ? old.aula : ''), fecha: v('fecha'), tipo: v('tipo'), estado: v('estado') || 'Completado', trabalho: v('trabajo'), refacciones: v('refacciones'), tecnico: v('tecnico'), costo: (n == null || isNaN(n)) ? null : n, proximo: v('proximo'), folio: v('folio'), actualizado: new Date().toISOString() };
     var btn = f.querySelector('[type=submit]'); btn.disabled = true;
     try { await put('servicios', obj); toast('Servicio guardado correctamente'); openSheet({ type: 'eq', id: obj.equipoId }); }
     catch (err) { btn.disabled = false; toast(failMsg(err)); }
@@ -620,9 +654,9 @@ main { padding-block: 24px 36px; }
   async function seed() {
     if (S.busy) return; S.busy = true; render();
     var E = [
-      ['Minisplit Aula 101', 'Aula 101', 'Edificio A', 'Carrier', '42QHC018', 'CR2201845', 'Minisplit', '18,000 BTU', 'R-410A', '2022-03-14'],
-      ['Minisplit Aula 102', 'Aula 102', 'Edificio A', 'Mirage', 'Magnum 24', 'MG2307712', 'Minisplit', '24,000 BTU', 'R-410A', '2023-01-20'],
-      ['Cassette Biblioteca', 'Biblioteca', 'Edificio B', 'LG', 'ATNQ48GPLA2', 'LG1904425', 'Cassette', '48,000 BTU', 'R-410A', '2019-08-05']
+      ['Minisplit Aula 101', 'Aula 101', 'Edificio A', 'Carrier', '42QHC018', 'CR2201845', 'Minisplit', '1.5 Toneladas (18,000 BTU)', 'R-410A', '2022-03-14'],
+      ['Minisplit Aula 102', 'Aula 102', 'Edificio A', 'Mirage', 'Magnum 24', 'MG2307712', 'Minisplit', '2.0 Toneladas (24,000 BTU)', 'R-410A', '2023-01-20'],
+      ['Cassette Biblioteca', 'Biblioteca', 'Edificio B', 'LG', 'ATNQ48GPLA2', 'LG1904425', 'Cassette', '4.0 Toneladas (48,000 BTU)', 'R-410A', '2019-08-05']
     ];
     var ids = E.map(function () { return uid('e'); });
     try {
