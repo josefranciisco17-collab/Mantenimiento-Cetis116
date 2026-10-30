@@ -209,6 +209,7 @@ footer .inner { display: flex; flex-wrap: wrap; gap: 6px 20px; border-top: 1px s
 
 <!-- Firebase SDKs -->
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
 <header class="top">
@@ -220,6 +221,7 @@ footer .inner { display: flex; flex-wrap: wrap; gap: 6px 20px; border-top: 1px s
     <div class="top-actions">
       <button type="button" class="btn primary" data-action="new-eq">+ Equipo</button>
       <button type="button" class="btn" data-action="new-sv">+ Servicio</button>
+      <button type="button" class="btn danger" data-action="logout">Cerrar Sesión</button>
     </div>
   </div>
 </header>
@@ -277,12 +279,16 @@ footer .inner { display: flex; flex-wrap: wrap; gap: 6px 20px; border-top: 1px s
   var plural = function (n, a, b) { return n + ' ' + (n === 1 ? a : b); };
 
   /* ---------- estado ---------- */
-  var DB = null;
+  var DB = null, currentUser = null;
   var S = { equipos: [], servicios: [], view: 'equipos', q: '', aula: '', estado: 'todos', tipo: 'todos', desde: '', hasta: '',
     ready: false, backend: '', error: '', sheet: null, confirm: null, busy: false, rE: false, rS: false };
 
   async function put(col, obj) {
-    if (S.backend === 'db') { await DB.collection(col).doc(obj.id).set(obj); return; }
+    if (S.backend === 'db') {
+      obj.actualizadoPor = currentUser ? currentUser.uid : 'desconocido';
+      await DB.collection(col).doc(obj.id).set(obj);
+      return;
+    }
   }
   async function del(col, id) {
     if (S.backend === 'db') { await DB.collection(col).doc(id).delete(); return; }
@@ -725,6 +731,7 @@ footer .inner { display: flex; flex-wrap: wrap; gap: 6px 20px; border-top: 1px s
       case 'seed': seed(); break;
       case 'unseed': unseed(); break;
       case 'export': exportCsv(); break;
+      case 'logout': firebase.auth().signOut().then(function() { window.location.href = 'login.html'; }); break;
     }
   });
   function onSearch(ev) { S.q = ev.target.value; renderBand(); renderMain(); }
@@ -752,7 +759,7 @@ footer .inner { display: flex; flex-wrap: wrap; gap: 6px 20px; border-top: 1px s
   });
   document.addEventListener('keydown', function (ev) { if (ev.key === 'Escape' && S.sheet) closeSheet(); });
 
-  /* ---------- arranque con Firebase Firestore ---------- */
+  /* ---------- arranque protegido con Auth y Firestore ---------- */
   function init() {
     var firebaseConfig = {
       apiKey: "AIzaSyA_JufV6ZSCICVuUrVZEJropD1VKA2bzQs",
@@ -765,19 +772,28 @@ footer .inner { display: flex; flex-wrap: wrap; gap: 6px 20px; border-top: 1px s
     };
 
     firebase.initializeApp(firebaseConfig);
-    DB = firebase.firestore();
-    S.backend = 'db';
 
-    var sub = function (col, flag) {
-      DB.collection(col).onSnapshot(function (snap) {
-        S[col] = snap.docs.map(function (d) { return Object.assign({}, d.data(), { id: d.id }); });
-        S[flag] = true; S.ready = S.rE && S.rS; render();
-      }, function (err) { S.error = 'No se pudieron cargar los datos de la nube.'; S.ready = true; render(); });
-    };
+    // Valida sesión: si no hay usuario, redirige al login
+    firebase.auth().onAuthStateChanged(function(user) {
+      if (!user) {
+        window.location.href = 'login.html';
+        return;
+      }
+      currentUser = user;
+      DB = firebase.firestore();
+      S.backend = 'db';
 
-    sub('equipos', 'rE');
-    sub('servicios', 'rS');
-    render();
+      var sub = function (col, flag) {
+        DB.collection(col).onSnapshot(function (snap) {
+          S[col] = snap.docs.map(function (d) { return Object.assign({}, d.data(), { id: d.id }); });
+          S[flag] = true; S.ready = S.rE && S.rS; render();
+        }, function (err) { S.error = 'No se pudieron cargar los datos de la nube.'; S.ready = true; render(); });
+      };
+
+      sub('equipos', 'rE');
+      sub('servicios', 'rS');
+      render();
+    });
   }
   init();
 })();
