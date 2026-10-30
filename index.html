@@ -56,6 +56,10 @@ h1, h2, h3, p { margin: 0; }
 .btn[disabled] { opacity: .5; cursor: default; }
 .link { background: none; border: 0; padding: 4px 0; color: var(--accent); text-decoration: underline; text-underline-offset: 3px; font-weight: 600; cursor: pointer; }
 
+/* Botón flotante para abrir auditoría */
+.audit-fab { position: fixed; bottom: 20px; right: 20px; z-index: 25; background: var(--surface); border: 1.5px solid var(--accent); color: var(--accent); padding: 10px 18px; border-radius: 99px; font-weight: 700; font-size: 13px; box-shadow: 0 4px 20px rgba(0,0,0,.5); display: flex; align-items: center; gap: 6px; text-transform: uppercase; letter-spacing: .05em; }
+.audit-fab:hover { background: var(--accent); color: var(--accent-ink); }
+
 /* Search band */
 .band { position: sticky; top: 0; z-index: 10; background: rgba(11, 19, 26, 0.9); backdrop-filter: blur(12px); border-bottom: 1px solid var(--line); }
 .band .inner { display: flex; flex-direction: column; gap: 12px; padding-block: 14px; }
@@ -196,6 +200,8 @@ main { padding-block: 24px 36px; }
   </div>
 </header>
 
+<button type="button" class="audit-fab" data-action="open-audit">📋 Historial Auditoría</button>
+
 <div class="band">
   <div class="inner">
     <label class="search">
@@ -264,10 +270,9 @@ main { padding-block: 24px 36px; }
 
   /* ---------- estado y auditoría por nombres ---------- */
   var DB = null, currentUser = null;
-  var S = { equipos: [], servicios: [], view: 'equipos', q: '', aula: '', estado: 'todos', tipo: 'todos', desde: '', hasta: '',
-    ready: false, backend: '', error: '', sheet: null, confirm: null, busy: false, rE: false, rS: false };
+  var S = { equipos: [], servicios: [], auditoria: [], view: 'equipos', q: '', aula: '', estado: 'todos', tipo: 'todos', desde: '', hasta: '',
+    ready: false, backend: '', error: '', sheet: null, confirm: null, busy: false, rE: false, rS: false, rA: false };
 
-  // Función para extraer o formatear el nombre (Primer Nombre y Primer Apellido) a partir del correo o cuenta
   function obtenerNombreUsuario(user) {
     if (!user) return 'Usuario Invitado';
     var email = user.email || '';
@@ -281,23 +286,22 @@ main { padding-block: 24px 36px; }
     return email;
   }
 
-  // Registrar movimiento en consola y base de datos con nombre y apellido
   async function registrarAuditoria(accion, detalle) {
     var nombreCompleto = obtenerNombreUsuario(currentUser);
-    var mensajeLog = '[AUDITORÍA] ' + nombreCompleto + ' ' + accion + ': ' + detalle;
-    console.log(mensajeLog);
+    var objLog = {
+      usuario: nombreCompleto,
+      email: currentUser ? currentUser.email : 'anónimo',
+      accion: accion,
+      detalle: detalle,
+      fecha: new Date().toISOString()
+    };
+    console.log('[AUDITORÍA] ' + objLog.usuario + ' ' + objLog.accion + ': ' + objLog.detalle);
     
     if (DB && currentUser) {
       try {
-        await DB.collection('auditoria').add({
-          usuario: nombreCompleto,
-          email: currentUser.email,
-          accion: accion,
-          detalle: detalle,
-          fecha: new Date().toISOString()
-        });
+        await DB.collection('auditoria').add(objLog);
       } catch (e) {
-        // Silencioso para no interrumpir flujo
+        // Silencioso
       }
     }
   }
@@ -518,7 +522,7 @@ main { padding-block: 24px 36px; }
       (ej ? '<button type="button" class="link" data-action="unseed"' + (S.busy ? ' disabled' : '') + '>Remover datos de ejemplo</button>' : '') + '</div>';
   }
 
-  /* ---------- Sheet Lateral ---------- */
+  /* ---------- Sheet Lateral (Incluyendo Panel de Auditoría) ---------- */
   function renderSheet(force) {
     var root = $('#sheet-root'), sh = S.sheet;
     if (!sh) { root.innerHTML = ''; document.body.classList.remove('lock'); return; }
@@ -530,11 +534,25 @@ main { padding-block: 24px 36px; }
       body = detailEq(e); label = e.nombre;
     } else if (sh.type === 'eq-form') { label = sh.id ? 'Editar equipo' : 'Registrar equipo'; body = formEq(sh.id ? S.equipos.find(function (x) { return x.id === sh.id; }) : null); }
     else if (sh.type === 'sv-form') { label = sh.id ? 'Editar servicio' : 'Nuevo servicio'; body = formSv(sh.id ? S.servicios.find(function (x) { return x.id === sh.id; }) : null, sh.eqId); }
+    else if (sh.type === 'audit') { label = 'Historial de Auditoría'; body = detailAudit(); }
+    
     var scrollTop = root.firstChild && $('.sheet', root) ? $('.sheet', root).scrollTop : 0;
     root.innerHTML = '<div class="overlay" data-action="overlay"><div class="sheet" role="dialog" aria-modal="true" aria-label="' + esc(label) + '">' + body + '</div></div>';
     if (!force && scrollTop) $('.sheet', root).scrollTop = scrollTop;
     document.body.classList.add('lock');
   }
+  
+  function detailAudit() {
+    var logs = S.auditoria.slice().sort(function(a,b){ return (b.fecha||'').localeCompare(a.fecha||''); });
+    return '<div class="sheet-h"><h2>Historial de Auditoría</h2>' + closeBtn() + '</div>' +
+      '<p style="color:var(--ink-2);font-size:13px;margin-bottom:16px;">Registro en tiempo real de los movimientos realizados por cada usuario en la plataforma.</p>' +
+      (logs.length ? '<ul class="hist">' + logs.map(function(l) {
+        return '<li class="hi"><div class="hi-h"><span style="font-weight:700;color:var(--accent);">' + esc(l.usuario) + '</span>' +
+          '<span style="font-size:12px;color:var(--ink-2);margin-left:auto;">' + fmtF(l.fecha ? l.fecha.split('T')[0] : '') + '</span></div>' +
+          '<p style="color:#fff;font-size:14px;margin:4px 0;">' + esc(l.accion) + ' ' + esc(l.detalle) + '</p></li>';
+      }).join('') + '</ul>' : '<p style="color:var(--ink-2);font-style:italic;">Aún no hay movimientos registrados en esta sesión.</p>');
+  }
+
   function openSheet(sh) { S.sheet = sh; S.confirm = null; renderSheet(true); var el = $('.sheet [data-first]') || $('.sheet .x'); if (el) el.focus(); }
   function closeSheet() { S.sheet = null; S.confirm = null; renderSheet(true); }
 
@@ -609,7 +627,7 @@ main { padding-block: 24px 36px; }
     var tipoVal = e.tipo || 'Minisplit';
     var tipos = TIPOS_EQ.indexOf(tipoVal) > -1 ? TIPOS_EQ : TIPOS_EQ.concat([tipoVal]);
 
-    return '<div class="sheet-h"><h2>' + (e.id ? 'Editar equipo' : 'Nuevo equipo') + '</h2>' + closeBtn() + '</div>' +
+    return '<div class="sheet-h"><h2>' + (e.id ? 'Editar equipo' : 'Registrar equipo') + '</h2>' + closeBtn() + '</div>' +
       '<form class="form" id="form-eq" novalidate>' +
       fld('Nombre del equipo', 'nombre', e.nombre || '', { req: 1, ph: 'Minisplit Aula 101', first: 1 }) +
       '<div class="grid2">' + fld('Aula / Zona', 'aula', e.aula || '', { req: 1, list: 'dl-aulas', ph: 'Aula 101' }) + fld('Edificio o planta', 'edificio', e.edificio || '', { ph: 'Edificio A' }) + '</div>' +
@@ -775,6 +793,7 @@ main { padding-block: 24px 36px; }
       case 'seed': seed(); break;
       case 'unseed': unseed(); break;
       case 'export': exportCsv(); break;
+      case 'open-audit': openSheet({ type: 'audit' }); break;
       case 'logout': firebase.auth().signOut().then(function() { window.location.href = 'login.html'; }); break;
     }
   });
@@ -839,6 +858,11 @@ main { padding-block: 24px 36px; }
           S[flag] = true; S.ready = S.rE && S.rS; render();
         }, function (err) { S.error = 'No se pudieron sincronizar los datos de la nube.'; S.ready = true; render(); });
       };
+
+      // Cargar colección de auditoría en tiempo real
+      DB.collection('auditoria').orderBy('fecha', 'desc').limit(50).onSnapshot(function(snap) {
+        S.auditoria = snap.docs.map(function(d){ return d.data(); });
+      }, function(err){});
 
       sub('equipos', 'rE');
       sub('servicios', 'rS');
