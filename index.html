@@ -1,5 +1,5 @@
 <!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#0B131A;color:#E6EEF1}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
-<title>Mantenimiento de Aires Acondicionados · CETis 116 Antonia Nava de Catalán</title>
+<title>Mantenimiento de Aires Acondicionados · CETis 116</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
 <style>
@@ -40,8 +40,8 @@ h1, h2, h3, p { margin: 0; }
 /* Masthead Corporativo */
 .top { background: linear-gradient(180deg, #101B22 0%, var(--bg) 100%); border-bottom: 1px solid var(--line); padding-block: 28px 20px; }
 .top .inner { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px 24px; }
-.brand h1 { font: 700 34px/1 var(--font-display); letter-spacing: .03em; text-transform: uppercase; color: #FFFFFF; }
-.brand p { color: var(--ink-2); margin-top: 6px; font-size: 13px; text-transform: uppercase; letter-spacing: .08em; }
+.brand h1 { font: 700 32px/1.1 var(--font-display); letter-spacing: .02em; text-transform: uppercase; color: #FFFFFF; text-wrap: balance; }
+.brand p { color: var(--accent); margin-top: 6px; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; }
 .top-actions { display: flex; flex-wrap: wrap; gap: 10px; }
 
 /* Botones Premium */
@@ -175,8 +175,8 @@ main { padding-block: 24px 36px; }
 <header class="top">
   <div class="inner">
     <div class="brand">
-      <h1>Bitácora Climas</h1>
-      <p>Gestión y Mantenimiento Corporativo</p>
+      <h1>Mantenimiento de Aires Acondicionados</h1>
+      <p>CETis 116 - Antonia Nava de Catalán</p>
     </div>
     <div class="top-actions">
       <button type="button" class="btn primary" data-action="new-eq">+ Equipo</button>
@@ -433,7 +433,7 @@ main { padding-block: 24px 36px; }
   function renderFoot() {
     var f = $('#foot'), ej = S.equipos.some(function (e) { return e.ejemplo; }) || S.servicios.some(function (s) { return s.ejemplo; });
     f.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;border-top:1px solid var(--line);padding-top:16px;color:var(--ink-2);font-size:13px;">' +
-      '<span>Bitácora de Climas Corporativa · Sincronizado en la nube</span>' +
+      '<span>Mantenimiento de Aires Acondicionados · CETis 116</span>' +
       (ej ? '<button type="button" class="link" data-action="unseed"' + (S.busy ? ' disabled' : '') + '>Remover datos de ejemplo</button>' : '') + '</div>';
   }
 
