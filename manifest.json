@@ -1,0 +1,22 @@
+{
+  "name": "Mantenimiento A/A CETis 116",
+  "short_name": "Clima CETis 116",
+  "description": "Sistema de Gestión de Mantenimiento de Aires Acondicionados - By JFAM Tecno-Energy",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0b1319",
+  "theme_color": "#00bcd4",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icono-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icono-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
