@@ -289,7 +289,7 @@
   var uid = function (p) { return p + '_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); };
   var plural = function (n, a, b) { return n + ' ' + (n === 1 ? a : b); };
 
-  /* ---------- estado y auditoría por nombres ---------- */
+  /* ---------- estado y auditoría con correo, fecha y hora ---------- */
   var DB = null, currentUser = null;
   var S = { equipos: [], servicios: [], auditoria: [], view: 'equipos', q: '', aula: '', estado: 'todos', tipo: 'todos', desde: '', hasta: '',
     ready: false, backend: '', error: '', sheet: null, confirm: null, busy: false, rE: false, rS: false, rA: false };
@@ -308,33 +308,48 @@
   }
 
   async function registrarAuditoria(accion, detalle) {
+    if (!DB || !currentUser) return;
+    var ahora = new Date();
+    var fechaLegible = ahora.toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' }).replace(/\./g, '');
+    var horaLegible = ahora.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
     var nombreCompleto = obtenerNombreUsuario(currentUser);
+
     var objLog = {
       usuario: nombreCompleto,
-      email: currentUser ? currentUser.email : 'anónimo',
+      email: currentUser.email || 'sin-correo',
+      uid: currentUser.uid,
       accion: accion,
       detalle: detalle,
-      fecha: new Date().toISOString()
+      fecha: ahora.toISOString(),
+      fechaTexto: fechaLegible,
+      horaTexto: horaLegible
     };
-    console.log('[AUDITORÍA] ' + objLog.usuario + ' ' + objLog.accion + ': ' + objLog.detalle);
+    console.log('[AUDITORÍA] ' + objLog.email + ' -> ' + objLog.accion + ': ' + objLog.detalle);
     
-    if (DB && currentUser) {
-      try {
-        await DB.collection('auditoria').add(objLog);
-      } catch (e) {
-        // Silencioso
-      }
+    try {
+      await DB.collection('auditoria').add(objLog);
+    } catch (e) {
+      console.error('Error al guardar en auditoría:', e);
     }
   }
 
   async function put(col, obj) {
     if (S.backend === 'db') {
       obj.actualizadoPor = currentUser ? currentUser.uid : 'desconocido';
-      var esNuevo = !await DB.collection(col).doc(obj.id).get().then(function(d){ return d.exists; });
+      var docPrevio = await DB.collection(col).doc(obj.id).get();
+      var esNuevo = !docPrevio.exists;
       await DB.collection(col).doc(obj.id).set(obj);
       
-      var tipoNombre = col === 'equipos' ? 'el equipo "' + obj.nombre + '"' : 'un servicio de tipo ' + obj.tipo;
-      registrarAuditoria(esNuevo ? 'acaba de crear' : 'acaba de actualizar', tipoNombre);
+      var descripcion = '';
+      if (col === 'equipos') {
+        descripcion = 'el equipo "' + obj.nombre + '" (' + (obj.aula || 'Sin aula') + ')';
+      } else {
+        var eq = S.equipos.find(function (x) { return x.id === obj.equipoId; });
+        var nomEq = eq ? eq.nombre : 'Equipo';
+        descripcion = 'el servicio ' + obj.tipo + ' en "' + nomEq + '" (' + (obj.aula || (eq && eq.aula) || 'Sin aula') + ')';
+      }
+
+      await registrarAuditoria(esNuevo ? 'Creó' : 'Editó / Modificó', descripcion);
       return;
     }
   }
@@ -343,10 +358,20 @@
     if (S.backend === 'db') {
       var docRef = await DB.collection(col).doc(id).get();
       var data = docRef.exists ? docRef.data() : null;
-      var nombreItem = data ? (data.nombre || data.tipo || id) : id;
+      var descripcion = id;
+
+      if (data) {
+        if (col === 'equipos') {
+          descripcion = 'el equipo "' + (data.nombre || id) + '" (' + (data.aula || 'Sin aula') + ')';
+        } else {
+          var eq = S.equipos.find(function (x) { return x.id === data.equipoId; });
+          var nomEq = eq ? eq.nombre : 'Equipo';
+          descripcion = 'el servicio ' + (data.tipo || '') + ' de "' + nomEq + '" (' + (data.aula || (eq && eq.aula) || 'Sin aula') + ')';
+        }
+      }
 
       await DB.collection(col).doc(id).delete();
-      registrarAuditoria('acaba de eliminar', (col === 'equipos' ? 'el equipo ' : 'el registro ') + '"' + nombreItem + '"');
+      await registrarAuditoria('Eliminó', descripcion);
       return;
     }
   }
@@ -440,7 +465,7 @@
     var m = $('#main'), html = '';
     if (!S.ready) { m.innerHTML = '<p class="banner">Sincronizando con base de datos en la nube…</p>'; return; }
     if (S.error) html += '<p class="banner bad">' + esc(S.error) + '</p>';
-    html += '<p class="banner"><span>Sesión corporativa: <b>' + esc(obtenerNombreUsuario(currentUser)) + '</b></span> <span style="font-family:var(--font-mono);font-size:12px;color:var(--accent);">Seguro</span></p>';
+    html += '<p class="banner"><span>Sesión corporativa: <b>' + esc(obtenerNombreUsuario(currentUser)) + '</b> (' + esc(currentUser ? currentUser.email : '') + ')</span> <span style="font-family:var(--font-mono);font-size:12px;color:var(--accent);">Seguro</span></p>';
     if (!S.equipos.length) html += emptyAll();
     else html += S.view === 'equipos' ? viewEquipos() : viewServicios();
     m.innerHTML = html;
@@ -558,353 +583,4 @@
     else if (sh.type === 'audit') { label = 'Historial de Auditoría'; body = detailAudit(); }
     
     var scrollTop = root.firstChild && $('.sheet', root) ? $('.sheet', root).scrollTop : 0;
-    root.innerHTML = '<div class="overlay" data-action="overlay"><div class="sheet" role="dialog" aria-modal="true" aria-label="' + esc(label) + '">' + body + '</div></div>';
-    if (!force && scrollTop) $('.sheet', root).scrollTop = scrollTop;
-    document.body.classList.add('lock');
-  }
-  
-  function detailAudit() {
-    var logs = S.auditoria.slice().sort(function(a,b){ return (b.fecha||'').localeCompare(a.fecha||''); });
-    return '<div class="sheet-h"><h2>Historial de Auditoría</h2>' + closeBtn() + '</div>' +
-      '<p style="color:var(--ink-2);font-size:13px;margin-bottom:16px;">Registro en tiempo real de los movimientos realizados por cada usuario en la plataforma.</p>' +
-      (logs.length ? '<ul class="hist">' + logs.map(function(l) {
-        return '<li class="hi"><div class="hi-h"><span style="font-weight:700;color:var(--accent);">' + esc(l.usuario) + '</span>' +
-          '<span style="font-size:12px;color:var(--ink-2);margin-left:auto;">' + fmtF(l.fecha ? l.fecha.split('T')[0] : '') + '</span></div>' +
-          '<p style="color:#fff;font-size:14px;margin:4px 0;">' + esc(l.accion) + ' ' + esc(l.detalle) + '</p></li>';
-      }).join('') + '</ul>' : '<p style="color:var(--ink-2);font-style:italic;">Aún no hay movimientos registrados en esta sesión.</p>');
-  }
-
-  function openSheet(sh) { S.sheet = sh; S.confirm = null; renderSheet(true); var el = $('.sheet [data-first]') || $('.sheet .x'); if (el) el.focus(); }
-  function closeSheet() { S.sheet = null; S.confirm = null; renderSheet(true); }
-
-  function closeBtn() { return '<button type="button" class="x" data-action="close-sheet" aria-label="Cerrar">✕</button>'; }
-  function detailEq(e) {
-    var st = estadoEq(e), ss = svOf(e.id);
-    var attrs = [['Marca', e.marca], ['Modelo', e.modelo], ['Serie', e.serie], ['Tipo', e.tipo], ['Capacidad', e.capacidad], ['Refrigerante', e.refrigerante], ['Edificio', e.edificio], ['Instalación', e.instalacion ? fmtL(e.instalacion) : '']]
-      .filter(function (a) { return a[1]; }).map(function (a) { return '<div><dt>' + a[0] + '</dt><dd>' + esc(a[1]) + '</dd></div>'; }).join('');
-    var next = st.next ? '<span style="font-size:13px;color:var(--ink-2);font-family:var(--font-mono);">Próximo servicio: ' + fmtL(st.next) + ' (' + st.rel + ')</span>' : '';
-    var conf = S.confirm && S.confirm.kind === 'eq' ?
-      '<div class="confirm" role="alert"><span>Se eliminará este equipo y sus ' + plural(ss.length, 'servicio', 'servicios') + '. Esta acción no se puede deshacer.</span><button type="button" class="btn danger solid small" data-action="del-eq-yes"' + (S.busy ? ' disabled' : '') + '>Confirmar</button><button type="button" class="btn small" data-action="cancel-confirm">Cancelar</button></div>' : '';
-    return '<div class="sheet-h"><div><h2>' + esc(e.nombre) + '</h2></div>' + closeBtn() + '</div>' +
-      '<div class="det-top"><span class="plate">' + esc(e.aula || 'Sin aula') + '</span>' + badge(st) + next + '</div>' +
-      (attrs ? '<dl class="attrs">' + attrs + '</dl>' : '') + (e.notas ? '<p class="notes">' + esc(e.notas) + '</p>' : '') +
-      '<div class="acts"><button type="button" class="btn primary" data-action="new-sv" data-eq="' + esc(e.id) + '" data-first>+ Registrar servicio</button>' +
-      '<button type="button" class="btn" data-action="edit-eq" data-id="' + esc(e.id) + '">Editar equipo</button>' +
-      '<button type="button" class="btn danger" data-action="del-eq-ask">Eliminar equipo</button></div>' + conf +
-      '<h3 class="hist-t">Historial de intervenciones (' + ss.length + ')</h3>' +
-      (ss.length ? '<ul class="hist">' + ss.map(function (s) { return histItem(s, e); }).join('') + '</ul>' : '<p style="color:var(--ink-2);font-style:italic;">No hay servicios registrados para este equipo.</p>');
-  }
-  function histItem(s, e) {
-    var conf = S.confirm && S.confirm.kind === 'sv' && S.confirm.id === s.id ?
-      '<div class="confirm" role="alert"><span>¿Eliminar este registro de servicio?</span><button type="button" class="btn danger solid small" data-action="del-sv-yes" data-id="' + esc(s.id) + '"' + (S.busy ? ' disabled' : '') + '>Sí, eliminar</button><button type="button" class="btn small" data-action="cancel-confirm">Cancelar</button></div>' : '';
-    var meta = [['Técnico', s.tecnico], ['Inversión', s.costo != null && s.costo !== '' ? money(s.costo) : ''], ['Refacciones', s.refacciones], ['Próximo', s.proximo ? fmtF(s.proximo) : ''], ['Folio', s.folio], ['Aula', s.aula && norm(s.aula) !== norm(e.aula) ? s.aula : '']]
-      .filter(function (a) { return a[1]; }).map(function (a) { return '<div><dt>' + a[0] + '</dt><dd>' + esc(a[1]) + '</dd></div>'; }).join('');
-    return '<li class="hi"><div class="hi-h"><span class="hi-date">' + fmtF(s.fecha) + '</span>' + tag(s.tipo) + (s.estado === 'Pendiente' ? '<span class="badge warn">Pendiente</span>' : '') + '<span style="flex:1;"></span>' +
-      '<button type="button" class="btn small" data-action="edit-sv" data-id="' + esc(s.id) + '">Editar</button>' +
-      '<button type="button" class="btn small danger" data-action="del-sv-ask" data-id="' + esc(s.id) + '">Eliminar</button></div>' +
-      (s.trabajo ? '<p style="color:var(--ink);">' + esc(s.trabajo) + '</p>' : '') + (meta ? '<dl class="attrs" style="margin:0;">' + meta + '</dl>' : '') + conf + '</li>';
-  }
-
-  function fld(label, name, val, o) {
-    o = o || {};
-    var id = 'x-' + name, t = o.type || 'text';
-    var ctl = o.area ? '<textarea id="' + id + '" name="' + name + '" rows="3"' + (o.ph ? ' placeholder="' + esc(o.ph) + '"' : '') + '>' + esc(val) + '</textarea>' :
-      '<input id="' + id + '" name="' + name + '" type="' + t + '" value="' + esc(val) + '"' + (o.list ? ' list="' + o.list + '"' : '') + (o.ph ? ' placeholder="' + esc(o.ph) + '"' : '') + (o.step ? ' step="' + o.step + '"' : '') + (o.min != null ? ' min="' + o.min + '"' : '') + ' autocomplete="off"' + (o.first ? ' data-first' : '') + '>';
-    return '<div class="fld"><label for="' + id + '">' + label + (o.req ? ' <span class="req">*</span>' : '') + '</label>' + ctl + '<p class="err" data-err="' + name + '" hidden></p></div>';
-  }
-  function sel(label, name, val, opts, o) {
-    o = o || {};
-    return '<div class="fld"><label for="x-' + name + '">' + label + (o.req ? ' <span class="req">*</span>' : '') + '</label><select id="x-' + name + '" name="' + name + '">' +
-      opts.map(function (p) { var v = Array.isArray(p) ? p[0] : p, l = Array.isArray(p) ? p[1] : p; return '<option value="' + esc(v) + '"' + (v === val ? ' selected' : '') + '>' + esc(l) + '</option>'; }).join('') + '</select><p class="err" data-err="' + name + '" hidden></p></div>';
-  }
-  function dlist(id, arr) { return '<datalist id="' + id + '">' + arr.map(function (a) { return '<option value="' + esc(a) + '">'; }).join('') + '</datalist>'; }
-
-  function formEq(e) {
-    e = e || {};
-    var marcaVal = e.marca || 'Carrier';
-    var marcasFamosasOpts = ['Carrier', 'Mirage', 'LG', 'York', 'Trane', 'Midea', 'Daikin', 'Samsung', 'Panasonic', 'Mitsubishi', 'Hisense', 'Gree', 'Whirlpool', 'Electrolux', 'Fujitsu', 'TCL', 'Prime', 'Rheem', 'Aux', 'Chigo'];
-    var marcasOtrasOpts = ['Amana', 'Bryant', 'Daewoo', 'Fedders', 'Friedrich', 'GE', 'Haier', 'Kenmore', 'Kelvinator', 'Philco', 'Sanyo', 'Sharp', 'Toshiba', 'Westinghouse', 'Winia', 'Otra'];
-    if (marcaVal && marcasFamosasOpts.indexOf(marcaVal) === -1 && marcasOtrasOpts.indexOf(marcaVal) === -1) { marcasOtrasOpts.unshift(marcaVal); }
-
-    var marcasOptionsHtml = '<option value="">Selecciona una marca</option>' +
-      '<optgroup label="⭐ Marcas Principales">' + marcasFamosasOpts.map(function(m) { return '<option value="' + esc(m) + '"' + (m === marcaVal ? ' selected' : '') + '>' + esc(m) + '</option>'; }).join('') + '</optgroup>' +
-      '<optgroup label="🔧 Otras Marcas">' + marcasOtrasOpts.map(function(m) { return '<option value="' + esc(m) + '"' + (m === marcaVal ? ' selected' : '') + '>' + esc(m) + '</option>'; }).join('') + '</optgroup>';
-
-    var capVal = e.capacidad || '1.5 Toneladas (18,000 BTU)';
-    var capOpts = [
-      '1.0 Tonelada (12,000 BTU)',
-      '1.5 Toneladas (18,000 BTU)',
-      '2.0 Toneladas (24,000 BTU)',
-      '2.5 Toneladas (30,000 BTU)',
-      '3.0 Toneladas (36,000 BTU)',
-      '4.0 Toneladas (48,000 BTU)',
-      '5.0 Toneladas (60,000 BTU)',
-      'Otra / Personalizada'
-    ];
-    if (capVal && capOpts.indexOf(capVal) === -1) { capOpts.unshift(capVal); }
-    var capOptionsHtml = '<option value="">Selecciona la capacidad</option>' +
-      capOpts.map(function(c) { return '<option value="' + esc(c) + '"' + (c === capVal ? ' selected' : '') + '>' + esc(c) + '</option>'; }).join('');
-
-    var tipoVal = e.tipo || 'Minisplit';
-    var tipos = TIPOS_EQ.indexOf(tipoVal) > -1 ? TIPOS_EQ : TIPOS_EQ.concat([tipoVal]);
-
-    return '<div class="sheet-h"><h2>' + (e.id ? 'Editar equipo' : 'Registrar equipo') + '</h2>' + closeBtn() + '</div>' +
-      '<form class="form" id="form-eq" novalidate>' +
-      fld('Nombre del equipo', 'nombre', e.nombre || '', { req: 1, ph: 'Minisplit Aula 101', first: 1 }) +
-      '<div class="grid2">' + fld('Aula / Zona', 'aula', e.aula || '', { req: 1, list: 'dl-aulas', ph: 'Aula 101' }) + fld('Edificio o planta', 'edificio', e.edificio || '', { ph: 'Edificio A' }) + '</div>' +
-      '<div class="grid2"><div class="fld"><label for="x-marca">Marca <span class="req">*</span></label><select id="x-marca" name="marca">' + marcasOptionsHtml + '</select><p class="err" data-err="marca" hidden></p></div>' + fld('Modelo', 'modelo', e.modelo || '') + '</div>' +
-      '<div class="grid2">' + fld('Número de serie', 'serie', e.serie || '') + sel('Tipo de equipo', 'tipo', tipoVal, tipos) + '</div>' +
-      '<div class="grid2"><div class="fld"><label for="x-capacidad">Capacidad (Toneladas / BTU)</label><select id="x-capacidad" name="capacidad">' + capOptionsHtml + '</select><p class="err" data-err="capacidad" hidden></p></div>' +
-      fld('Refrigerante', 'refrigerante', e.refrigerante || '', { list: 'dl-ref', ph: 'R-410A' }) + '</div>' +
-      fld('Fecha de instalación', 'instalacion', e.instalacion || '', { type: 'date' }) +
-      fld('Notas y observaciones', 'notas', e.notas || '', { area: 1, ph: 'Ubicación exacta, accesos, requerimientos especiales' }) +
-      dlist('dl-aulas', aulas()) + dlist('dl-ref', REFRIG) +
-      '<div class="form-acts"><button type="submit" class="btn primary">Guardar equipo</button><button type="button" class="btn" data-action="cancel-form">Cancelar</button></div></form>';
-  }
-
-  function formSv(s, eqId) {
-    var fecha = s ? s.fecha : todayIso();
-    var tipo = s ? s.tipo : 'Preventivo';
-    var prox = s ? (s.proximo || '') : addMonths(fecha, 2);
-    var cur = s ? s.equipoId : (eqId || '');
-    var eqs = S.equipos.slice().sort(function (a, b) { return natural(a.aula, b.aula) || natural(a.nombre, b.nombre); });
-    var opts = [['', 'Selecciona un equipo']].concat(eqs.map(function (e) { return [e.id, e.nombre + ' · ' + (e.aula || 'Sin aula')]; }));
-    var tecs = Array.from(new Set(S.servicios.map(function (x) { return x.tecnico; }).filter(Boolean))).sort(natural);
-    var eq0 = S.equipos.find(function (e) { return e.id === cur; });
-    return '<div class="sheet-h"><h2>' + (s ? 'Editar servicio' : 'Nuevo servicio') + '</h2>' + closeBtn() + '</div>' +
-      '<form class="form" id="form-sv" novalidate>' +
-      sel('Equipo', 'equipoId', cur, opts, { req: 1 }) + '<p class="hint" id="x-aula-hint">' + (eq0 ? 'Aula: ' + esc(eq0.aula || 'sin aula') : '') + '</p>' +
-      '<div class="grid2">' + fld('Fecha de intervención', 'fecha', fecha, { type: 'date', req: 1 }) + sel('Tipo de servicio', 'tipo', tipo, TIPOS, { req: 1 }) + '</div>' +
-      '<div class="grid2">' + sel('Estado', 'estado', s ? (s.estado || 'Completado') : 'Completado', ['Completado', 'Pendiente']) + fld('Folio u orden', 'folio', s ? s.folio || '' : '') + '</div>' +
-      fld('Trabajo realizado', 'trabajo', s ? s.trabajo || '' : '', { area: 1, ph: 'Limpieza de serpentines, presiones, lavado de filtros' }) +
-      fld('Refacciones o materiales', 'refacciones', s ? s.refacciones || '' : '', { ph: 'Capacitor 35 µF, gas R-410A' }) +
-      '<div class="grid2">' + fld('Técnico responsable', 'tecnico', s ? s.tecnico || '' : '', { list: 'dl-tec' }) + fld('Costo (MXN)', 'costo', s && s.costo != null ? s.costo : '', { type: 'number', step: '0.01', min: 0 }) + '</div>' +
-      '<div class="fld"><label for="x-proximo">Próximo servicio (Estimado a 2 meses)</label><input id="x-proximo" name="proximo" type="date" value="' + esc(prox) + '" data-touched="' + (s ? 1 : 0) + '"><p class="hint">Calculado a 2 meses automáticamente para preventivos. Puedes ajustarlo.</p></div>' +
-      dlist('dl-tec', tecs) +
-      '<div class="form-acts"><button type="submit" class="btn primary">Guardar servicio</button><button type="button" class="btn" data-action="cancel-form">Cancelar</button></div></form>';
-  }
-
-  function showErrors(f, errs) {
-    f.querySelectorAll('[data-err]').forEach(function (p) { p.hidden = true; var c = f.elements[p.dataset.err]; if (c) c.removeAttribute('aria-invalid'); });
-    var first = null;
-    Object.keys(errs).forEach(function (k) { var p = f.querySelector('[data-err="' + k + '"]'), c = f.elements[k]; if (p) { p.textContent = errs[k]; p.hidden = false; } if (c) { c.setAttribute('aria-invalid', 'true'); first = first || c; } });
-    if (first) first.focus();
-  }
-
-  async function saveEq(f) {
-    var fd = new FormData(f), v = function (k) { return String(fd.get(k) || '').trim(); }, errs = {};
-    if (!v('nombre')) errs.nombre = 'Escribe el nombre del equipo.';
-    if (!v('aula')) errs.aula = 'Indica en qué aula está.';
-    if (!v('marca')) errs.marca = 'Selecciona una marca.';
-    if (Object.keys(errs).length) return showErrors(f, errs);
-    var old = S.sheet.id ? S.equipos.find(function (x) { return x.id === S.sheet.id; }) : null;
-    var obj = { id: old ? old.id : uid('e'), nombre: v('nombre'), aula: v('aula'), edificio: v('edificio'), marca: v('marca'), modelo: v('modelo'), serie: v('serie'), tipo: v('tipo'), capacidad: v('capacidad'), refrigerante: v('refrigerante'), instalacion: v('instalacion'), notas: v('notas'), actualizado: new Date().toISOString() };
-    var btn = f.querySelector('[type=submit]'); btn.disabled = true;
-    try { await put('equipos', obj); toast('Equipo guardado correctamente'); openSheet({ type: 'eq', id: obj.id }); }
-    catch (err) { btn.disabled = false; toast(failMsg(err)); }
-  }
-
-  async function saveSv(f) {
-    var fd = new FormData(f), v = function (k) { return String(fd.get(k) || '').trim(); }, errs = {};
-    if (!v('equipoId')) errs.equipoId = 'Selecciona el equipo.';
-    if (!v('fecha')) errs.fecha = 'Indica la fecha.';
-    if (Object.keys(errs).length) return showErrors(f, errs);
-    var eq = S.equipos.find(function (x) { return x.id === v('equipoId'); });
-    var old = S.sheet.id ? S.servicios.find(function (x) { return x.id === S.sheet.id; }) : null;
-    var costo = v('costo'), n = costo === '' ? null : Number(costo);
-    var obj = { id: old ? old.id : uid('s'), equipoId: v('equipoId'), aula: eq ? eq.aula : (old ? old.aula : ''), fecha: v('fecha'), tipo: v('tipo'), estado: v('estado') || 'Completado', trabajo: v('trabajo'), refacciones: v('refacciones'), tecnico: v('tecnico'), costo: (n == null || isNaN(n)) ? null : n, proximo: v('proximo'), folio: v('folio'), actualizado: new Date().toISOString() };
-    var btn = f.querySelector('[type=submit]'); btn.disabled = true;
-    try { await put('servicios', obj); toast('Servicio guardado correctamente'); openSheet({ type: 'eq', id: obj.equipoId }); }
-    catch (err) { btn.disabled = false; toast(failMsg(err)); }
-  }
-
-  async function delEq(id) {
-    S.busy = true; renderSheet(true);
-    try {
-      var ss = svOf(id); for (var i = 0; i < ss.length; i++) await del('servicios', ss[i].id);
-      await del('equipos', id); S.busy = false; closeSheet(); toast('Equipo eliminado');
-    } catch (err) { S.busy = false; renderSheet(true); toast(failMsg(err)); }
-  }
-  async function delSv(id) {
-    S.busy = true; renderSheet(true);
-    try { await del('servicios', id); S.busy = false; S.confirm = null; renderSheet(true); toast('Servicio eliminado'); }
-    catch (err) { S.busy = false; renderSheet(true); toast(failMsg(err)); }
-  }
-
-  /* ---------- datos demo ---------- */
-  async function seed() {
-    if (S.busy) return; S.busy = true; render();
-    var E = [
-      ['Minisplit Aula 101', 'Aula 101', 'Edificio A', 'Carrier', '42QHC018', 'CR2201845', 'Minisplit', '1.5 Toneladas (18,000 BTU)', 'R-410A', '2022-03-14'],
-      ['Minisplit Aula 102', 'Aula 102', 'Edificio A', 'Mirage', 'Magnum 24', 'MG2307712', 'Minisplit', '2.0 Toneladas (24,000 BTU)', 'R-410A', '2023-01-20'],
-      ['Cassette Biblioteca', 'Biblioteca', 'Edificio B', 'LG', 'ATNQ48GPLA2', 'LG1904425', 'Cassette', '4.0 Toneladas (48,000 BTU)', 'R-410A', '2019-08-05']
-    ];
-    var ids = E.map(function () { return uid('e'); });
-    try {
-      for (var i = 0; i < E.length; i++) {
-        var x = E[i];
-        await put('equipos', { id: ids[i], nombre: x[0], aula: x[1], edificio: x[2], marca: x[3], modelo: x[4], serie: x[5], tipo: x[6], capacidad: x[7], refrigerante: x[8], instalacion: x[9], notas: '', ejemplo: true, actualizado: new Date().toISOString() });
-        await put('servicios', { id: uid('s'), equipoId: ids[i], aula: x[1], fecha: todayIso(), tipo: 'Preventivo', estado: 'Completado', trabajo: 'Limpieza general y revisión de presiones', refacciones: '', tecnico: 'Personal Técnico', costo: 650, proximo: addMonths(todayIso(), 2), folio: 'DEMO', ejemplo: true, actualizado: new Date().toISOString() });
-      }
-      toast('Datos demo cargados');
-    } catch (err) { toast(failMsg(err)); }
-    S.busy = false; render();
-  }
-  async function unseed() {
-    if (S.busy) return; S.busy = true; render();
-    try {
-      var ss = S.servicios.filter(function (s) { return s.ejemplo; }), ee = S.equipos.filter(function (e) { return e.ejemplo; });
-      for (var i = 0; i < ss.length; i++) await del('servicios', ss[i].id);
-      for (var j = 0; j < ee.length; j++) {
-        var rest = svOf(ee[j].id); for (var k = 0; k < rest.length; k++) await del('servicios', rest[k].id);
-        await del('equipos', ee[j].id);
-      }
-      toast('Datos demo removidos');
-    } catch (err) { toast(failMsg(err)); }
-    S.busy = false; render();
-  }
-
-  /* ---------- exportar CSV ---------- */
-  var csv = function (rows) { return rows.map(function (r) { return r.map(function (c) { c = c == null ? '' : String(c); return /[",\n\r]/.test(c) ? '"' + c.replace(/"/g, '""') + '"' : c; }).join(','); }).join('\r\n'); };
-  function exportCsv() {
-    var rows, name;
-    if (S.view === 'servicios') {
-      rows = [['Fecha', 'Equipo', 'Aula', 'Edificio', 'Marca', 'Modelo', 'Serie', 'Tipo', 'Estado', 'Trabajo', 'Refacciones', 'Técnico', 'Costo', 'Próximo', 'Folio']];
-      svList().forEach(function (x) { var s = x.s, e = x.e || {}; rows.push([s.fecha, e.nombre || '', s.aula || e.aula || '', e.edificio || '', e.marca || '', e.modelo || '', e.serie || '', s.tipo, s.estado, s.trabajo, s.refacciones, s.tecnico, s.costo, s.proximo, s.folio]); });
-      name = 'servicios-' + todayIso() + '.csv';
-    } else {
-      rows = [['Equipo', 'Aula', 'Edificio', 'Marca', 'Modelo', 'Serie', 'Tipo', 'Capacidad', 'Refrigerante', 'Instalación', 'Estado', 'Último servicio', 'Próximo servicio']];
-      eqList().filter(function (it) { return S.estado === 'todos' || it.st.k === S.estado; }).forEach(function (it) { var e = it.e; rows.push([e.nombre, e.aula, e.edificio, e.marca, e.modelo, e.serie, e.tipo, e.capacidad, e.refrigerante, e.instalacion, it.st.label, it.st.last ? it.st.last.fecha : '', it.st.next || '']); });
-      name = 'equipos-' + todayIso() + '.csv';
-    }
-    var blob = new Blob(['﻿' + csv(rows)], { type: 'text/csv;charset=utf-8;' });
-    var link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = name;
-    link.style.display = 'none'; document.body.appendChild(link); link.click(); document.body.removeChild(link);
-  }
-
-  /* ---------- Eventos ---------- */
-  function clearAll() { S.q = ''; S.aula = ''; S.estado = 'todos'; S.tipo = 'todos'; S.desde = ''; S.hasta = ''; $('#q').value = ''; }
-  function openSvForm(eqId) {
-    if (!S.equipos.length) { toast('Registra un equipo primero.'); openSheet({ type: 'eq-form' }); return; }
-    openSheet({ type: 'sv-form', eqId: eqId || '' });
-  }
-
-  document.addEventListener('click', function (ev) {
-    var el = ev.target.closest('[data-action]'); if (!el) return;
-    var a = el.dataset.action;
-    if (a === 'overlay') { if (ev.target === el) closeSheet(); return; }
-    switch (a) {
-      case 'tab': S.view = el.dataset.v; render(); break;
-      case 'new-eq': openSheet({ type: 'eq-form' }); break;
-      case 'new-sv': openSvForm(el.dataset.eq); break;
-      case 'open-eq': openSheet({ type: 'eq', id: el.dataset.id }); break;
-      case 'edit-eq': openSheet({ type: 'eq-form', id: el.dataset.id }); break;
-      case 'edit-sv': { var s = S.servicios.find(function (x) { return x.id === el.dataset.id; }); if (s) openSheet({ type: 'sv-form', id: s.id, eqId: s.equipoId }); break; }
-      case 'close-sheet': closeSheet(); break;
-      case 'cancel-form': { var sh = S.sheet, back = sh && (sh.type === 'sv-form' ? sh.eqId : sh.id); if (back && S.equipos.some(function (e) { return e.id === back; })) openSheet({ type: 'eq', id: back }); else closeSheet(); break; }
-      case 'quick-del-eq': openSheet({ type: 'eq', id: el.dataset.id }); S.confirm = { kind: 'eq' }; renderSheet(true); break;
-      case 'del-eq-ask': S.confirm = { kind: 'eq' }; renderSheet(true); break;
-      case 'del-eq-yes': delEq(S.sheet.id); break;
-      case 'del-sv-ask': S.confirm = { kind: 'sv', id: el.dataset.id }; renderSheet(true); break;
-      case 'del-sv-yes': delSv(el.dataset.id); break;
-      case 'cancel-confirm': S.confirm = null; renderSheet(true); break;
-      case 'chip-estado': S.estado = el.dataset.v; render(); break;
-      case 'chip-tipo': S.tipo = el.dataset.v; render(); break;
-      case 'clear': clearAll(); render(); break;
-      case 'seed': seed(); break;
-      case 'unseed': unseed(); break;
-      case 'export': exportCsv(); break;
-      case 'open-audit': openSheet({ type: 'audit' }); break;
-      case 'logout': firebase.auth().signOut().then(function() { window.location.href = 'login.html'; }); break;
-    }
-  });
-
-  function onSearch(ev) { S.q = ev.target.value; renderBand(); renderMain(); }
-  $('#q').addEventListener('input', onSearch);
-  $('#q').addEventListener('search', onSearch);
-
-  document.addEventListener('change', function (ev) {
-    var t = ev.target;
-    if (t.id === 'f-aula') { S.aula = t.value; render(); }
-    else if (t.id === 'f-desde') { S.desde = t.value; render(); }
-    else if (t.id === 'f-hasta') { S.hasta = t.value; render(); }
-    else if (t.id === 'x-equipoId') { var e = S.equipos.find(function (x) { return x.id === t.value; }); $('#x-aula-hint').textContent = e ? 'Aula: ' + (e.aula || 'sin aula') : ''; }
-  });
-
-  document.addEventListener('input', function (ev) {
-    var t = ev.target;
-    if (t.id === 'x-proximo') { t.dataset.touched = '1'; return; }
-    if (t.id === 'x-fecha' || t.id === 'x-tipo') {
-      var p = $('#x-proximo'); if (!p || p.dataset.touched === '1') return;
-      p.value = $('#x-tipo').value === 'Preventivo' ? addMonths($('#x-fecha').value, 2) : '';
-    }
-  });
-
-  document.addEventListener('submit', function (ev) {
-    ev.preventDefault();
-    if (ev.target.id === 'form-eq') saveEq(ev.target);
-    else if (ev.target.id === 'form-sv') saveSv(ev.target);
-  });
-  document.addEventListener('keydown', function (ev) { if (ev.key === 'Escape' && S.sheet) closeSheet(); });
-
-  /* ---------- Arranque de Firebase Auth y Firestore ---------- */
-  function init() {
-    var firebaseConfig = {
-      apiKey: "AIzaSyA_JufV6ZSCICVuUrVZEJropD1VKA2bzQs",
-      authDomain: "mantenimientocetis116.firebaseapp.com",
-      databaseURL: "https://mantenimientocetis116-default-rtdb.firebaseio.com",
-      projectId: "mantenimientocetis116",
-      storageBucket: "mantenimientocetis116.firebasestorage.app",
-      messagingSenderId: "556796465966",
-      appId: "1:556796465966:web:b0636bf4ee5ba99c21a0bf"
-    };
-
-    firebase.initializeApp(firebaseConfig);
-
-    firebase.auth().onAuthStateChanged(function(user) {
-      if (!user) {
-        window.location.href = 'login.html';
-        return;
-      }
-      currentUser = user;
-      DB = firebase.firestore();
-      S.backend = 'db';
-
-      var nombreUsuario = obtenerNombreUsuario(user);
-      console.log('[SISTEMA] Sesión iniciada correctamente por: ' + nombreUsuario);
-
-      var sub = function (col, flag) {
-        DB.collection(col).onSnapshot(function (snap) {
-          S[col] = snap.docs.map(function (d) { return Object.assign({}, d.data(), { id: d.id }); });
-          S[flag] = true; S.ready = S.rE && S.rS; render();
-        }, function (err) { S.error = 'No se pudieron sincronizar los datos de la nube.'; S.ready = true; render(); });
-      };
-
-      // Cargar colección de auditoría en tiempo real
-      DB.collection('auditoria').orderBy('fecha', 'desc').limit(50).onSnapshot(function(snap) {
-        S.auditoria = snap.docs.map(function(d){ return d.data(); });
-      }, function(err){});
-
-      sub('equipos', 'rE');
-      sub('servicios', 'rS');
-      render();
-    });
-  }
-  init();
-})();
-</script>
-
-<!-- ================ REGISTRO DEL SERVICE WORKER (PWA/APK) ================ -->
-<script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', function() {
-      navigator.serviceWorker.register('./sw.js').catch(function(err) {
-        console.log('ServiceWorker error:', err);
-      });
-    });
-  }
-</script>
-<!-- ======================================================================= -->
-
-</body>
-</html>
+    root.innerHTML = '<div class="overlay" data-action="overlay"><div class="sheet" role="dialog" aria-modal="true" aria-label="' + esc(label) + '">'
