@@ -113,21 +113,21 @@
       </div>
     </div>
 
-    <!-- Directorio Completo de Usuarios Registrados y Activos -->
-    <div class="card">
-      <h2>👥 Directorio de Usuarios (Activos e Inactivos)</h2>
+    <!-- NUEVO APARTADO: USUARIOS CONECTADOS EN TIEMPO REAL -->
+    <div class="card" style="border-color: rgba(6, 182, 212, 0.4);">
+      <h2>🟢 Usuarios Conectados (Tiempo Real)</h2>
+      <p style="color: var(--ink-2); font-size: 12px; margin-bottom: 14px;">Monitoreo en vivo de sesiones activas, hora y fecha de conexión.</p>
       <div class="table-container">
         <table>
           <thead>
             <tr>
-              <th>Correo Electrónico</th>
-              <th>UID de Usuario</th>
-              <th>Estado</th>
-              <th>Fecha de Registro</th>
+              <th>Usuario / Correo</th>
+              <th>Estatus</th>
+              <th>Fecha y Hora de Conexión</th>
             </tr>
           </thead>
-          <tbody id="users-table-body">
-            <tr><td colspan="4" style="text-align:center; color:var(--ink-2);">Cargando usuarios...</td></tr>
+          <tbody id="live-users-table-body">
+            <tr><td colspan="3" style="text-align:center; color:var(--ink-2);">Escuchando conexiones en vivo...</td></tr>
           </tbody>
         </table>
       </div>
@@ -184,7 +184,7 @@
       if (user && CORREOS_ADMINS.includes(user.email)) {
         document.getElementById('auth-screen').style.display = 'none';
         document.getElementById('dashboard-content').style.display = 'block';
-        cargarDatosGerenciales();
+        iniciarPanelGerencialEnVivo();
       }
     });
 
@@ -213,7 +213,7 @@
         .then(() => {
           document.getElementById('auth-screen').style.display = 'none';
           document.getElementById('dashboard-content').style.display = 'block';
-          cargarDatosGerenciales();
+          iniciarPanelGerencialEnVivo();
         })
         .catch(() => {
           errDiv.textContent = "Credenciales de Firebase inválidas.";
@@ -227,70 +227,79 @@
       });
     }
 
-    async function cargarDatosGerenciales() {
+    async function iniciarPanelGerencialEnVivo() {
       try {
+        // Cargar estadísticas generales
         const equiposSnap = await db.collection('equipos').get();
         const serviciosSnap = await db.collection('servicios').get();
-        const auditSnap = await db.collection('auditoria').orderBy('fecha', 'desc').limit(15).get();
-        const usersSnap = await db.collection('usuarios_registrados').get();
-
         document.getElementById('stat-equipos').textContent = equiposSnap.size;
         document.getElementById('stat-servicios').textContent = serviciosSnap.size;
-        document.getElementById('stat-auditoria').textContent = auditSnap.size;
 
-        const usersBody = document.getElementById('users-table-body');
-        usersBody.innerHTML = '';
-        if (usersSnap.empty) {
-          usersBody.innerHTML = '<tr><td colspan="4" style="text-align:center;">No hay usuarios registrados todavía.</td></tr>';
-        } else {
-          const ahora = new Date();
-          usersSnap.forEach(doc => {
-            const u = doc.data();
-            const fechaReg = u.fechaCreacion ? new Date(u.fechaCreacion).toLocaleDateString() : 'N/D';
-            
-            let esEnLinea = false;
-            if (u.ultimaConexion) {
-              const ultimaConx = new Date(u.ultimaConexion);
-              const diferenciaMinutos = (ahora - ultimaConx) / (1000 * 60);
-              if (diferenciaMinutos <= 10) {
-                esEnLinea = true;
+        // Auditoría general
+        db.collection('auditoria').orderBy('fecha', 'desc').limit(15).onSnapshot(auditSnap => {
+          const auditBody = document.getElementById('audit-table-body');
+          auditBody.innerHTML = '';
+          if(auditSnap.empty) {
+            auditBody.innerHTML = '<tr><td colspan="3" style="text-align:center;">No hay movimientos registrados.</td></tr>';
+          } else {
+            document.getElementById('stat-auditoria').textContent = auditSnap.size;
+            auditSnap.forEach(doc => {
+              const data = doc.data();
+              const fechaFmt = data.fecha ? new Date(data.fecha).toLocaleString() : 'N/D';
+              auditBody.innerHTML += `
+                <tr>
+                  <td><strong>${data.usuario || 'Anónimo'}</strong></td>
+                  <td>${data.accion} - ${data.detalle || ''}</td>
+                  <td><small style="color:var(--ink-2);">${fechaFmt}</small></td>
+                </tr>
+              `;
+            });
+          }
+        });
+
+        // ESCUCHA EN TIEMPO REAL (ONSNAPSHOT) PARA USUARIOS CONECTADOS
+        db.collection('usuarios_registrados').onSnapshot(usersSnap => {
+          const liveUsersBody = document.getElementById('live-users-table-body');
+          liveUsersBody.innerHTML = '';
+
+          if (usersSnap.empty) {
+            liveUsersBody.innerHTML = '<tr><td colspan="3" style="text-align:center;">No hay usuarios conectados.</td></tr>';
+          } else {
+            const ahora = new Date();
+            usersSnap.forEach(doc => {
+              const u = doc.data();
+              
+              // Verificamos si se conectó en los últimos 15 minutos para estatus en vivo
+              let esEnLinea = false;
+              if (u.ultimaConexion) {
+                const ultimaConx = new Date(u.ultimaConexion);
+                const diferenciaMinutos = (ahora - ultimaConx) / (1000 * 60);
+                if (diferenciaMinutos <= 15) {
+                  esEnLinea = true;
+                }
               }
-            }
 
-            const estadoClase = esEnLinea ? 'active' : 'inactive';
-            const estadoTexto = esEnLinea ? '🟢 En Línea' : '⚪ Inactivo';
+              if (auth.currentUser && auth.currentUser.email === u.email) {
+                esEnLinea = true; // El admin actual siempre está activo
+              }
 
-            usersBody.innerHTML += `
-              <tr>
-                <td><strong>${u.email}</strong></td>
-                <td><code>${u.uid}</code></td>
-                <td><span class="badge-status ${estadoClase}">${estadoTexto}</span></td>
-                <td>${fechaReg}</td>
-              </tr>
-            `;
-          });
-        }
+              const estadoClase = esEnLinea ? 'active' : 'inactive';
+              const estadoTexto = esEnLinea ? '🟢 Conectado' : '⚪ Desconectado';
+              const fechaConexionFmt = u.ultimaConexion ? new Date(u.ultimaConexion).toLocaleString() : 'Sin registro';
 
-        const auditBody = document.getElementById('audit-table-body');
-        auditBody.innerHTML = '';
-        if(auditSnap.empty) {
-          auditBody.innerHTML = '<tr><td colspan="3" style="text-align:center;">No hay movimientos registrados.</td></tr>';
-        } else {
-          auditSnap.forEach(doc => {
-            const data = doc.data();
-            const fechaFmt = data.fecha ? new Date(data.fecha).toLocaleString() : 'N/D';
-            auditBody.innerHTML += `
-              <tr>
-                <td><strong>${data.usuario || 'Anónimo'}</strong></td>
-                <td>${data.accion} - ${data.detalle || ''}</td>
-                <td><small style="color:var(--ink-2);">${fechaFmt}</small></td>
-              </tr>
-            `;
-          });
-        }
+              liveUsersBody.innerHTML += `
+                <tr>
+                  <td><strong>${u.email}</strong></td>
+                  <td><span class="badge-status ${estadoClase}">${estadoTexto}</span></td>
+                  <td><small style="color:var(--ink-2);">${fechaConexionFmt}</small></td>
+                </tr>
+              `;
+            });
+          }
+        });
 
       } catch (error) {
-        console.error("Error al cargar datos gerenciales:", error);
+        console.error("Error al inicializar panel en tiempo real:", error);
       }
     }
   </script>
