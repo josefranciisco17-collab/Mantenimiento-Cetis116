@@ -238,20 +238,27 @@
         document.getElementById('stat-servicios').textContent = serviciosSnap.size;
         document.getElementById('stat-auditoria').textContent = auditSnap.size;
 
-        // Renderizar tabla completa de usuarios registrados y activos
         const usersBody = document.getElementById('users-table-body');
         usersBody.innerHTML = '';
         if (usersSnap.empty) {
           usersBody.innerHTML = '<tr><td colspan="4" style="text-align:center;">No hay usuarios registrados todavía.</td></tr>';
         } else {
+          const ahora = new Date();
           usersSnap.forEach(doc => {
             const u = doc.data();
             const fechaReg = u.fechaCreacion ? new Date(u.fechaCreacion).toLocaleDateString() : 'N/D';
             
-            // Determinamos si está activo (si es el usuario actual logueado o tiene estatus activo)
-            const esActivo = auth.currentUser && auth.currentUser.email === u.email;
-            const estadoClase = esActivo ? 'active' : 'inactive';
-            const estadoTexto = esActivo ? '🟢 Activo (En línea)' : '⚪ Registrado';
+            let esEnLinea = false;
+            if (u.ultimaConexion) {
+              const ultimaConx = new Date(u.ultimaConexion);
+              const diferenciaMinutos = (ahora - ultimaConx) / (1000 * 60);
+              if (diferenciaMinutos <= 10) {
+                esEnLinea = true;
+              }
+            }
+
+            const estadoClase = esEnLinea ? 'active' : 'inactive';
+            const estadoTexto = esEnLinea ? '🟢 En Línea' : '⚪ Inactivo';
 
             usersBody.innerHTML += `
               <tr>
@@ -264,7 +271,6 @@
           });
         }
 
-        // Renderizar Auditoría
         const auditBody = document.getElementById('audit-table-body');
         auditBody.innerHTML = '';
         if(auditSnap.empty) {
