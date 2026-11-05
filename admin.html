@@ -26,20 +26,17 @@
     
     .wrapper { max-width: 900px; margin: 0 auto; display: none; }
 
-    /* Cabecera del Panel */
     .admin-header { display: flex; justify-content: space-between; align-items: center; background: var(--surface); border: 1px solid var(--line); padding: 20px 24px; border-radius: 12px; margin-bottom: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
     .admin-header h1 { font-family: var(--font-display); font-size: 24px; text-transform: uppercase; color: #fff; }
     .admin-header p { color: var(--accent); font-size: 12px; font-family: var(--font-mono); text-transform: uppercase; }
     .btn-exit { background: rgba(239, 68, 68, 0.15); color: var(--bad); border: 1px solid rgba(239, 68, 68, 0.4); padding: 8px 16px; border-radius: 8px; font-weight: 700; cursor: pointer; text-decoration: none; font-size: 13px; transition: all 0.2s; }
     .btn-exit:hover { background: rgba(239, 68, 68, 0.3); }
 
-    /* Tarjetas de Estadísticas */
     .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
     .stat-card { background: var(--surface); border: 1px solid var(--line); padding: 20px; border-radius: 12px; text-align: center; }
     .stat-card h3 { font-size: 12px; color: var(--ink-2); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
     .stat-card .value { font-size: 28px; font-weight: 800; color: var(--accent); font-family: var(--font-mono); }
 
-    /* Secciones y Tablas */
     .card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 24px; margin-bottom: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.4); }
     .card h2 { font-size: 18px; font-family: var(--font-display); text-transform: uppercase; margin-bottom: 16px; color: #fff; display: flex; align-items: center; gap: 10px; }
     
@@ -55,7 +52,6 @@
     .btn-action { background: var(--surface-2); border: 1px solid var(--line); color: var(--ink); padding: 6px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
     .btn-action:hover { border-color: var(--accent); color: var(--accent); }
 
-    /* Pantalla de Login (Llave Maestra) */
     #auth-screen { max-width: 400px; margin: 80px auto; background: var(--surface); border: 1px solid var(--line); padding: 30px; border-radius: 16px; box-shadow: 0 20px 40px rgba(0,0,0,0.6); }
     #auth-screen h2 { color: #fff; font-size: 22px; margin-bottom: 6px; text-align: center; font-family: var(--font-display); text-transform: uppercase; }
     #auth-screen p { color: var(--ink-2); font-size: 12px; text-align: center; margin-bottom: 20px; }
@@ -119,21 +115,21 @@
       </div>
     </div>
 
-    <!-- Gestión de Usuarios -->
+    <!-- Directorio Completo de Usuarios Registrados -->
     <div class="card">
-      <h2>👥 Control de Sesión Activa</h2>
+      <h2>👥 Directorio de Usuarios Registrados</h2>
       <div class="table-container">
         <table>
           <thead>
             <tr>
               <th>Correo Electrónico</th>
-              <th>UID de Administrador</th>
+              <th>UID de Usuario</th>
               <th>Estado</th>
-              <th>Acciones</th>
+              <th>Fecha de Registro</th>
             </tr>
           </thead>
           <tbody id="users-table-body">
-            <tr><td colspan="4" style="text-align:center; color:var(--ink-2);">Cargando perfil...</td></tr>
+            <tr><td colspan="4" style="text-align:center; color:var(--ink-2);">Cargando usuarios...</td></tr>
           </tbody>
         </table>
       </div>
@@ -186,7 +182,6 @@
       "josefranciisco17@gmail.com"
     ];
 
-    // Verificar si ya hay una sesión activa de administrador al cargar la página
     auth.onAuthStateChanged(user => {
       if (user && CORREOS_ADMINS.includes(user.email)) {
         document.getElementById('auth-screen').style.display = 'none';
@@ -239,11 +234,33 @@
         const equiposSnap = await db.collection('equipos').get();
         const serviciosSnap = await db.collection('servicios').get();
         const auditSnap = await db.collection('auditoria').orderBy('fecha', 'desc').limit(15).get();
+        const usersSnap = await db.collection('usuarios_registrados').get();
 
         document.getElementById('stat-equipos').textContent = equiposSnap.size;
         document.getElementById('stat-servicios').textContent = serviciosSnap.size;
         document.getElementById('stat-auditoria').textContent = auditSnap.size;
 
+        // Renderizar tabla de usuarios registrados
+        const usersBody = document.getElementById('users-table-body');
+        usersBody.innerHTML = '';
+        if (usersSnap.empty) {
+          usersBody.innerHTML = '<tr><td colspan="4" style="text-align:center;">No hay usuarios registrados todavía.</td></tr>';
+        } else {
+          usersSnap.forEach(doc => {
+            const u = doc.data();
+            const fechaReg = u.fechaCreacion ? new Date(u.fechaCreacion).toLocaleDateString() : 'N/D';
+            usersBody.innerHTML += `
+              <tr>
+                <td><strong>${u.email}</strong></td>
+                <td><code>${u.uid}</code></td>
+                <td><span class="badge-status active">${u.estado || 'Activo'}</span></td>
+                <td>${fechaReg}</td>
+              </tr>
+            `;
+          });
+        }
+
+        // Renderizar Auditoría
         const auditBody = document.getElementById('audit-table-body');
         auditBody.innerHTML = '';
         if(auditSnap.empty) {
@@ -261,18 +278,6 @@
             `;
           });
         }
-
-        const usersBody = document.getElementById('users-table-body');
-        usersBody.innerHTML = `
-          <tr>
-            <td>${auth.currentUser ? auth.currentUser.email : 'Admin'}</td>
-            <td><code>${auth.currentUser ? auth.currentUser.uid : 'N/A'}</code></td>
-            <td><span class="badge-status active">Gerente en Línea</span></td>
-            <td>
-              <button class="btn-action" onclick="alert('Sesión de alta seguridad verificada.')">Ver Estado</button>
-            </td>
-          </tr>
-        `;
 
       } catch (error) {
         console.error("Error al cargar datos gerenciales:", error);
