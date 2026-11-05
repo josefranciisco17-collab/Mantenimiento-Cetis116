@@ -81,6 +81,32 @@
     .btn:hover { filter: brightness(1.1); }
     .btn:disabled { opacity: .6; cursor: not-allowed; }
 
+    /* Botón de acceso de Administrador estilo corporativo */
+    .btn-admin-access {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      height: 46px;
+      background: var(--surface-2);
+      color: var(--accent);
+      border: 1px solid rgba(6, 182, 212, 0.35);
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      margin-top: 20px;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    .btn-admin-access:hover {
+      background: rgba(6, 182, 212, 0.1);
+      border-color: var(--accent);
+      filter: brightness(1.1);
+    }
+
     .actions-row { display: flex; justify-content: space-between; align-items: center; margin-top: 14px; font-size: 13px; }
     .link-btn { background: none; border: 0; color: var(--accent); cursor: pointer; padding: 0; text-decoration: underline; text-underline-offset: 3px; font-size: 13px; font-weight: 600; }
     
@@ -161,6 +187,11 @@
         <button type="submit" class="btn" id="reg-submit-btn">Registrar Cuenta</button>
       </form>
     </div>
+
+    <!-- Acceso Extra de Administrador -->
+    <a href="admin.html" class="btn-admin-access">
+      🔒 Panel de Administrador
+    </a>
 
     <div id="alert-box" class="alert" hidden></div>
   </div>
