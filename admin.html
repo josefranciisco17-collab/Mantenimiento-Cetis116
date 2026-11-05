@@ -48,9 +48,7 @@
 
     .badge-status { display: inline-block; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
     .badge-status.active { background: rgba(16, 185, 129, 0.15); color: var(--ok); border: 1px solid rgba(16,185,129,0.3); }
-
-    .btn-action { background: var(--surface-2); border: 1px solid var(--line); color: var(--ink); padding: 6px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
-    .btn-action:hover { border-color: var(--accent); color: var(--accent); }
+    .badge-status.inactive { background: rgba(148, 163, 184, 0.15); color: var(--ink-2); border: 1px solid rgba(148,163,184,0.3); }
 
     #auth-screen { max-width: 400px; margin: 80px auto; background: var(--surface); border: 1px solid var(--line); padding: 30px; border-radius: 16px; box-shadow: 0 20px 40px rgba(0,0,0,0.6); }
     #auth-screen h2 { color: #fff; font-size: 22px; margin-bottom: 6px; text-align: center; font-family: var(--font-display); text-transform: uppercase; }
@@ -115,9 +113,9 @@
       </div>
     </div>
 
-    <!-- Directorio Completo de Usuarios Registrados -->
+    <!-- Directorio Completo de Usuarios Registrados y Activos -->
     <div class="card">
-      <h2>👥 Directorio de Usuarios Registrados</h2>
+      <h2>👥 Directorio de Usuarios (Activos e Inactivos)</h2>
       <div class="table-container">
         <table>
           <thead>
@@ -240,7 +238,7 @@
         document.getElementById('stat-servicios').textContent = serviciosSnap.size;
         document.getElementById('stat-auditoria').textContent = auditSnap.size;
 
-        // Renderizar tabla de usuarios registrados
+        // Renderizar tabla completa de usuarios registrados y activos
         const usersBody = document.getElementById('users-table-body');
         usersBody.innerHTML = '';
         if (usersSnap.empty) {
@@ -249,11 +247,17 @@
           usersSnap.forEach(doc => {
             const u = doc.data();
             const fechaReg = u.fechaCreacion ? new Date(u.fechaCreacion).toLocaleDateString() : 'N/D';
+            
+            // Determinamos si está activo (si es el usuario actual logueado o tiene estatus activo)
+            const esActivo = auth.currentUser && auth.currentUser.email === u.email;
+            const estadoClase = esActivo ? 'active' : 'inactive';
+            const estadoTexto = esActivo ? '🟢 Activo (En línea)' : '⚪ Registrado';
+
             usersBody.innerHTML += `
               <tr>
                 <td><strong>${u.email}</strong></td>
                 <td><code>${u.uid}</code></td>
-                <td><span class="badge-status active">${u.estado || 'Activo'}</span></td>
+                <td><span class="badge-status ${estadoClase}">${estadoTexto}</span></td>
                 <td>${fechaReg}</td>
               </tr>
             `;
