@@ -24,7 +24,7 @@
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { background: var(--bg); color: var(--ink); font: 15px/1.5 var(--font-body); padding: 20px; }
     
-    .wrapper { max-width: 900px; margin: 0 auto; }
+    .wrapper { max-width: 900px; margin: 0 auto; display: none; }
 
     /* Cabecera del Panel */
     .admin-header { display: flex; justify-content: space-between; align-items: center; background: var(--surface); border: 1px solid var(--line); padding: 20px 24px; border-radius: 12px; margin-bottom: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
@@ -51,14 +51,11 @@
 
     .badge-status { display: inline-block; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
     .badge-status.active { background: rgba(16, 185, 129, 0.15); color: var(--ok); border: 1px solid rgba(16,185,129,0.3); }
-    .badge-status.banned { background: rgba(239, 68, 68, 0.15); color: var(--bad); border: 1px solid rgba(239,68,68,0.3); }
 
-    .action-btns { display: flex; gap: 8px; }
     .btn-action { background: var(--surface-2); border: 1px solid var(--line); color: var(--ink); padding: 6px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
     .btn-action:hover { border-color: var(--accent); color: var(--accent); }
-    .btn-action.danger:hover { border-color: var(--bad); color: var(--bad); }
 
-    /* Pantalla de Login (Si no ha puesto la llave) */
+    /* Pantalla de Login (Llave Maestra) */
     #auth-screen { max-width: 400px; margin: 80px auto; background: var(--surface); border: 1px solid var(--line); padding: 30px; border-radius: 16px; box-shadow: 0 20px 40px rgba(0,0,0,0.6); }
     #auth-screen h2 { color: #fff; font-size: 22px; margin-bottom: 6px; text-align: center; font-family: var(--font-display); text-transform: uppercase; }
     #auth-screen p { color: var(--ink-2); font-size: 12px; text-align: center; margin-bottom: 20px; }
@@ -68,8 +65,6 @@
     .input-group input:focus { outline: none; border-color: var(--accent); }
     .btn-main { width: 100%; background: var(--accent); color: var(--accent-ink); border: none; padding: 12px; font-weight: 800; border-radius: 8px; cursor: pointer; text-transform: uppercase; }
     .error-msg { background: rgba(239,68,68,0.15); border: 1px solid var(--bad); color: #FCA5A5; padding: 10px; border-radius: 6px; font-size: 12px; text-align: center; margin-bottom: 15px; display: none; }
-    
-    #dashboard-content { display: none; }
   </style>
 </head>
 <body>
@@ -90,14 +85,14 @@
       </div>
       <div class="input-group">
         <label>Llave Maestra de Seguridad</label>
-        <input type="password" id="adm-key" required placeholder="Código PIN maestro">
+        <input type="password" id="adm-key" required placeholder="PIN maestro">
       </div>
       <button type="submit" class="btn-main">Acceder al Panel</button>
     </form>
     <a href="login.html" style="display:block; text-align:center; margin-top:20px; color:var(--ink-2); font-size:12px; text-decoration:none;">← Volver al login general</a>
   </div>
 
-  <!-- PANEL GERENCIAL PRINCIPAL (Oculto hasta autenticarse) -->
+  <!-- PANEL GERENCIAL PRINCIPAL -->
   <div id="dashboard-content" class="wrapper">
     
     <div class="admin-header">
@@ -124,22 +119,21 @@
       </div>
     </div>
 
-    <!-- Gestión de Usuarios y Accesos -->
+    <!-- Gestión de Usuarios -->
     <div class="card">
-      <h2>👥 Gestión de Usuarios Registrados</h2>
-      <p style="color:var(--ink-2); font-size:13px; margin-bottom:16px;">Lista de cuentas creadas en el sistema. Puedes cambiar credenciales o revocar accesos.</p>
+      <h2>👥 Control de Sesión Activa</h2>
       <div class="table-container">
         <table>
           <thead>
             <tr>
               <th>Correo Electrónico</th>
-              <th>UID de Usuario</th>
+              <th>UID de Administrador</th>
               <th>Estado</th>
-              <th>Acciones de Control</th>
+              <th>Acciones</th>
             </tr>
           </thead>
           <tbody id="users-table-body">
-            <tr><td colspan="4" style="text-align:center; color:var(--ink-2);">Cargando registros...</td></tr>
+            <tr><td colspan="4" style="text-align:center; color:var(--ink-2);">Cargando perfil...</td></tr>
           </tbody>
         </table>
       </div>
@@ -171,7 +165,6 @@
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
   <script>
-    // Configuración de Firebase (Tus credenciales reales)
     const firebaseConfig = {
       apiKey: "AIzaSyA_JufV6ZSCICVuUrVZEJropD1VKA2bzQs",
       authDomain: "mantenimientocetis116.firebaseapp.com",
@@ -188,12 +181,19 @@
     const auth = firebase.auth();
     const db = firebase.firestore();
 
-    // Llave secreta maestra y lista blanca
-    const LLAVE_MAESTRA = "464"; 
+    const LLAVE_MAESTRA = "4864"; 
     const CORREOS_ADMINS = [
       "josefranciisco17@gmail.com"
-      // Agrega más correos gerenciales aquí si lo deseas
     ];
+
+    // Verificar si ya hay una sesión activa de administrador al cargar la página
+    auth.onAuthStateChanged(user => {
+      if (user && CORREOS_ADMINS.includes(user.email)) {
+        document.getElementById('auth-screen').style.display = 'none';
+        document.getElementById('dashboard-content').style.display = 'block';
+        cargarDatosGerenciales();
+      }
+    });
 
     function verificarAccesoAdmin(e) {
       e.preventDefault();
@@ -236,7 +236,6 @@
 
     async function cargarDatosGerenciales() {
       try {
-        // 1. Estadísticas de Equipos y Servicios
         const equiposSnap = await db.collection('equipos').get();
         const serviciosSnap = await db.collection('servicios').get();
         const auditSnap = await db.collection('auditoria').orderBy('fecha', 'desc').limit(15).get();
@@ -245,7 +244,6 @@
         document.getElementById('stat-servicios').textContent = serviciosSnap.size;
         document.getElementById('stat-auditoria').textContent = auditSnap.size;
 
-        // 2. Renderizar Auditoría Global
         const auditBody = document.getElementById('audit-table-body');
         auditBody.innerHTML = '';
         if(auditSnap.empty) {
@@ -264,17 +262,14 @@
           });
         }
 
-        // 3. Simulación y Control de Usuarios (Basado en auditores o registros recolectados)
-        // Nota: Como Firebase Auth requiere Cloud Functions para listar todos los usuarios nativos, 
-        // listamos los usuarios activos que han interactuado o dejamos la estructura lista.
         const usersBody = document.getElementById('users-table-body');
         usersBody.innerHTML = `
           <tr>
-            <td>${auth.currentUser ? auth.currentUser.email : 'Admin Activo'}</td>
+            <td>${auth.currentUser ? auth.currentUser.email : 'Admin'}</td>
             <td><code>${auth.currentUser ? auth.currentUser.uid : 'N/A'}</code></td>
-            <td><span class="badge-status active">Activo / En Línea</span></td>
+            <td><span class="badge-status active">Gerente en Línea</span></td>
             <td>
-              <button class="btn-action" onclick="alert('Función de cambio de contraseña rápido habilitada.')">Editar Clave</button>
+              <button class="btn-action" onclick="alert('Sesión de alta seguridad verificada.')">Ver Estado</button>
             </td>
           </tr>
         `;
