@@ -250,11 +250,31 @@
 
     async function iniciarPanelGerencialEnVivo() {
       try {
-        // Estadísticas de equipos y servicios
         const equiposSnap = await db.collection('equipos').get();
         const serviciosSnap = await db.collection('servicios').get();
         document.getElementById('stat-equipos').textContent = equiposSnap.size;
         document.getElementById('stat-servicios').textContent = serviciosSnap.size;
+
+        // Auto-respaldo de seguridad: Asegura que el admin actual siempre esté registrado en Firestore
+        if (auth.currentUser) {
+          const userRef = db.collection('usuarios_registrados').doc(auth.currentUser.uid);
+          const docSnap = await userRef.get();
+          if (!docSnap.exists) {
+            await userRef.set({
+              email: auth.currentUser.email,
+              uid: auth.currentUser.uid,
+              rol: 'Administrador',
+              fechaCreacion: new Date().toISOString(),
+              ultimaConexion: new Date().toISOString(),
+              estado: 'Activo'
+            });
+          } else {
+            // Actualizar latido de conexión en tiempo real
+            await userRef.update({
+              ultimaConexion: new Date().toISOString()
+            });
+          }
+        }
 
         // Auditoría general en tiempo real
         db.collection('auditoria').orderBy('fecha', 'desc').limit(15).onSnapshot(auditSnap => {
@@ -295,7 +315,7 @@
             usersSnap.forEach(doc => {
               const u = doc.data();
               
-              // 1. Lógica para Usuarios Conectados en vivo (< 15 minutos de actividad)
+              // 1. Usuarios Conectados (< 15 minutos)
               let esEnLinea = false;
               if (u.ultimaConexion) {
                 const ultimaConx = new Date(u.ultimaConexion);
@@ -312,16 +332,17 @@
               const estadoTexto = esEnLinea ? '🟢 Conectado' : '⚪ Desconectado';
               const fechaConexionFmt = u.ultimaConexion ? new Date(u.ultimaConexion).toLocaleString() : 'Sin registro';
 
-              // Renderizar en tabla de Conectados
-              liveUsersBody.innerHTML += `
-                <tr>
-                  <td><strong>${u.email}</strong></td>
-                  <td><span class="badge-status ${estadoClase}">${estadoTexto}</span></td>
-                  <td><small style="color:var(--ink-2);">${fechaConexionFmt}</small></td>
-                </tr>
-              `;
+              if (esEnLinea) {
+                liveUsersBody.innerHTML += `
+                  <tr>
+                    <td><strong>${u.email}</strong></td>
+                    <td><span class="badge-status ${estadoClase}">${estadoTexto}</span></td>
+                    <td><small style="color:var(--ink-2);">${fechaConexionFmt}</small></td>
+                  </tr>
+                `;
+              }
 
-              // 2. Renderizar en tabla de Cuentas Creadas (Directorio completo con datos de Firebase)
+              // 2. Cuentas Creadas (Listado general)
               const fechaCreacionFmt = u.fechaCreacion ? new Date(u.fechaCreacion).toLocaleDateString() : 'N/D';
               accountsBody.innerHTML += `
                 <tr>
@@ -332,6 +353,10 @@
                 </tr>
               `;
             });
+
+            if (liveUsersBody.innerHTML === '') {
+              liveUsersBody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:var(--ink-2);">No hay usuarios activos en este momento.</td></tr>';
+            }
           }
         });
 
