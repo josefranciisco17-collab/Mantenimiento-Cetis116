@@ -873,6 +873,24 @@
       var nombreUsuario = obtenerNombreUsuario(user);
       console.log('[SISTEMA] Sesión iniciada correctamente por: ' + nombreUsuario);
 
+      
+  // Auto-registro y actualización de conexión para el panel gerencial
+  auth.onAuthStateChanged(function(user) {
+    if (user) {
+      db.collection('usuarios_registrados').doc(user.uid).set({
+        email: user.email || 'Sin correo',
+        uid: user.uid,
+        rol: 'Trabajador',
+        fechaCreacion: new Date().toISOString(),
+        ultimaConexion: new Date().toISOString(),
+        estado: 'Activo'
+      }, { merge: true }).catch(err => {
+        console.error("Error al registrar usuario:", err);
+      });
+    }
+  });
+
+      
       var sub = function (col, flag) {
         DB.collection(col).onSnapshot(function (snap) {
           S[col] = snap.docs.map(function (d) { return Object.assign({}, d.data(), { id: d.id }); });
