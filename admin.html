@@ -113,7 +113,7 @@
       </div>
     </div>
 
-    <!-- NUEVO APARTADO: USUARIOS CONECTADOS EN TIEMPO REAL -->
+    <!-- APARTADO 1: USUARIOS CONECTADOS EN TIEMPO REAL -->
     <div class="card" style="border-color: rgba(6, 182, 212, 0.4);">
       <h2>🟢 Usuarios Conectados (Tiempo Real)</h2>
       <p style="color: var(--ink-2); font-size: 12px; margin-bottom: 14px;">Monitoreo en vivo de sesiones activas, hora y fecha de conexión.</p>
@@ -127,7 +127,28 @@
             </tr>
           </thead>
           <tbody id="live-users-table-body">
-            <tr><td colspan="3" style="text-align:center; color:var(--ink-2);">Escuchando conexiones en vivo...</td></tr>
+            <tr><td colspan="3" style="text-align:center; color:var(--ink-2);">Escuchando conexiones...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- APARTADO 2: CUENTAS CREADAS (BASE DE DATOS FIREBASE) -->
+    <div class="card" style="border-color: rgba(16, 185, 129, 0.4);">
+      <h2>📁 Cuentas Creadas (Base de Datos)</h2>
+      <p style="color: var(--ink-2); font-size: 12px; margin-bottom: 14px;">Listado general con la información completa de todos los usuarios registrados.</p>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Correo Electrónico</th>
+              <th>UID de Firebase</th>
+              <th>Rol / Estado</th>
+              <th>Fecha de Creación</th>
+            </tr>
+          </thead>
+          <tbody id="accounts-table-body">
+            <tr><td colspan="4" style="text-align:center; color:var(--ink-2);">Cargando cuentas registradas...</td></tr>
           </tbody>
         </table>
       </div>
@@ -229,13 +250,13 @@
 
     async function iniciarPanelGerencialEnVivo() {
       try {
-        // Cargar estadísticas generales
+        // Estadísticas de equipos y servicios
         const equiposSnap = await db.collection('equipos').get();
         const serviciosSnap = await db.collection('servicios').get();
         document.getElementById('stat-equipos').textContent = equiposSnap.size;
         document.getElementById('stat-servicios').textContent = serviciosSnap.size;
 
-        // Auditoría general
+        // Auditoría general en tiempo real
         db.collection('auditoria').orderBy('fecha', 'desc').limit(15).onSnapshot(auditSnap => {
           const auditBody = document.getElementById('audit-table-body');
           auditBody.innerHTML = '';
@@ -257,19 +278,24 @@
           }
         });
 
-        // ESCUCHA EN TIEMPO REAL (ONSNAPSHOT) PARA USUARIOS CONECTADOS
+        // ESCUCHA EN TIEMPO REAL PARA USUARIOS CONECTADOS Y CUENTAS CREADAS
         db.collection('usuarios_registrados').onSnapshot(usersSnap => {
           const liveUsersBody = document.getElementById('live-users-table-body');
+          const accountsBody = document.getElementById('accounts-table-body');
+          
           liveUsersBody.innerHTML = '';
+          accountsBody.innerHTML = '';
 
           if (usersSnap.empty) {
             liveUsersBody.innerHTML = '<tr><td colspan="3" style="text-align:center;">No hay usuarios conectados.</td></tr>';
+            accountsBody.innerHTML = '<tr><td colspan="4" style="text-align:center;">No hay cuentas registradas en la base de datos.</td></tr>';
           } else {
             const ahora = new Date();
+            
             usersSnap.forEach(doc => {
               const u = doc.data();
               
-              // Verificamos si se conectó en los últimos 15 minutos para estatus en vivo
+              // 1. Lógica para Usuarios Conectados en vivo (< 15 minutos de actividad)
               let esEnLinea = false;
               if (u.ultimaConexion) {
                 const ultimaConx = new Date(u.ultimaConexion);
@@ -278,15 +304,15 @@
                   esEnLinea = true;
                 }
               }
-
               if (auth.currentUser && auth.currentUser.email === u.email) {
-                esEnLinea = true; // El admin actual siempre está activo
+                esEnLinea = true;
               }
 
               const estadoClase = esEnLinea ? 'active' : 'inactive';
               const estadoTexto = esEnLinea ? '🟢 Conectado' : '⚪ Desconectado';
               const fechaConexionFmt = u.ultimaConexion ? new Date(u.ultimaConexion).toLocaleString() : 'Sin registro';
 
+              // Renderizar en tabla de Conectados
               liveUsersBody.innerHTML += `
                 <tr>
                   <td><strong>${u.email}</strong></td>
@@ -294,12 +320,23 @@
                   <td><small style="color:var(--ink-2);">${fechaConexionFmt}</small></td>
                 </tr>
               `;
+
+              // 2. Renderizar en tabla de Cuentas Creadas (Directorio completo con datos de Firebase)
+              const fechaCreacionFmt = u.fechaCreacion ? new Date(u.fechaCreacion).toLocaleDateString() : 'N/D';
+              accountsBody.innerHTML += `
+                <tr>
+                  <td><strong>${u.email}</strong></td>
+                  <td><code>${u.uid}</code></td>
+                  <td><span class="badge-status active">${u.rol || 'Trabajador'}</span></td>
+                  <td><small style="color:var(--ink-2);">${fechaCreacionFmt}</small></td>
+                </tr>
+              `;
             });
           }
         });
 
       } catch (error) {
-        console.error("Error al inicializar panel en tiempo real:", error);
+        console.error("Error al inicializar panel gerencial:", error);
       }
     }
   </script>
