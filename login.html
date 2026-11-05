@@ -33,7 +33,6 @@
     .brand-header h1 { font-family: var(--font-display); font-size: 30px; text-transform: uppercase; letter-spacing: .02em; margin: 0; color: #FFFFFF; text-wrap: balance; line-height: 1.1; }
     .brand-header p { color: var(--accent); font-size: 13px; font-weight: 600; margin-top: 6px; text-transform: uppercase; letter-spacing: .08em; }
 
-    /* Firma Tecno-Energy Estilo Corporativo Pro */
     .signature-badge {
       display: inline-flex;
       align-items: center;
@@ -81,7 +80,6 @@
     .btn:hover { filter: brightness(1.1); }
     .btn:disabled { opacity: .6; cursor: not-allowed; }
 
-    /* Botón de acceso de Administrador estilo corporativo */
     .btn-admin-access {
       display: flex;
       align-items: center;
@@ -200,6 +198,7 @@
 <!-- Firebase SDKs -->
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 <script>
   var firebaseConfig = {
     apiKey: "AIzaSyA_JufV6ZSCICVuUrVZEJropD1VKA2bzQs",
@@ -213,6 +212,7 @@
 
   firebase.initializeApp(firebaseConfig);
   var auth = firebase.auth();
+  var db = firebase.firestore();
 
   auth.onAuthStateChanged(function(user) {
     if (user) {
@@ -306,11 +306,20 @@
     btn.textContent = 'Registrando...';
 
     auth.createUserWithEmailAndPassword(email, password)
-      .then(function() {
-        showAlert('¡Cuenta creada con éxito! Redirigiendo...', 'success');
-        setTimeout(function() {
-          window.location.href = 'index.html';
-        }, 1200);
+      .then(function(userCredential) {
+        // Guardar automáticamente el perfil del usuario en Firestore para el panel admin
+        db.collection('usuarios_registrados').doc(userCredential.user.uid).set({
+          email: email,
+          uid: userCredential.user.uid,
+          rol: 'Trabajador',
+          fechaCreacion: new Date().toISOString(),
+          estado: 'Activo'
+        }).then(function() {
+          showAlert('¡Cuenta creada con éxito! Redirigiendo...', 'success');
+          setTimeout(function() {
+            window.location.href = 'index.html';
+          }, 1200);
+        });
       })
       .catch(function(error) {
         btn.disabled = false;
