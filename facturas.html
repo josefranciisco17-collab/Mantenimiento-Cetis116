@@ -7,68 +7,89 @@
   
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
   
-  <!-- jsPDF y html2canvas para la descarga limpia en PDF -->
+  <!-- jsPDF y html2canvas para la descarga en PDF -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
   <style>
+    :root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#0B131A;color:#E6EEF1}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}
+    
     :root {
       --bg: #0B131A;
       --surface: #131E26;
       --surface-2: #1B2934;
+      --surface-3: #223442;
       --ink: #E6EEF1;
       --ink-2: #92A6B2;
       --line: #2A3F4E;
       --accent: #06B6D4;
       --accent-ink: #041E26;
+      --accent-soft: rgba(6, 182, 212, 0.15);
+      --ok: #10B981;
+      --ok-soft: rgba(16, 185, 129, 0.15);
+      --warn: #F59E0B;
       --bad: #EF4444;
       --bad-soft: rgba(239, 68, 68, 0.15);
+      --scrim: rgba(5, 9, 13, 0.75);
       --font-display: 'Barlow Condensed', sans-serif;
       --font-body: 'Plus Jakarta Sans', sans-serif;
       --font-mono: 'JetBrains Mono', monospace;
     }
 
     * { box-sizing: border-box; }
-    body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 var(--font-body); padding-bottom: 50px; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 var(--font-body); }
     h1, h2, h3, p { margin: 0; }
     
-    .inner { max-width: 1100px; margin: 0 auto; padding: 20px; }
-    
-    .top-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 15px; margin-bottom: 24px; border-bottom: 1px solid var(--line); padding-bottom: 16px; }
-    .brand h1 { font: 700 28px var(--font-display); text-transform: uppercase; color: #fff; }
-    .brand p { color: var(--accent); font-size: 13px; font-weight: 600; text-transform: uppercase; }
+    .inner { max-width: 1100px; margin: 0 auto; padding-left: max(20px, env(safe-area-inset-left, 0px)); padding-right: max(20px, env(safe-area-inset-right, 0px)); }
 
-    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 42px; padding: 8px 18px; border: 1.5px solid var(--line); border-radius: 6px; background: var(--surface); font-weight: 600; font-size: 14px; color: var(--ink); text-decoration: none; cursor: pointer; transition: all .2s; }
+    /* Masthead Corporativo igual al index */
+    .top { background: linear-gradient(180deg, #101B22 0%, var(--bg) 100%); border-bottom: 1px solid var(--line); padding-block: 28px 20px; }
+    .top .inner { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px 24px; }
+    .brand h1 { font: 700 28px/1.1 var(--font-display); letter-spacing: .02em; text-transform: uppercase; color: #FFFFFF; }
+    .brand p { color: var(--accent); margin-top: 6px; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; }
+    .top-actions { display: flex; flex-wrap: wrap; gap: 10px; width: 100%; }
+    @media (min-width: 640px) {
+      .top-actions { width: auto; }
+    }
+
+    /* Botones estilo index */
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 42px; padding: 8px 18px; border: 1.5px solid var(--line); border-radius: 6px; background: var(--surface); font-weight: 600; font-size: 14px; transition: all .2s; color: var(--ink); text-decoration: none; width: 100%; }
+    @media (min-width: 640px) {
+      .btn { width: auto; }
+    }
     .btn:hover { border-color: var(--accent); background: var(--surface-2); }
     .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
     .btn.primary:hover { filter: brightness(1.1); }
+    .btn.success { background: #10B981; border-color: #10B981; color: #fff; }
+    .btn.small { min-height: 34px; padding: 4px 12px; font-size: 13px; width: auto; }
 
+    main { padding-block: 24px 48px; }
+    
     .grid-layout { display: grid; grid-template-columns: 1fr; gap: 24px; }
-    @media (min-width: 900px) {
-      .grid-layout { grid-template-columns: 420px 1fr; }
+    @media (min-width: 1000px) {
+      .grid-layout { grid-template-columns: 460px 1fr; }
     }
 
-    .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,.3); }
-    .panel h2 { font: 700 20px var(--font-display); text-transform: uppercase; color: var(--accent); margin-bottom: 16px; border-bottom: 1px solid var(--line); padding-bottom: 8px; }
+    .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,.3); margin-bottom: 20px; }
+    .panel h2 { font: 700 20px var(--font-display); text-transform: uppercase; color: var(--accent); margin-bottom: 16px; border-bottom: 1px solid var(--line); padding-bottom: 8px; letter-spacing: .04em; }
 
     .fld { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
-    .fld label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-2); }
-    .fld input, .fld select, .fld textarea { width: 100%; min-height: 42px; padding: 8px 12px; font-size: 14px; background: var(--bg); border: 1.5px solid var(--line); border-radius: 6px; color: var(--ink); }
-    .fld textarea { min-height: 80px; resize: vertical; }
-    .fld input:focus, .fld select:focus, .fld textarea:focus { border-color: var(--accent); outline: none; }
+    .fld label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-2); }
+    .fld input, .fld select, .fld textarea { width: 100%; min-height: 46px; padding: 10px 14px; font-size: 15px; background: var(--bg); border: 1.5px solid var(--line); border-radius: 8px; color: var(--ink); }
+    .fld textarea { min-height: 90px; resize: vertical; }
+    .fld input:focus, .fld select:focus, .fld textarea:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 0 3px var(--accent-soft); }
 
     .items-table-edit { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
     .items-table-edit th, .items-table-edit td { border: 1px solid var(--line); padding: 8px; text-align: left; }
-    .items-table-edit th { background: var(--surface-2); color: var(--accent); font-size: 12px; text-transform: uppercase; }
-    .items-table-edit input { width: 100%; background: var(--bg); border: 1px solid var(--line); color: #fff; padding: 4px 6px; border-radius: 4px; font-size: 13px; }
+    .items-table-edit th { background: var(--surface-2); color: var(--accent); font-size: 11px; text-transform: uppercase; letter-spacing: .05em; }
+    .items-table-edit input { width: 100%; background: var(--bg); border: 1px solid var(--line); color: #fff; padding: 6px 8px; border-radius: 6px; font-size: 13px; min-height: 36px; }
 
-    /* PREVISUALIZACIÓN DE FACTURA (Estilo Impresión Carta Real) */
-    .preview-container { background: #526270; padding: 20px; border-radius: 10px; overflow-x: auto; display: flex; justify-content: center; }
-    .invoice-page { background: #FFFFFF; color: #000000; width: 794px; min-height: 1123px; padding: 50px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; box-shadow: 0 10px 30px rgba(0,0,0,.5); position: relative; font-size: 13px; line-height: 1.4; }
+    /* PREVISUALIZACIÓN DE FACTURA (Contenedor adaptable en móvil) */
+    .preview-container { background: #1B2934; padding: 12px; border-radius: 10px; overflow-x: auto; border: 1px solid var(--line); display: flex; justify-content: center; }
+    .invoice-page { background: #FFFFFF; color: #000000; width: 794px; min-height: 1123px; padding: 50px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; box-shadow: 0 10px 30px rgba(0,0,0,.5); position: relative; font-size: 13px; line-height: 1.4; flex-shrink: 0; }
     
     .inv-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 3px solid #041E26; padding-bottom: 15px; margin-bottom: 20px; }
     .inv-logo-area { display: flex; align-items: center; gap: 15px; }
-    .inv-logo-area img { width: 70px; height: 70px; object-fit: contain; border-radius: 50%; background: #041E26; padding: 4px; }
     .inv-company h2 { font-size: 22px; font-weight: 800; color: #041E26; text-transform: uppercase; margin: 0; line-height: 1.1; }
     .inv-company p { font-size: 11px; color: #4b5563; margin: 2px 0; }
     
@@ -99,162 +120,161 @@
 </head>
 <body>
 
-<div class="inner">
-  <div class="top-bar">
+<header class="top">
+  <div class="inner">
     <div class="brand">
       <h1>Clima Hogar Multi Servicios</h1>
-      <p>Módulo de Facturación Oficial y Comprobantes</p>
+      <p>Módulo de Facturación y Comprobantes</p>
     </div>
-    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+    <div class="top-actions">
       <a href="index.html" class="btn primary">Volver al sistema</a>
-      <button type="button" class="btn primary" id="btn-download" style="background:#10B981; border-color:#10B981;">📥 Descargar Factura PDF</button>
+      <button type="button" class="btn success" id="btn-download">📥 Descargar Factura PDF</button>
     </div>
   </div>
+</header>
 
-  <div class="grid-layout">
-    <!-- PANEL DE CONFIGURACIÓN Y CONCEPTOS -->
-    <div class="panel">
-      <h2>1. Datos de la Factura</h2>
-      <div class="fld">
-        <label>Folio</label>
-        <input type="text" id="inv-folio" value="CH-2026-089">
-      </div>
-      <div class="fld">
-        <label>Fecha</label>
-        <input type="date" id="inv-fecha">
-      </div>
-      <div class="fld">
-        <label>Cliente</label>
-        <input type="text" id="inv-cliente" value="CETis 116 &quot;Antonia Nava de Catalán&quot;">
-      </div>
-      <div class="fld">
-        <label>Ubicación / Ciudad</label>
-        <input type="text" id="inv-ubicacion" value="Acapulco, Guerrero">
-      </div>
-      <div class="fld">
-        <label>Método de Pago</label>
-        <input type="text" id="inv-metodo" value="Transferencia / Efectivo">
-      </div>
-      <div class="fld">
-        <label>Aplicar I.V.A. (16%)</label>
-        <select id="inv-iva">
-          <option value="si" selected>Sí (16% IVA)</option>
-          <option value="no">No aplicar IVA</option>
-        </select>
-      </div>
+<main>
+  <div class="inner">
+    <div class="grid-layout">
+      <!-- PANEL DE CONFIGURACIÓN Y CONCEPTOS -->
+      <div class="panel">
+        <h2>1. Datos de la Factura</h2>
+        <div class="fld">
+          <label>Folio</label>
+          <input type="text" id="inv-folio" value="CH-2026-089">
+        </div>
+        <div class="fld">
+          <label>Fecha</label>
+          <input type="date" id="inv-fecha">
+        </div>
+        <div class="fld">
+          <label>Cliente</label>
+          <input type="text" id="inv-cliente" value="CETis 116 &quot;Antonia Nava de Catalán&quot;">
+        </div>
+        <div class="fld">
+          <label>Ubicación / Ciudad</label>
+          <input type="text" id="inv-ubicacion" value="Acapulco, Guerrero">
+        </div>
+        <div class="fld">
+          <label>Método de Pago</label>
+          <input type="text" id="inv-metodo" value="Transferencia / Efectivo">
+        </div>
+        <div class="fld">
+          <label>Aplicar I.V.A. (16%)</label>
+          <select id="inv-iva">
+            <option value="si" selected>Sí (16% IVA)</option>
+            <option value="no">No aplicar IVA</option>
+          </select>
+        </div>
 
-      <div class="fld">
-        <label>Resumen Técnico General</label>
-        <textarea id="inv-resumen">Reparación de tubería condensadora, instalación, limpieza profunda de equipos en biblioteca y áreas administrativas, y carga de gas refrigerante.</textarea>
-      </div>
+        <div class="fld">
+          <label>Resumen Técnico General</label>
+          <textarea id="inv-resumen">Reparación de tubería condensadora, instalación, limpieza profunda de equipos en biblioteca y áreas administrativas, y carga de gas refrigerante.</textarea>
+        </div>
 
-      <div style="display:flex; justify-content:space-between; align-items:center; margin:16px 0 8px 0;">
-        <h2 style="border:none; margin:0; padding:0;">2. Conceptos</h2>
-        <button type="button" class="btn small primary" id="btn-add-row">+ Agregar concepto</button>
-      </div>
-      
-      <div style="overflow-x:auto;">
-        <table class="items-table-edit">
-          <thead>
-            <tr>
-              <th style="width:40px;">Cant</th>
-              <th>Descripción</th>
-              <th style="width:80px;">P. Unit</th>
-              <th style="width:40px;"></th>
-            </tr>
-          </thead>
-          <tbody id="edit-items-body">
-            <!-- Se llena por JS -->
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- PREVISUALIZACIÓN EN VIVO (HOJA CARTA REAL) -->
-    <div>
-      <h2 style="font: 700 18px var(--font-display); text-transform: uppercase; color: var(--ink-2); margin-bottom: 10px;">Vista Previa en Vivo</h2>
-      <div class="preview-container">
-        <div id="invoice-pdf" class="invoice-page">
-          <div class="inv-header">
-            <div class="inv-logo-area">
-              <div style="width:60px; height:60px; background:#041E26; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#06B6D4; font-weight:bold; font-size:20px; font-family:'Barlow Condensed';">CH</div>
-              <div class="inv-company">
-                <h2>Clima Hogar Multi Servicios</h2>
-                <p>Soluciones Completas para tu Hogar e Institución</p>
-                <p>Especialistas en Aire Acondicionado, Refrigeración y Electricidad</p>
-                <p>Acapulco, Gro., México | Tel: 744 533 1689</p>
-              </div>
-            </div>
-            <div class="inv-title-box">
-              <h1>Factura</h1>
-              <p><strong>Folio:</strong> <span id="lbl-folio">CH-2026-089</span></p>
-              <p><strong>Fecha:</strong> <span id="lbl-fecha">28 de Septiembre de 2026</span></p>
-              <p><strong>Condiciones:</strong> Contado</p>
-            </div>
-          </div>
-
-          <div class="inv-client-section">
-            <div>
-              <strong>FACTURAR A:</strong><br>
-              <span id="lbl-cliente">CETis 116 "Antonia Nava de Catalán"</span><br>
-              <span id="lbl-ubicacion">Ubicación: Acapulco, Guerrero</span>
-            </div>
-            <div style="text-align: right;">
-              <strong>MÉTODO DE PAGO:</strong><br>
-              <span id="lbl-metodo">Transferencia / Efectivo</span>
-            </div>
-          </div>
-
-          <div class="inv-summary-bar">
-            <strong>RESUMEN TÉCNICO DE SERVICIOS:</strong> <span id="lbl-resumen">Reparación de tubería condensadora, instalación, limpieza profunda de equipos en biblioteca y áreas administrativas, y carga de gas refrigerante.</span>
-          </div>
-
-          <table class="inv-table">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin:20px 0 10px 0;">
+          <h2 style="border:none; margin:0; padding:0; font-size:18px;">2. Conceptos</h2>
+          <button type="button" class="btn small primary" id="btn-add-row">+ Agregar concepto</button>
+        </div>
+        
+        <div style="overflow-x:auto;">
+          <table class="items-table-edit">
             <thead>
               <tr>
-                <th>CANT.</th>
-                <th>DESCRIPCIÓN DEL SERVICIO, MATERIAL Y UBICACIÓN</th>
-                <th>PRECIO UNIT.</th>
-                <th>IMPORTE</th>
+                <th style="width:45px;">Cant</th>
+                <th>Descripción</th>
+                <th style="width:90px;">P. Unit</th>
+                <th style="width:40px;"></th>
               </tr>
             </thead>
-            <tbody id="preview-items-body">
-              <!-- Renglones de factura -->
+            <tbody id="edit-items-body">
+              <!-- Se llena dinámicamente -->
             </tbody>
           </table>
+        </div>
+      </div>
 
-          <div class="inv-totals">
-            <div class="inv-totals-box">
-              <div class="inv-totals-row">
-                <span>Subtotal:</span>
-                <span id="lbl-subtotal">$0.00</span>
+      <!-- PREVISUALIZACIÓN EN VIVO -->
+      <div>
+        <h2 style="font: 700 18px var(--font-display); text-transform: uppercase; color: var(--ink-2); margin-bottom: 12px; letter-spacing: .04em;">Vista Previa en Vivo</h2>
+        <div class="preview-container">
+          <div id="invoice-pdf" class="invoice-page">
+            <div class="inv-header">
+              <div class="inv-logo-area">
+                <div style="width:60px; height:60px; background:#041E26; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#06B6D4; font-weight:bold; font-size:20px; font-family:'Barlow Condensed';">CH</div>
+                <div class="inv-company">
+                  <h2>Clima Hogar Multi Servicios</h2>
+                  <p>Soluciones Completas para tu Hogar e Institución</p>
+                  <p>Especialistas en Aire Acondicionado, Refrigeración y Electricidad</p>
+                  <p>Acapulco, Gro., México | Tel: 744 533 1689</p>
+                </div>
               </div>
-              <div class="inv-totals-row" id="row-iva">
-                <span>I.V.A. (16%):</span>
-                <span id="lbl-iva">$0.00</span>
-              </div>
-              <div class="inv-totals-row final">
-                <span>Total General:</span>
-                <span id="lbl-total">$0.00</span>
+              <div class="inv-title-box">
+                <h1>Factura</h1>
+                <p><strong>Folio:</strong> <span id="lbl-folio">CH-2026-089</span></p>
+                <p><strong>Fecha:</strong> <span id="lbl-fecha">28 de Septiembre de 2026</span></p>
+                <p><strong>Condiciones:</strong> Contado</p>
               </div>
             </div>
-          </div>
 
-          <div class="inv-footer">
-            Clima Hogar Multi Servicios | Factura Oficial y Comprobante de Servicios · Página 1 de 1
+            <div class="inv-client-section">
+              <div>
+                <strong>FACTURAR A:</strong><br>
+                <span id="lbl-cliente">CETis 116 "Antonia Nava de Catalán"</span><br>
+                <span id="lbl-ubicacion">Ubicación: Acapulco, Guerrero</span>
+              </div>
+              <div style="text-align: right;">
+                <strong>MÉTODO DE PAGO:</strong><br>
+                <span id="lbl-metodo">Transferencia / Efectivo</span>
+              </div>
+            </div>
+
+            <div class="inv-summary-bar">
+              <strong>RESUMEN TÉCNICO DE SERVICIOS:</strong> <span id="lbl-resumen">Reparación de tubería condensadora, instalación, limpieza profunda de equipos en biblioteca y áreas administrativas, y carga de gas refrigerante.</span>
+            </div>
+
+            <table class="inv-table">
+              <thead>
+                <tr>
+                  <th>CANT.</th>
+                  <th>DESCRIPCIÓN DEL SERVICIO, MATERIAL Y UBICACIÓN</th>
+                  <th>PRECIO UNIT.</th>
+                  <th>IMPORTE</th>
+                </tr>
+              </thead>
+              <tbody id="preview-items-body">
+                <!-- Renglones de factura -->
+              </tbody>
+            </table>
+
+            <div class="inv-totals">
+              <div class="inv-totals-box">
+                <div class="inv-totals-row">
+                  <span>Subtotal:</span>
+                  <span id="lbl-subtotal">$0.00</span>
+                </div>
+                <div class="inv-totals-row" id="row-iva">
+                  <span>I.V.A. (16%):</span>
+                  <span id="lbl-iva">$0.00</span>
+                </div>
+                <div class="inv-totals-row final">
+                  <span>Total General:</span>
+                  <span id="lbl-total">$0.00</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="inv-footer">
+              Clima Hogar Multi Servicios | Factura Oficial y Comprobante de Servicios · Página 1 de 1
+            </div>
           </div>
         </div>
       </div>
     </div>
   </div>
-</div>
+</main>
 
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
-
-<!-- Firebase SDKs -->
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
 <script>
 (function() {
@@ -296,7 +316,7 @@
       tr.innerHTML = '<td><input type="number" min="1" value="' + item.cant + '" data-idx="' + idx + '" data-field="cant"></td>' +
                      '<td><input type="text" value="' + item.desc.replace(/"/g, '&quot;') + '" data-idx="' + idx + '" data-field="desc"></td>' +
                      '<td><input type="number" step="0.01" value="' + item.precio + '" data-idx="' + idx + '" data-field="precio"></td>' +
-                     '<td style="text-align:center;"><button type="button" class="btn small danger" data-idx="' + idx + '" data-action="del-item" style="padding:2px 6px; color:#EF4444; border:none; background:transparent;">✕</button></td>';
+                     '<td style="text-align:center;"><button type="button" class="btn small danger" data-idx="' + idx + '" data-action="del-item" style="padding:2px 6px; color:#EF4444; border:none; background:transparent; font-size:16px; cursor:pointer;">✕</button></td>';
       tbody.appendChild(tr);
     });
   }
@@ -346,7 +366,6 @@
     renderPreview();
   }
 
-  // Eventos de edición
   document.addEventListener('input', function(e) {
     var target = e.target;
     if (target.matches('#inv-folio, #inv-fecha, #inv-cliente, #inv-ubicacion, #inv-metodo, #inv-resumen, #inv-iva')) {
@@ -374,7 +393,6 @@
     }
   });
 
-  // Descargar PDF usando html2canvas + jsPDF
   $('#btn-download').addEventListener('click', function() {
     var btn = this;
     btn.textContent = 'Generando PDF...';
@@ -403,7 +421,6 @@
     });
   });
 
-  // Inicializar fecha de hoy por defecto
   var todayIso = new Date().toISOString().split('T')[0];
   $('#inv-fecha').value = todayIso;
   updateAll();
