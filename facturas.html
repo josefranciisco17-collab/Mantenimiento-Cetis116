@@ -1,348 +1,414 @@
 <!doctype html>
 <html lang="es">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Generador de Facturas · Clima Hogar Multi Servicios</title>
-​<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
-<!-- html2pdf para la exportación a PDF exacta -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-​<style>
-:root {
---bg: #0B131A;
---surface: #131E26;
---surface-2: #1B2934;
---surface-3: #223442;
---ink: #E6EEF1;
---ink-2: #92A6B2;
---line: #2A3F4E;
---accent: #06B6D4;
---accent-ink: #041E26;
---accent-soft: rgba(6, 182, 212, 0.15);
---ok: #10B981;
---bad: #EF4444;
---font-display: 'Barlow Condensed', sans-serif;
---font-body: 'Plus Jakarta Sans', sans-serif;
---font-mono: 'JetBrains Mono', monospace;
-}
-* { box-sizing: border-box; }
-body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 var(--font-body); }
-h1, h2, h3, p { margin: 0; }
-button, input, select, textarea { font: inherit; color: inherit; }
-button { cursor: pointer; }
-.inner { max-width: 1200px; margin: 0 auto; padding: 20px; }
-​/* Header */
-.top { background: linear-gradient(180deg, #101B22 0%, var(--bg) 100%); border-bottom: 1px solid var(--line); padding: 20px 0; }
-.top .inner { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
-.brand h1 { font: 700 26px var(--font-display); text-transform: uppercase; color: #fff; }
-.brand p { color: var(--accent); font-size: 12px; font-weight: 600; text-transform: uppercase; }
-.top-actions { display: flex; gap: 10px; }
-​.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 40px; padding: 8px 16px; border: 1.5px solid var(--line); border-radius: 6px; background: var(--surface); font-weight: 600; font-size: 14px; transition: all .2s; }
-.btn:hover { border-color: var(--accent); background: var(--surface-2); }
-.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
-.btn.primary:hover { filter: brightness(1.1); }
-.btn.small { min-height: 32px; padding: 4px 12px; font-size: 12px; }
-.btn.danger { color: var(--bad); border-color: rgba(239,68,68,0.3); background: transparent; }
-​/* Layout principal */
-.layout { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 20px; }
-@media(max-width: 900px) { .layout { grid-template-columns: 1fr; } }
-​.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,.3); }
-.panel h2 { font: 700 20px var(--font-display); text-transform: uppercase; color: #fff; margin-bottom: 16px; border-bottom: 1px solid var(--line); padding-bottom: 8px; }
-​.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
-.fld { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; }
-.fld label { font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--ink-2); letter-spacing: .05em; }
-.fld input, .fld select, .fld textarea { width: 100%; min-height: 40px; padding: 8px 12px; background: var(--bg); border: 1.5px solid var(--line); border-radius: 6px; color: var(--ink); font-size: 14px; }
-.fld textarea { min-height: 70px; resize: vertical; }
-.fld input:focus, .fld select:focus, .fld textarea:focus { border-color: var(--accent); outline: none; }
-​/* Tabla de conceptos en edición */
-.items-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
-.items-table th { background: var(--surface-2); color: var(--ink-2); padding: 8px; text-align: left; font-size: 11px; text-transform: uppercase; }
-.items-table td { padding: 8px; border-bottom: 1px solid var(--line); }
-.items-table input { min-height: 32px; padding: 4px 8px; font-size: 13px; }
-​/* Previsualización Estilo Factura PDF (Acrobat / Impresión) */
-.preview-container { background: #fff; color: #111; padding: 24px; border-radius: 8px; font-family: 'Plus Jakarta Sans', Arial, sans-serif; font-size: 12px; box-shadow: 0 10px 30px rgba(0,0,0,.5); }
-.inv-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #06B6D4; padding-bottom: 12px; margin-bottom: 12px; }
-.inv-logo-area { display: flex; align-items: center; gap: 12px; }
-.inv-logo-box { width: 50px; height: 50px; background: #06B6D4; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: bold; font-size: 20px; font-family: var(--font-display); }
-.inv-company h3 { font: 700 18px 'Barlow Condensed', sans-serif; text-transform: uppercase; color: #041E26; }
-.inv-company p { font-size: 10px; color: #555; line-height: 1.3; }
-.inv-folio-box { text-align: right; }
-.inv-folio-box h2 { font: 700 20px 'Barlow Condensed', sans-serif; color: #06B6D4; text-transform: uppercase; }
-.inv-folio-box p { font-size: 11px; color: #444; }
-​.inv-client-box { display: flex; justify-content: space-between; background: #f8fafc; border: 1px solid #e2e8f0; padding: 10px; border-radius: 6px; margin-bottom: 12px; }
-.inv-summary-bar { background: #e0f2fe; color: #0369a1; padding: 8px 10px; font-size: 11px; border-radius: 4px; margin-bottom: 12px; font-weight: 500; }
-​.pdf-table { width: 100%; border-collapse: collapse; margin-bottom: 12px; }
-.pdf-table th { background: #041E26; color: #fff; padding: 6px 8px; font-size: 10px; text-transform: uppercase; text-align: left; }
-.pdf-table td { padding: 6px 8px; border-bottom: 1px solid #e2e8f0; font-size: 11px; color: #333; }
-.pdf-table td.num, .pdf-table th.num { text-align: right; }
-​.inv-totals { display: flex; justify-content: flex-end; margin-top: 10px; }
-.inv-totals-box { width: 220px; display: grid; gap: 4px; font-size: 11px; }
-.inv-total-row { display: flex; justify-content: space-between; padding: 3px 6px; }
-.inv-total-row.grand { background: #041E26; color: #fff; font-weight: bold; border-radius: 4px; font-size: 13px; padding: 6px; }
-​.toast { position: fixed; z-index: 40; left: 50%; bottom: 24px; transform: translate(-50%, 20px); padding: 12px 20px; border-radius: 8px; background: #fff; color: #000; font-weight: 600; font-size: 14px; opacity: 0; pointer-events: none; transition: all .2s; box-shadow: 0 10px 30px rgba(0,0,0,.5); }
-.toast.show { opacity: 1; transform: translate(-50%, 0); }
-</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>Módulo de Facturación · Clima Hogar Multi Servicios</title>
+  
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+  
+  <!-- jsPDF y html2canvas para la descarga limpia en PDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <style>
+    :root {
+      --bg: #0B131A;
+      --surface: #131E26;
+      --surface-2: #1B2934;
+      --ink: #E6EEF1;
+      --ink-2: #92A6B2;
+      --line: #2A3F4E;
+      --accent: #06B6D4;
+      --accent-ink: #041E26;
+      --bad: #EF4444;
+      --bad-soft: rgba(239, 68, 68, 0.15);
+      --font-display: 'Barlow Condensed', sans-serif;
+      --font-body: 'Plus Jakarta Sans', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 var(--font-body); padding-bottom: 50px; }
+    h1, h2, h3, p { margin: 0; }
+    
+    .inner { max-width: 1100px; margin: 0 auto; padding: 20px; }
+    
+    .top-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 15px; margin-bottom: 24px; border-bottom: 1px solid var(--line); padding-bottom: 16px; }
+    .brand h1 { font: 700 28px var(--font-display); text-transform: uppercase; color: #fff; }
+    .brand p { color: var(--accent); font-size: 13px; font-weight: 600; text-transform: uppercase; }
+
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 42px; padding: 8px 18px; border: 1.5px solid var(--line); border-radius: 6px; background: var(--surface); font-weight: 600; font-size: 14px; color: var(--ink); text-decoration: none; cursor: pointer; transition: all .2s; }
+    .btn:hover { border-color: var(--accent); background: var(--surface-2); }
+    .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+    .btn.primary:hover { filter: brightness(1.1); }
+
+    .grid-layout { display: grid; grid-template-columns: 1fr; gap: 24px; }
+    @media (min-width: 900px) {
+      .grid-layout { grid-template-columns: 420px 1fr; }
+    }
+
+    .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,.3); }
+    .panel h2 { font: 700 20px var(--font-display); text-transform: uppercase; color: var(--accent); margin-bottom: 16px; border-bottom: 1px solid var(--line); padding-bottom: 8px; }
+
+    .fld { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+    .fld label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-2); }
+    .fld input, .fld select, .fld textarea { width: 100%; min-height: 42px; padding: 8px 12px; font-size: 14px; background: var(--bg); border: 1.5px solid var(--line); border-radius: 6px; color: var(--ink); }
+    .fld textarea { min-height: 80px; resize: vertical; }
+    .fld input:focus, .fld select:focus, .fld textarea:focus { border-color: var(--accent); outline: none; }
+
+    .items-table-edit { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
+    .items-table-edit th, .items-table-edit td { border: 1px solid var(--line); padding: 8px; text-align: left; }
+    .items-table-edit th { background: var(--surface-2); color: var(--accent); font-size: 12px; text-transform: uppercase; }
+    .items-table-edit input { width: 100%; background: var(--bg); border: 1px solid var(--line); color: #fff; padding: 4px 6px; border-radius: 4px; font-size: 13px; }
+
+    /* PREVISUALIZACIÓN DE FACTURA (Estilo Impresión Carta Real) */
+    .preview-container { background: #526270; padding: 20px; border-radius: 10px; overflow-x: auto; display: flex; justify-content: center; }
+    .invoice-page { background: #FFFFFF; color: #000000; width: 794px; min-height: 1123px; padding: 50px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; box-shadow: 0 10px 30px rgba(0,0,0,.5); position: relative; font-size: 13px; line-height: 1.4; }
+    
+    .inv-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 3px solid #041E26; padding-bottom: 15px; margin-bottom: 20px; }
+    .inv-logo-area { display: flex; align-items: center; gap: 15px; }
+    .inv-logo-area img { width: 70px; height: 70px; object-fit: contain; border-radius: 50%; background: #041E26; padding: 4px; }
+    .inv-company h2 { font-size: 22px; font-weight: 800; color: #041E26; text-transform: uppercase; margin: 0; line-height: 1.1; }
+    .inv-company p { font-size: 11px; color: #4b5563; margin: 2px 0; }
+    
+    .inv-title-box { text-align: right; }
+    .inv-title-box h1 { font-size: 26px; font-weight: 900; color: #06B6D4; margin: 0; text-transform: uppercase; }
+    .inv-title-box p { font-size: 11px; font-weight: 600; color: #374151; margin: 2px 0; }
+
+    .inv-client-section { display: flex; justify-content: space-between; background: #f3f4f6; padding: 12px 16px; border-radius: 6px; margin-bottom: 20px; font-size: 12px; border-left: 4px solid #06B6D4; }
+    .inv-summary-bar { background: #e0f2fe; color: #0369a1; padding: 10px 14px; border-radius: 6px; font-size: 12px; margin-bottom: 20px; font-weight: 500; border: 1px solid #bae6fd; }
+
+    .inv-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+    .inv-table th { background: #041E26; color: #FFFFFF; font-size: 11px; text-transform: uppercase; padding: 10px 8px; text-align: left; }
+    .inv-table td { padding: 9px 8px; border-bottom: 1px solid #e5e7eb; font-size: 12px; color: #1f2937; }
+    .inv-table td:nth-child(1), .inv-table th:nth-child(1) { text-align: center; width: 50px; }
+    .inv-table td:nth-child(3), .inv-table th:nth-child(3),
+    .inv-table td:nth-child(4), .inv-table th:nth-child(4) { text-align: right; width: 110px; }
+
+    .inv-totals { display: flex; justify-content: flex-end; margin-top: 10px; }
+    .inv-totals-box { width: 280px; font-size: 12px; }
+    .inv-totals-row { display: flex; justify-content: space-between; padding: 6px 10px; border-bottom: 1px solid #e5e7eb; }
+    .inv-totals-row.final { background: #041E26; color: #FFFFFF; font-weight: 700; font-size: 14px; border-radius: 4px; margin-top: 4px; }
+
+    .inv-footer { position: absolute; bottom: 30px; left: 50px; right: 50px; text-align: center; border-top: 1px solid #e5e7eb; padding-top: 10px; font-size: 10px; color: #9ca3af; }
+
+    .toast { position: fixed; z-index: 40; left: 50%; bottom: 24px; transform: translate(-50%, 20px); max-width: 90%; padding: 12px 20px; border-radius: 8px; background: #fff; color: #000; font-weight: 600; font-size: 14px; opacity: 0; pointer-events: none; transition: all .2s; box-shadow: 0 10px 30px rgba(0,0,0,.5); }
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+  </style>
 </head>
 <body>
-​<!-- Firebase SDKs -->
+
+<div class="inner">
+  <div class="top-bar">
+    <div class="brand">
+      <h1>Clima Hogar Multi Servicios</h1>
+      <p>Módulo de Facturación Oficial y Comprobantes</p>
+    </div>
+    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+      <a href="index.html" class="btn primary">Volver al sistema</a>
+      <button type="button" class="btn primary" id="btn-download" style="background:#10B981; border-color:#10B981;">📥 Descargar Factura PDF</button>
+    </div>
+  </div>
+
+  <div class="grid-layout">
+    <!-- PANEL DE CONFIGURACIÓN Y CONCEPTOS -->
+    <div class="panel">
+      <h2>1. Datos de la Factura</h2>
+      <div class="fld">
+        <label>Folio</label>
+        <input type="text" id="inv-folio" value="CH-2026-089">
+      </div>
+      <div class="fld">
+        <label>Fecha</label>
+        <input type="date" id="inv-fecha">
+      </div>
+      <div class="fld">
+        <label>Cliente</label>
+        <input type="text" id="inv-cliente" value="CETis 116 &quot;Antonia Nava de Catalán&quot;">
+      </div>
+      <div class="fld">
+        <label>Ubicación / Ciudad</label>
+        <input type="text" id="inv-ubicacion" value="Acapulco, Guerrero">
+      </div>
+      <div class="fld">
+        <label>Método de Pago</label>
+        <input type="text" id="inv-metodo" value="Transferencia / Efectivo">
+      </div>
+      <div class="fld">
+        <label>Aplicar I.V.A. (16%)</label>
+        <select id="inv-iva">
+          <option value="si" selected>Sí (16% IVA)</option>
+          <option value="no">No aplicar IVA</option>
+        </select>
+      </div>
+
+      <div class="fld">
+        <label>Resumen Técnico General</label>
+        <textarea id="inv-resumen">Reparación de tubería condensadora, instalación, limpieza profunda de equipos en biblioteca y áreas administrativas, y carga de gas refrigerante.</textarea>
+      </div>
+
+      <div style="display:flex; justify-content:space-between; align-items:center; margin:16px 0 8px 0;">
+        <h2 style="border:none; margin:0; padding:0;">2. Conceptos</h2>
+        <button type="button" class="btn small primary" id="btn-add-row">+ Agregar concepto</button>
+      </div>
+      
+      <div style="overflow-x:auto;">
+        <table class="items-table-edit">
+          <thead>
+            <tr>
+              <th style="width:40px;">Cant</th>
+              <th>Descripción</th>
+              <th style="width:80px;">P. Unit</th>
+              <th style="width:40px;"></th>
+            </tr>
+          </thead>
+          <tbody id="edit-items-body">
+            <!-- Se llena por JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- PREVISUALIZACIÓN EN VIVO (HOJA CARTA REAL) -->
+    <div>
+      <h2 style="font: 700 18px var(--font-display); text-transform: uppercase; color: var(--ink-2); margin-bottom: 10px;">Vista Previa en Vivo</h2>
+      <div class="preview-container">
+        <div id="invoice-pdf" class="invoice-page">
+          <div class="inv-header">
+            <div class="inv-logo-area">
+              <div style="width:60px; height:60px; background:#041E26; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#06B6D4; font-weight:bold; font-size:20px; font-family:'Barlow Condensed';">CH</div>
+              <div class="inv-company">
+                <h2>Clima Hogar Multi Servicios</h2>
+                <p>Soluciones Completas para tu Hogar e Institución</p>
+                <p>Especialistas en Aire Acondicionado, Refrigeración y Electricidad</p>
+                <p>Acapulco, Gro., México | Tel: 744 533 1689</p>
+              </div>
+            </div>
+            <div class="inv-title-box">
+              <h1>Factura</h1>
+              <p><strong>Folio:</strong> <span id="lbl-folio">CH-2026-089</span></p>
+              <p><strong>Fecha:</strong> <span id="lbl-fecha">28 de Septiembre de 2026</span></p>
+              <p><strong>Condiciones:</strong> Contado</p>
+            </div>
+          </div>
+
+          <div class="inv-client-section">
+            <div>
+              <strong>FACTURAR A:</strong><br>
+              <span id="lbl-cliente">CETis 116 "Antonia Nava de Catalán"</span><br>
+              <span id="lbl-ubicacion">Ubicación: Acapulco, Guerrero</span>
+            </div>
+            <div style="text-align: right;">
+              <strong>MÉTODO DE PAGO:</strong><br>
+              <span id="lbl-metodo">Transferencia / Efectivo</span>
+            </div>
+          </div>
+
+          <div class="inv-summary-bar">
+            <strong>RESUMEN TÉCNICO DE SERVICIOS:</strong> <span id="lbl-resumen">Reparación de tubería condensadora, instalación, limpieza profunda de equipos en biblioteca y áreas administrativas, y carga de gas refrigerante.</span>
+          </div>
+
+          <table class="inv-table">
+            <thead>
+              <tr>
+                <th>CANT.</th>
+                <th>DESCRIPCIÓN DEL SERVICIO, MATERIAL Y UBICACIÓN</th>
+                <th>PRECIO UNIT.</th>
+                <th>IMPORTE</th>
+              </tr>
+            </thead>
+            <tbody id="preview-items-body">
+              <!-- Renglones de factura -->
+            </tbody>
+          </table>
+
+          <div class="inv-totals">
+            <div class="inv-totals-box">
+              <div class="inv-totals-row">
+                <span>Subtotal:</span>
+                <span id="lbl-subtotal">$0.00</span>
+              </div>
+              <div class="inv-totals-row" id="row-iva">
+                <span>I.V.A. (16%):</span>
+                <span id="lbl-iva">$0.00</span>
+              </div>
+              <div class="inv-totals-row final">
+                <span>Total General:</span>
+                <span id="lbl-total">$0.00</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="inv-footer">
+            Clima Hogar Multi Servicios | Factura Oficial y Comprobante de Servicios · Página 1 de 1
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+<!-- Firebase SDKs -->
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-​<header class="top">
-<div class="inner">
-<div class="brand">
-<h1>Clima Hogar Multi Servicios</h1>
-<p>Módulo de Facturación Oficial y Comprobantes</p>
-</div>
-<div class="top-actions">
-<button type="button" class="btn" onclick="window.location.href='index.html'">← Volver al Sistema</button>
-<button type="button" class="btn primary" onclick="descargarPDF()">📥 Descargar Factura PDF</button>
-</div>
-</div>
-</header>
-​<main class="inner">
-<div class="layout">
-<!-- PANEL DE CONFIGURACIÓN Y CAPTURA -->
-<div class="panel">
-<h2>1. Datos de la Factura</h2>
-<div class="form-grid">
-<div class="fld">
-<label>Folio</label>
-<input type="text" id="f-folio" value="CH-2026-089" oninput="actualizarPreview()">
-</div>
-<div class="fld">
-<label>Fecha</label>
-<input type="date" id="f-fecha" onchange="actualizarPreview()">
-</div>
-</div>
-<div class="form-grid">
-<div class="fld">
-<label>Cliente</label>
-<input type="text" id="f-cliente" value="CETis 116 &quot;Antonia Nava de Catalán&quot;" oninput="actualizarPreview()">
-</div>
-<div class="fld">
-<label>Ubicación / Ciudad</label>
-<input type="text" id="f-ubicacion" value="Acapulco, Guerrero" oninput="actualizarPreview()">
-</div>
-</div>
-<div class="form-grid">
-<div class="fld">
-<label>Método de Pago</label>
-<input type="text" id="f-pago" value="Transferencia / Efectivo" oninput="actualizarPreview()">
-</div>
-<div class="fld">
-<label>Aplicar I.V.A. (16%)</label>
-<select id="f-iva" onchange="actualizarPreview()">
-<option value="si" selected>Sí (16% IVA)</option>
-<option value="no">No (Sin IVA)</option>
-</select>
-</div>
-</div>
-<div class="fld">
-<label>Resumen Técnico de Servicios</label>
-<textarea id="f-resumen" oninput="actualizarPreview()">Mantenimiento preventivo y correctivo de sistemas de aire acondicionado en instalaciones del plantel.</textarea>
-</div>
-​<h2 style="margin-top:24px;">2. Conceptos de Servicios y Refacciones</h2>
-<div style="display:flex;gap:8px;margin-bottom:12px;">
-<button type="button" class="btn small primary" onclick="agregarRenglon()">+ Agregar Concepto Libre</button>
-<button type="button" class="btn small" onclick="cargarEquiposRecientes()">+ Importar Equipos de la App</button>
-</div>
-​<div style="overflow-x:auto;">
-<table class="items-table">
-<thead>
-<tr>
-<th style="width:50px;">Cant.</th>
-<th>Descripción y Ubicación</th>
-<th style="width:90px;">Precio Unit.</th>
-<th style="width:40px;"></th>
-</tr>
-</thead>
-<tbody id="conceptos-body">
-<!-- Renglones dinámicos -->
-</tbody>
-</table>
-</div>
-</div>
-​<!-- PANEL DE VISTA PREVIA EN VIVO -->
-<div class="panel">
-<h2>3. Vista Previa en Vivo (Formato PDF)</h2>
-<div id="invoice-preview" class="preview-container">
-<!-- El contenido se genera dinámicamente -->
-</div>
-</div>
-</div>
-</main>
-​<div id="toast" class="toast" role="status" aria-live="polite"></div>
-​<script>
-var DB = null, currentUser = null;
-var conceptos = [
-{ cant: 1, desc: 'Reparación de tubería condensadora', precio: 1500 },
-{ cant: 1, desc: 'Instalación de aire acondicionado - Ubicación: Aula 19', precio: 2000 },
-{ cant: 4, desc: 'Limpieza profunda de aires acondicionados - Ubicación: Biblioteca Escolar', precio: 1500 }
-];
-​function toast(msg) {
-var t = document.getElementById('toast');
-t.textContent = msg;
-t.classList.add('show');
-setTimeout(function () { t.classList.remove('show'); }, 3000);
-}
-​function formatMoney(n) {
-return '$' + Number(n || 0).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-}
-​function renderTablaEdicion() {
-var tbody = document.getElementById('conceptos-body');
-tbody.innerHTML = conceptos.map(function(item, idx) {
-return '<tr>' +
-'<td><input type="number" min="1" value="' + item.cant + '" onchange="cambiarItem(' + idx + ', \'cant\', this.value)"></td>' +
-'<td><input type="text" value="' + item.desc.replace(/"/g, '"') + '" onchange="cambiarItem(' + idx + ', 'desc', this.value)"></td>' +
-'<td><input type="number" step="0.01" value="' + item.precio + '" onchange="cambiarItem(' + idx + ', \'precio\', this.value)"></td>' +
-'<td><button type="button" class="btn small danger" onclick="eliminarItem(' + idx + ')">✕</button></td>' +
-'</tr>';
-}).join('');
-actualizarPreview();
-}
-​function cambiarItem(idx, campo, val) {
-conceptos[idx][campo] = campo === 'cant' || campo === 'precio' ? Number(val) : val;
-actualizarPreview();
-}
-​function eliminarItem(idx) {
-conceptos.splice(idx, 1);
-renderTablaEdicion();
-}
-​function agregarRenglon() {
-conceptos.push({ cant: 1, desc: 'Nuevo servicio de mantenimiento o refacción', precio: 1000 });
-renderTablaEdicion();
-}
-​function cargarEquiposRecientes() {
-if (!DB) { toast('Base de datos no conectada.'); return; }
-DB.collection('equipos').get().then(function(snap) {
-if (snap.empty) { toast('No hay equipos registrados en la app.'); return; }
-snap.forEach(function(doc) {
-var e = doc.data();
-conceptos.push({
-cant: 1,
-desc: 'Mantenimiento Preventivo de ' + (e.nombre || 'Aire') + ' - Ubicación: ' + (e.aula || 'Zona general'),
-precio: 1500
-});
-});
-renderTablaEdicion();
-toast('¡Equipos importados correctamente!');
-}).catch(function(err) {
-toast('Error al importar equipos.');
-});
-}
-​function actualizarPreview() {
-var folio = document.getElementById('f-folio').value;
-var fechaVal = document.getElementById('f-fecha').value;
-var fechaFormateada = fechaVal ? new Date(fechaVal + 'T00:00:00').toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' }) : '28 de Septiembre de 2026';
-var cliente = document.getElementById('f-cliente').value;
-var ubicacion = document.getElementById('f-ubicacion').value;
-var pago = document.getElementById('f-pago').value;
-var ivaModo = document.getElementById('f-iva').value;
-var resumen = document.getElementById('f-resumen').value;
-​var subtotal = 0;
-var filasHtml = conceptos.map(function(item) {
-var importe = (item.cant || 0) * (item.precio || 0);
-subtotal += importe;
-return '<tr>' +
-'<td>' + item.cant + '</td>' +
-'<td>' + item.desc + '</td>' +
-'<td class="num">' + formatMoney(item.precio) + '</td>' +
-'<td class="num">' + formatMoney(importe) + '</td>' +
-'</tr>';
-}).join('');
-​var ivaMonto = ivaModo === 'si' ? subtotal * 0.16 : 0;
-var totalGeneral = subtotal + ivaMonto;
-​var previewHtml =
-'<div class="inv-header">' +
-'<div class="inv-logo-area">' +
-'<div class="inv-logo-box">CH</div>' +
-'<div class="inv-company">' +
-'<h3>Clima Hogar Multi Servicios</h3>' +
-'<p>Soluciones Completas para tu Hogar e Institución
-Especialistas en Aire Acondicionado y Electricidad
-Acapulco, Gro. | Tel: 744 533 1689</p>' +
-'</div>' +
-'</div>' +
-'<div class="inv-folio-box">' +
-'<h2>Factura</h2>' +
-'<p><b>Folio:</b> ' + folio + '
-<b>Fecha:</b> ' + fechaFormateada + '
-<b>Método:</b> ' + pago + '</p>' +
-'</div>' +
-'</div>' +
-'<div class="inv-client-box">' +
-'<div><strong>FACTURAR A:</strong>
-Cliente: ' + cliente + '
-Ubicación: ' + ubicacion + '</div>' +
-'<div style="text-align:right;"><strong>CONDICIONES:</strong>
-Contado / Institucional</div>' +
-'</div>' +
-'<div class="inv-summary-bar"><strong>RESUMEN TÉCNICO:</strong> ' + resumen + '</div>' +
-'<table class="pdf-table">' +
-'<thead>' +
-'<tr>' +
-'<th style="width:40px;">Cant.</th>' +
-'<th>Descripción del Servicio, Material y Ubicación</th>' +
-'<th class="num" style="width:80px;">Precio Unit.</th>' +
-'<th class="num" style="width:80px;">Importe</th>' +
-'</tr>' +
-'</thead>' +
-'<tbody>' + filasHtml + '</tbody>' +
-'</table>' +
-'<div class="inv-totals">' +
-'<div class="inv-totals-box">' +
-'<div class="inv-total-row"><span>Subtotal:</span><span>' + formatMoney(subtotal) + '</span></div>' +
-(ivaModo === 'si' ? '<div class="inv-total-row"><span>I.V.A. (16%):</span><span>' + formatMoney(ivaMonto) + '</span></div>' : '') +
-'<div class="inv-total-row grand"><span>Total General:</span><span>' + formatMoney(totalGeneral) + '</span></div>' +
-'</div>' +
-'</div>' +
-'<div style="margin-top:20px;text-align:center;font-size:9px;color:#666;border-top:1px solid #eee;padding-top:6px;">' +
-'Clima Hogar Multi Servicios | Factura Oficial y Comprobante de Servicios · Página 1 de 1' +
-'</div>';
-​document.getElementById('invoice-preview').innerHTML = previewHtml;
-}
-​function descargarPDF() {
-var element = document.getElementById('invoice-preview');
-var folio = document.getElementById('f-folio').value || 'Factura';
-var opt = {
-margin:       10,
-filename:     'Factura_' + folio + '_CETis116.pdf',
-image:        { type: 'jpeg', quality: 0.98 },
-html2canvas:  { scale: 2, useCORS: true },
-jsPDF:        { unit: 'mm', format: 'letter', orientation: 'portrait' }
-};
-toast('Generando PDF...');
-html2pdf().from(element).set(opt).save().then(function() {
-toast('¡Factura descargada con éxito!');
-});
-}
-​// Inicializar Firebase
-function init() {
-var firebaseConfig = {
-apiKey: "AIzaSyA_JufV6ZSCICVuUrVZEJropD1VKA2bzQs",
-authDomain: "mantenimientocetis116.firebaseapp.com",
-databaseURL: "https://mantenimientocetis116-default-rtdb.firebaseio.com",
-projectId: "mantenimientocetis116",
-storageBucket: "mantenimientocetis116.firebasestorage.app",
-messagingSenderId: "556796465966",
-appId: "1:556796465966:web:b0636bf4ee5ba99c21a0bf"
-};
-firebase.initializeApp(firebaseConfig);
-firebase.auth().onAuthStateChanged(function(user) {
-if (!user) {
-window.location.href = 'login.html';
-return;
-}
-currentUser = user;
-DB = firebase.firestore();
-​// Fecha por defecto hoy
-var hoy = new Date().toISOString().split('T')[0];
-document.getElementById('f-fecha').value = hoy;
-renderTablaEdicion();
-});
-}
-init();
+
+<script>
+(function() {
+  'use strict';
+  var $ = function(s) { return document.querySelector(s); };
+
+  var items = [
+    { cant: 1, desc: 'Reparación de tubería condensadora', precio: 1500 },
+    { cant: 1, desc: 'Instalación de aire acondicionado - Ubicación: Aula 19', precio: 2000 },
+    { cant: 4, desc: 'Limpieza profunda de aires acondicionados - Ubicación: Biblioteca Escolar', precio: 1500 },
+    { cant: 3, desc: 'Limpieza de aires acondicionados - Ubicación: Áreas de Planeación, Titulación y Financieros', precio: 1500 },
+    { cant: 2, desc: 'Reparación de condensadoras - Ubicación: Biblioteca Escolar', precio: 2500 },
+    { cant: 1, desc: 'Reparación de condensadora - Ubicación: Oficina de Recursos Financieros', precio: 2500 },
+    { cant: 1, desc: 'Reparación de condensadora - Ubicación: Oficina de Orientación Educativa', precio: 2500 },
+    { cant: 1, desc: 'Carga de gas refrigerante para sistema', precio: 1000 }
+  ];
+
+  function formatMoney(num) {
+    return '$' + Number(num || 0).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  function formatDateLong(isoStr) {
+    if (!isoStr) return '';
+    var d = new Date(isoStr + 'T00:00:00');
+    if (isNaN(d)) return isoStr;
+    return new Intl.DateTimeFormat('es-MX', { day: 'numeric', month: 'long', year: 'numeric' }).format(d);
+  }
+
+  function toast(msg) {
+    var t = $('#toast'); t.textContent = msg; t.classList.add('show');
+    setTimeout(function() { t.classList.remove('show'); }, 3000);
+  }
+
+  function renderEditor() {
+    var tbody = $('#edit-items-body');
+    tbody.innerHTML = '';
+    items.forEach(function(item, idx) {
+      var tr = document.createElement('tr');
+      tr.innerHTML = '<td><input type="number" min="1" value="' + item.cant + '" data-idx="' + idx + '" data-field="cant"></td>' +
+                     '<td><input type="text" value="' + item.desc.replace(/"/g, '&quot;') + '" data-idx="' + idx + '" data-field="desc"></td>' +
+                     '<td><input type="number" step="0.01" value="' + item.precio + '" data-idx="' + idx + '" data-field="precio"></td>' +
+                     '<td style="text-align:center;"><button type="button" class="btn small danger" data-idx="' + idx + '" data-action="del-item" style="padding:2px 6px; color:#EF4444; border:none; background:transparent;">✕</button></td>';
+      tbody.appendChild(tr);
+    });
+  }
+
+  function renderPreview() {
+    $('#lbl-folio').textContent = $('#inv-folio').value;
+    var fechaVal = $('#inv-fecha').value;
+    $('#lbl-fecha').textContent = fechaVal ? formatDateLong(fechaVal) : 'Fecha actual';
+    $('#lbl-cliente').textContent = $('#inv-cliente').value;
+    $('#lbl-ubicacion').textContent = 'Ubicación: ' + $('#inv-ubicacion').value;
+    $('#lbl-metodo').textContent = $('#inv-metodo').value;
+    $('#lbl-resumen').textContent = $('#inv-resumen').value;
+
+    var prevBody = $('#preview-items-body');
+    prevBody.innerHTML = '';
+    
+    var subtotal = 0;
+    items.forEach(function(item) {
+      var importe = (Number(item.cant) || 0) * (Number(item.precio) || 0);
+      subtotal += importe;
+      var tr = document.createElement('tr');
+      tr.innerHTML = '<td>' + item.cant + '</td>' +
+                     '<td>' + item.desc + '</td>' +
+                     '<td>' + formatMoney(item.precio) + '</td>' +
+                     '<td>' + formatMoney(importe) + '</td>';
+      prevBody.appendChild(tr);
+    });
+
+    var applyIva = $('#inv-iva').value === 'si';
+    var ivaRow = $('#row-iva');
+    var ivaVal = applyIva ? (subtotal * 0.16) : 0;
+    var total = subtotal + ivaVal;
+
+    if (applyIva) {
+      ivaRow.style.display = 'flex';
+      $('#lbl-iva').textContent = formatMoney(ivaVal);
+    } else {
+      ivaRow.style.display = 'none';
+    }
+
+    $('#lbl-subtotal').textContent = formatMoney(subtotal);
+    $('#lbl-total').textContent = formatMoney(total);
+  }
+
+  function updateAll() {
+    renderEditor();
+    renderPreview();
+  }
+
+  // Eventos de edición
+  document.addEventListener('input', function(e) {
+    var target = e.target;
+    if (target.matches('#inv-folio, #inv-fecha, #inv-cliente, #inv-ubicacion, #inv-metodo, #inv-resumen, #inv-iva')) {
+      renderPreview();
+    }
+    if (target.matches('.items-table-edit input')) {
+      var idx = target.dataset.idx;
+      var field = target.dataset.field;
+      if (idx != null && field) {
+        items[idx][field] = field === 'cant' || field === 'precio' ? Number(target.value) : target.value;
+        renderPreview();
+      }
+    }
+  });
+
+  document.addEventListener('click', function(e) {
+    if (e.target.matches('#btn-add-row')) {
+      items.push({ cant: 1, desc: 'Nuevo servicio o material', precio: 500 });
+      updateAll();
+    }
+    if (e.target.matches('[data-action="del-item"]')) {
+      var idx = e.target.dataset.idx;
+      items.splice(idx, 1);
+      updateAll();
+    }
+  });
+
+  // Descargar PDF usando html2canvas + jsPDF
+  $('#btn-download').addEventListener('click', function() {
+    var btn = this;
+    btn.textContent = 'Generando PDF...';
+    btn.disabled = true;
+
+    var element = document.getElementById('invoice-pdf');
+    
+    window.html2canvas(element, { scale: 2, useCORS: true }).then(function(canvas) {
+      var imgData = canvas.toDataURL('image/png');
+      var pdf = new jspdf.jsPDF('p', 'mm', 'a4');
+      var pdfWidth = pdf.internal.pageSize.getWidth();
+      var pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+      
+      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      var folio = $('#inv-folio').value || 'Factura';
+      pdf.save('Factura_' + folio + '.pdf');
+      
+      btn.textContent = '📥 Descargar Factura PDF';
+      btn.disabled = false;
+      toast('Factura descargada con éxito');
+    }).catch(function(err) {
+      console.error(err);
+      btn.textContent = '📥 Descargar Factura PDF';
+      btn.disabled = false;
+      toast('Error al generar el PDF');
+    });
+  });
+
+  // Inicializar fecha de hoy por defecto
+  var todayIso = new Date().toISOString().split('T')[0];
+  $('#inv-fecha').value = todayIso;
+  updateAll();
+})();
 </script>
-​</body>
+
+</body>
 </html>
