@@ -187,7 +187,7 @@
     }
   });
 
-  // INICIAR SESIÓN CON AUTO-CORRECCIÓN Y RECONOCIMIENTO DE ADMINISTRADOR
+  // INICIAR SESIÓN CON BYPASS TOTAL PARA EL ADMINISTRADOR PRINCIPAL
   $('#form-login').addEventListener('submit', async function(e) {
     e.preventDefault();
     var email = $('#login-email').value.trim();
@@ -195,25 +195,21 @@
 
     try {
       var cred = await auth.signInWithEmailAndPassword(email, password);
+      
+      // SI ES TU CUENTA DE ADMINISTRADOR, ENTRA DIRECTAMENTE SIN NINGUNA RESTRICCIÓN
+      if (email === 'josefranciisco17@gmail.com') {
+        toast('¡Bienvenido, Administrador!');
+        setTimeout(function() {
+          window.location.href = 'index.html';
+        }, 800);
+        return;
+      }
+
+      // Validación normal para cualquier otro usuario registrado
       var userRef = db.collection('usuarios_registrados').doc(cred.user.uid);
       var userDoc = await userRef.get();
       
-      var esAdminPrincipal = (email === 'josefranciisco17@gmail.com');
-
-      if (!userDoc.exists || esAdminPrincipal) {
-        await userRef.set({
-          email: email,
-          rol: esAdminPrincipal ? 'admin' : (userDoc.exists ? userDoc.data().rol : 'pendiente'),
-          aprobado: esAdminPrincipal ? true : (userDoc.exists ? userDoc.data().aprobado : false),
-          fechaRegistro: userDoc.exists && userDoc.data().fechaRegistro ? userDoc.data().fechaRegistro : new Date().toISOString()
-        }, { merge: true });
-        
-        userDoc = await userRef.get();
-      }
-
-      var userData = userDoc.data();
-
-      if (!userData || !userData.aprobado) {
+      if (!userDoc.exists || !userDoc.data().aprobado) {
         await auth.signOut();
         toast('⚠️ Su cuenta se encuentra en proceso de validación.');
         return;
