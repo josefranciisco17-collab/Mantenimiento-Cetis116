@@ -8,21 +8,26 @@
   <style>
     :root { --bg: #0B131A; --surface: #131E26; --surface-2: #1B2934; --ink: #E6EEF1; --ink-2: #92A6B2; --line: #2A3F4E; --accent: #06B6D4; --accent-ink: #041E26; --bad: #EF4444; --good: #10B981; }
     body { margin: 0; background: var(--bg); color: var(--ink); font-family: 'Plus Jakarta Sans', sans-serif; padding: 20px; }
-    .container { max-width: 960px; margin: 0 auto; }
+    .container { max-width: 980px; margin: 0 auto; }
     .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; border-bottom: 1px solid var(--line); padding-bottom: 12px; }
     .header h1 { font-family: 'Barlow Condensed', sans-serif; font-size: 26px; margin: 0; color: #fff; text-transform: uppercase; }
     
     /* Pestañas de Navegación del Panel */
     .admin-tabs { display: flex; gap: 8px; margin-bottom: 20px; background: var(--surface); padding: 6px; border-radius: 8px; border: 1px solid var(--line); flex-wrap: wrap; }
-    .admin-tab { flex: 1; min-width: 140px; padding: 10px 16px; background: transparent; border: 0; border-radius: 6px; color: var(--ink-2); font-weight: 600; font-size: 13px; text-transform: uppercase; cursor: pointer; text-align: center; }
+    .admin-tab { flex: 1; min-width: 140px; padding: 10px 14px; background: transparent; border: 0; border-radius: 6px; color: var(--ink-2); font-weight: 600; font-size: 12px; text-transform: uppercase; cursor: pointer; text-align: center; }
     .admin-tab[aria-selected="true"] { background: var(--accent); color: var(--accent-ink); }
 
     .card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
     .card h2 { font-family: 'Barlow Condensed', sans-serif; font-size: 20px; color: #fff; margin-bottom: 14px; text-transform: uppercase; }
     
-    .user-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--line); gap: 10px; flex-wrap: wrap; }
+    .user-row { display: flex; justify-content: space-between; align-items: flex-start; padding: 16px 0; border-bottom: 1px solid var(--line); gap: 14px; flex-wrap: wrap; }
     .user-row:last-child { border-bottom: none; }
     
+    /* Estilos para los permisos de roles */
+    .permissions-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 8px; margin-top: 10px; width: 100%; background: var(--bg); padding: 12px; border-radius: 8px; border: 1px solid var(--line); }
+    .permission-label { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--ink); cursor: pointer; }
+    .permission-label input { width: 16px; height: 16px; accent-color: var(--accent); cursor: pointer; }
+
     .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 20px; }
     .stat-box { background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px; padding: 16px; text-align: center; }
     .stat-box h3 { font-size: 11px; color: var(--ink-2); text-transform: uppercase; margin-bottom: 6px; }
@@ -32,6 +37,7 @@
     .btn-approve { background: var(--good); color: #fff; }
     .btn-deactivate { background: var(--bad); color: #fff; }
     .btn-activate { background: var(--accent); color: var(--accent-ink); }
+    .btn-save { background: var(--accent); color: var(--accent-ink); margin-top: 8px; }
     .btn-back { background: var(--surface); color: var(--accent); border: 1px solid var(--accent); }
     .empty { color: var(--ink-2); text-align: center; padding: 30px; }
     .section-content { display: none; }
@@ -48,16 +54,17 @@
 
   <!-- Pestañas de Control -->
   <div class="admin-tabs" role="tablist">
-    <button type="button" class="admin-tab" id="tab-aprobacion" aria-selected="true" onclick="cambiarSeccion('aprobacion')">👥 Solicitudes Pendientes</button>
-    <button type="button" class="admin-tab" id="tab-cuentas" aria-selected="false" onclick="cambiarSeccion('cuentas')">🔒 Cuentas Activas / Inactivas</button>
-    <button type="button" class="admin-tab" id="tab-gestion" aria-selected="false" onclick="cambiarSeccion('gestion')">📊 Estadísticas y Gestión</button>
+    <button type="button" class="admin-tab" id="tab-aprobacion" aria-selected="true" onclick="cambiarSeccion('aprobacion')">👥 Solicitudes</button>
+    <button type="button" class="admin-tab" id="tab-cuentas" aria-selected="false" onclick="cambiarSeccion('cuentas')">🔒 Cuentas Activas</button>
+    <button type="button" class="admin-tab" id="tab-permisos" aria-selected="false" onclick="cambiarSeccion('permisos')">⚙️ Permisos y Roles</button>
+    <button type="button" class="admin-tab" id="tab-gestion" aria-selected="false" onclick="cambiarSeccion('gestion')">📊 Estadísticas</button>
   </div>
 
-  <!-- SECCIÓN 1: APROBACIÓN DE CUENTAS NUEVAS -->
+  <!-- SECCIÓN 1: SOLICITUDES PENDIENTES -->
   <div id="seccion-aprobacion" class="section-content active">
     <div class="card">
       <h2>Cuentas Nuevas Pendientes de Validación</h2>
-      <p style="margin-top:0; color: var(--ink-2); font-size: 13px; margin-bottom: 16px;">Autoriza los registros nuevos para que puedan acceder al sistema[span_1](start_span)[span_1](end_span):</p>
+      <p style="margin-top:0; color: var(--ink-2); font-size: 13px; margin-bottom: 16px;">Autoriza los registros nuevos para que puedan acceder al sistema[span_0](start_span)[span_0](end_span):</p>
       <div id="pending-users-list">
         <p class="empty">Cargando solicitudes pendientes...</p>
       </div>
@@ -68,14 +75,25 @@
   <div id="seccion-cuentas" class="section-content">
     <div class="card">
       <h2>Gestión de Cuentas (Activas e Inactivas)</h2>
-      <p style="margin-top:0; color: var(--ink-2); font-size: 13px; margin-bottom: 16px;">Visualiza todas las cuentas registradas y cambia su estado para bloquear o permitir el acceso cuando lo necesites:</p>
+      <p style="margin-top:0; color: var(--ink-2); font-size: 13px; margin-bottom: 16px;">Bloquea o permite el acceso de los usuarios registrados[span_1](start_span)[span_1](end_span):</p>
       <div id="all-users-list">
         <p class="empty">Cargando listado de cuentas...</p>
       </div>
     </div>
   </div>
 
-  <!-- SECCIÓN 3: ESTADÍSTICAS Y GESTIÓN GENERAL -->
+  <!-- SECCIÓN 3: PERMISOS Y ROLES ESPECÍFICOS (NUEVO) -->
+  <div id="seccion-permisos" class="section-content">
+    <div class="card">
+      <h2>Matriz de Permisos por Usuario</h2>
+      <p style="margin-top:0; color: var(--ink-2); font-size: 13px; margin-bottom: 16px;">Define detalladamente qué acciones puede realizar cada colaborador en la plataforma:</p>
+      <div id="permissions-users-list">
+        <p class="empty">Cargando matriz de permisos...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECCIÓN 4: ESTADÍSTICAS Y GESTIÓN GENERAL -->
   <div id="seccion-gestion" class="section-content">
     <div class="stats-grid">
       <div class="stat-box">
@@ -95,9 +113,6 @@
     <div class="card">
       <h2>Resumen Operativo del CETis 116</h2>
       <p style="color: var(--ink-2); font-size: 14px; margin-bottom: 16px;">Supervisión general de equipos de aire acondicionado y bitácoras sincronizadas con Firestore[span_2](start_span)[span_2](end_span).</p>
-      <div style="background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
-        <p style="margin: 0; font-size: 13px; color: var(--accent);">💡 <b>Sistema operativo:</b> Los permisos de administrador están vinculados de forma exclusiva a tu cuenta principal.</p>
-      </div>
     </div>
   </div>
 </div>
@@ -123,14 +138,16 @@
   var auth = firebase.auth();
   var db = firebase.firestore();
 
-  // Cambio de pestañas
+  // Control de pestañas
   window.cambiarSeccion = function(seccion) {
     document.getElementById('tab-aprobacion').setAttribute('aria-selected', seccion === 'aprobacion');
     document.getElementById('tab-cuentas').setAttribute('aria-selected', seccion === 'cuentas');
+    document.getElementById('tab-permisos').setAttribute('aria-selected', seccion === 'permisos');
     document.getElementById('tab-gestion').setAttribute('aria-selected', seccion === 'gestion');
     
     document.getElementById('seccion-aprobacion').classList.toggle('active', seccion === 'aprobacion');
     document.getElementById('seccion-cuentas').classList.toggle('active', seccion === 'cuentas');
+    document.getElementById('seccion-permisos').classList.toggle('active', seccion === 'permisos');
     document.getElementById('seccion-gestion').classList.toggle('active', seccion === 'gestion');
   };
 
@@ -142,20 +159,19 @@
     }
     cargarSolicitudesPendientes();
     cargarTodasLasCuentas();
+    cargarMatrizPermisos();
     cargarEstadisticasAdmin();
   });
 
-  // 1. Cargar solicitudes pendientes (aprobado == false)
+  // 1. Solicitudes pendientes
   async function cargarSolicitudesPendientes() {
     var container = document.getElementById('pending-users-list');
     try {
       var snapshot = await db.collection('usuarios_registrados').where('aprobado', '==', false).get();
-      
       if (snapshot.empty) {
         container.innerHTML = '<p class="empty">No hay cuentas nuevas pendientes de aprobación.</p>';
         return;
       }
-
       var html = '';
       snapshot.forEach(function(doc) {
         var u = doc.data();
@@ -174,17 +190,15 @@
     }
   }
 
-  // 2. Cargar todas las cuentas para gestionar activas e inactivas
+  // 2. Cuentas activas / inactivas
   async function cargarTodasLasCuentas() {
     var container = document.getElementById('all-users-list');
     try {
       var snapshot = await db.collection('usuarios_registrados').get();
-      
       if (snapshot.empty) {
-        container.innerHTML = '<p class="empty">No hay usuarios registrados en el sistema.</p>';
+        container.innerHTML = '<p class="empty">No hay usuarios registrados.</p>';
         return;
       }
-
       var html = '';
       snapshot.forEach(function(doc) {
         var u = doc.data();
@@ -195,19 +209,13 @@
         html += '<div class="user-row">' +
                   '<div>' +
                     '<strong style="color: #fff; font-size: 15px;">' + (u.email || 'Sin correo') + '</strong><br>' +
-                    '<span style="font-size: 12px; color: ' + (activo ? 'var(--good)' : 'var(--bad)') + ';">● ' + (activo ? 'Cuenta Activa' : 'Cuenta Inactiva / Pendiente') + '</span>' +
+                    '<span style="font-size: 12px; color: ' + (activo ? 'var(--good)' : 'var(--bad)') + ';">● ' + (activo ? 'Activa' : 'Inactiva') + '</span>' +
                   '</div>';
-        
         if (!esAdmin) {
-          if (activo) {
-            html += '<button class="btn btn-deactivate" onclick="actualizarEstadoUsuario(\'' + uid + '\', false)">Desactivar</button>';
-          } else {
-            html += '<button class="btn btn-activate" onclick="actualizarEstadoUsuario(\'' + uid + '\', true)">Activar</button>';
-          }
+          html += '<button class="btn ' + (activo ? 'btn-deactivate' : 'btn-activate') + '" onclick="actualizarEstadoUsuario(\'' + uid + '\', ' + !activo + ')">' + (activo ? 'Desactivar' : 'Activar') + '</button>';
         } else {
           html += '<span style="font-size: 12px; color: var(--accent); font-weight: 600;">Creador (Admin)</span>';
         }
-
         html += '</div>';
       });
       container.innerHTML = html;
@@ -216,34 +224,84 @@
     }
   }
 
-  // Función global para cambiar el estado (aprobar / activar / desactivar)
-  window.actualizarEstadoUsuario = async function(uid, nuevoEstado) {
+  // 3. Matriz de Permisos y Roles Específicos
+  async function cargarMatrizPermisos() {
+    var container = document.getElementById('permissions-users-list');
     try {
-      await db.collection('usuarios_registrados').doc(uid).update({
-        aprobado: nuevoEstado
+      var snapshot = await db.collection('usuarios_registrados').get();
+      if (snapshot.empty) {
+        container.innerHTML = '<p class="empty">No hay usuarios para configurar permisos.</p>';
+        return;
+      }
+      var html = '';
+      snapshot.forEach(function(doc) {
+        var u = doc.data();
+        var uid = doc.id;
+        var p = u.permisos || {}; // Objeto de permisos
+        var esAdmin = (u.email === 'josefranciisco17@gmail.com');
+
+        html += '<div style="padding: 14px 0; border-bottom: 1px solid var(--line);">' +
+                  '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">' +
+                    '<strong style="color: #fff; font-size: 15px;">' + (u.email || 'Sin correo') + '</strong>' +
+                    (esAdmin ? '<span style="font-size: 12px; color: var(--accent);">Acceso Total (Creador)</span>' : '') +
+                  '</div>';
+
+        if (!esAdmin) {
+          html += '<div class="permissions-grid">' +
+                    '<label class="permission-label"><input type="checkbox" id="p-add-' + uid + '" ' + (p.addService ? 'checked' : '') + '> Añadir Servicios</label>' +
+                    '<label class="permission-label"><input type="checkbox" id="p-edit-' + uid + '" ' + (p.editService ? 'checked' : '') + '> Modificar Servicios</label>' +
+                    '<label class="permission-label"><input type="checkbox" id="p-factura-' + uid + '" ' + (p.facturar ? 'checked' : '') + '> Facturar</label>' +
+                    '<label class="permission-label"><input type="checkbox" id="p-dictamen-' + uid + '" ' + (p.dictamen ? 'checked' : '') + '> Hacer Dictámenes</label>' +
+                  '</div>' +
+                  '<button class="btn btn-save" onclick="guardarPermisos(\'' + uid + '\')">Guardar Permisos</button>';
+        }
+        html += '</div>';
       });
-      alert(nuevoEstado ? '¡Cuenta activada/aprobada con éxito!' : 'Cuenta desactivada correctamente.');
-      cargarSolicitudesPendientes();
-      cargarTodasLasCuentas();
-      cargarEstadisticasAdmin();
+      container.innerHTML = html;
     } catch (err) {
-      alert('Error al actualizar estado: ' + err.message);
+      container.innerHTML = '<p class="empty" style="color: var(--bad);">Error al cargar permisos: ' + err.message + '</p>';
+    }
+  }
+
+  // Guardar permisos en Firestore
+  window.guardarPermisos = async function(uid) {
+    var permisos = {
+      addService: document.getElementById('p-add-' + uid).checked,
+      editService: document.getElementById('p-edit-' + uid).checked,
+      facturar: document.getElementById('p-factura-' + uid).checked,
+      dictamen: document.getElementById('p-dictamen-' + uid).checked
+    };
+
+    try {
+      await db.collection('usuarios_registrados').doc(uid).update({ permisos: permisos });
+      alert('¡Permisos actualizados correctamente!');
+    } catch (err) {
+      alert('Error al guardar permisos: ' + err.message);
     }
   };
 
-  // 3. Estadísticas generales
+  window.actualizarEstadoUsuario = async function(uid, nuevoEstado) {
+    try {
+      await db.collection('usuarios_registrados').doc(uid).update({ aprobado: nuevoEstado });
+      alert(nuevoEstado ? 'Cuenta activada correctamente.' : 'Cuenta desactivada.');
+      cargarSolicitudesPendientes();
+      cargarTodasLasCuentas();
+      cargarMatrizPermisos();
+    } catch (err) {
+      alert('Error al actualizar: ' + err.message);
+    }
+  };
+
+  // 4. Estadísticas
   async function cargarEstadisticasAdmin() {
     try {
       var eqSnap = await db.collection('equipos').get();
       var svSnap = await db.collection('servicios').get();
       var usSnap = await db.collection('usuarios_registrados').get();
-
       document.getElementById('stat-equipos').textContent = eqSnap.size;
       document.getElementById('stat-servicios').textContent = svSnap.size;
       document.getElementById('stat-usuarios').textContent = usSnap.size;
-    } catch (err) {
-      console.error('Error al cargar métricas de administración:', err);
-    }
+    } catch (err) {}
   }
 })();
 </script>
