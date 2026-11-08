@@ -66,7 +66,7 @@
   <div id="seccion-aprobacion" class="section-content active">
     <div class="card">
       <h2>Cuentas Nuevas Pendientes de Validación</h2>
-      <p style="margin-top:0; color: var(--ink-2); font-size: 14px; margin-bottom: 20px;">Autoriza los registros nuevos y envía notificación directa por WhatsApp:</p>
+      <p style="margin-top:0; color: var(--ink-2); font-size: 14px; margin-bottom: 20px;">Autoriza los registros nuevos para que puedan acceder al sistema:</p>
       <div id="pending-users-list">
         <p class="empty">Cargando solicitudes pendientes...</p>
       </div>
@@ -166,7 +166,7 @@
     cargarEstadisticasAdmin();
   });
 
-  // 1. Cargar Solicitudes Pendientes (con soporte para teléfono de WhatsApp)
+  // 1. Cargar Solicitudes Pendientes (muestra el teléfono registrado)
   async function cargarSolicitudesPendientes() {
     var container = document.getElementById('pending-users-list');
     try {
@@ -179,14 +179,14 @@
       snapshot.forEach(function(doc) {
         var u = doc.data();
         var uid = doc.id;
-        var tel = u.telefono || '';
+        var tel = u.telefono || 'No registrado';
         html += '<div class="user-row">' +
                   '<div>' +
                     '<strong style="color: #fff; font-size: 16px;">' + (u.email || 'Sin correo') + '</strong><br>' +
-                    '<span style="font-size: 13px; color: var(--ink-2);">WhatsApp: ' + (tel ? tel : 'No registrado') + '</span><br>' +
+                    '<span style="font-size: 13px; color: var(--ink-2);">WhatsApp: ' + tel + '</span><br>' +
                     '<span style="font-size: 12px; color: var(--ink-2);">Registrado: ' + (u.fechaRegistro ? new Date(u.fechaRegistro).toLocaleString() : 'N/D') + '</span>' +
                   '</div>' +
-                  '<button class="btn btn-approve" onclick="actualizarEstadoUsuario(\'' + uid + '\', true, true, \'' + tel + '\')">Aprobar y Notificar</button>' +
+                  '<button class="btn btn-approve" onclick="actualizarEstadoUsuario(\'' + uid + '\', true)">Aprobar Cuenta</button>' +
                 '</div>';
       });
       container.innerHTML = html;
@@ -218,7 +218,7 @@
                     '<span style="font-size: 13px; color: ' + (activo ? 'var(--good)' : 'var(--bad)') + ';">● ' + (activo ? 'Cuenta Activa' : 'Cuenta Inactiva') + '</span>' +
                   '</div>';
         if (!esAdmin) {
-          html += '<button class="btn ' + (activo ? 'btn-deactivate' : 'btn-activate') + '" onclick="actualizarEstadoUsuario(\'' + uid + '\', ' + !activo + ', false, \'\')">' + (activo ? 'Desactivar' : 'Activar') + '</button>';
+          html += '<button class="btn ' + (activo ? 'btn-deactivate' : 'btn-activate') + '" onclick="actualizarEstadoUsuario(\'' + uid + '\', ' + !activo + ')">' + (activo ? 'Desactivar' : 'Activar') + '</button>';
         } else {
           html += '<span style="font-size: 12px; color: var(--accent); font-weight: 700; text-transform: uppercase;">Creador (Admin)</span>';
         }
@@ -284,28 +284,11 @@
     }
   };
 
-  // Función de actualización y envío automático a WhatsApp
-  window.actualizarEstadoUsuario = async function(uid, nuevoEstado, esAprobacion, telefonoUsuario) {
+  // Función de actualización limpia sin redirección a WhatsApp
+  window.actualizarEstadoUsuario = async function(uid, nuevoEstado) {
     try {
       await db.collection('usuarios_registrados').doc(uid).update({ aprobado: nuevoEstado });
-      
-      if (esAprobacion && nuevoEstado) {
-        var textoMensaje = "¡Hola! Tu cuenta para la app de Mantenimiento de Aires Acondicionados (CETis 116) ha sido APROBADA con éxito. Ya puedes iniciar sesión y comenzar a registrar servicios.";
-        
-        if (telefonoUsuario) {
-          var numLimpio = telefonoUsuario.replace(/\D/g, '');
-          var urlWhatsApp = "https://api.whatsapp.com/send?phone=52" + numLimpio + "&text=" + encodeURIComponent(textoMensaje);
-          
-          if (confirm('¡Cuenta aprobada con éxito!\n\n¿Deseas abrir WhatsApp para enviar el mensaje de bienvenida al número ' + telefonoUsuario + '?')) {
-            window.open(urlWhatsApp, '_blank');
-          }
-        } else {
-          alert('¡Cuenta aprobada con éxito! (Nota: El usuario no proporcionó un número telefónico).');
-        }
-      } else {
-        alert(nuevoEstado ? 'Cuenta activada correctamente.' : 'Cuenta desactivada.');
-      }
-
+      alert(nuevoEstado ? '¡Cuenta aprobada correctamente!' : 'Cuenta desactivada.');
       cargarSolicitudesPendientes();
       cargarTodasLasCuentas();
       cargarMatrizPermisos();
