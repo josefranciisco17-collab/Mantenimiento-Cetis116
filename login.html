@@ -187,7 +187,7 @@
     }
   });
 
-  // INICIAR SESIÓN CON FILTRO DE APROBACIÓN
+  // INICIAR SESIÓN CON AUTO-CORRECCIÓN Y FILTRO DE APROBACIÓN
   $('#form-login').addEventListener('submit', async function(e) {
     e.preventDefault();
     var email = $('#login-email').value.trim();
@@ -195,10 +195,25 @@
 
     try {
       var cred = await auth.signInWithEmailAndPassword(email, password);
+      var userRef = db.collection('usuarios').doc(cred.user.uid);
+      var userDoc = await userRef.get();
       
-      var userDoc = await db.collection('usuarios').doc(cred.user.uid).get();
-      
-      if (!userDoc.exists || !userDoc.data().aprobado) {
+      // AUTO-CORRECCIÓN: Si el documento no existe en Firestore, lo creamos en automático.
+      // Si es tu correo principal, te da privilegios de admin y acceso inmediato.
+      if (!userDoc.exists) {
+        var esAdminPrincipal = (email === 'josefranciisco17@gmail.com');
+        await userRef.set({
+          email: email,
+          rol: esAdminPrincipal ? 'admin' : 'pendiente',
+          aprobado: esAdminPrincipal ? true : false,
+          fechaRegistro: new Date().toISOString()
+        });
+        userDoc = await userRef.get();
+      }
+
+      var userData = userDoc.data();
+
+      if (!userData || !userData.aprobado) {
         await auth.signOut();
         toast('⚠️ Su cuenta se encuentra en proceso de validación.');
         return;
