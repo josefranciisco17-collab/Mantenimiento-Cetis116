@@ -3,97 +3,70 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-  <meta http-equiv="Pragma" content="no-cache">
-  <meta http-equiv="Expires" content="0">
-  <title>Acceso al Sistema · Clima Hogar Multi Servicios</title>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+  <title>Acceso · Clima Hogar</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap">
   <style>
-  :root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#0B131A;color:#E6EEF1}
-  :root { --bg: #0B131A; --surface: #131E26; --ink: #E6EEF1; --ink-2: #92A6B2; --line: #2A3F4E; --accent: #06B6D4; --accent-ink: #041E26; --accent-soft: rgba(6, 182, 212, 0.15); }
-  * { box-sizing: border-box; }
-  body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 'Plus Jakarta Sans', sans-serif; display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; }
-  .auth-card { width: min(440px, 100%); background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 30px; box-shadow: 0 10px 30px rgba(0,0,0,.5); }
-  .auth-header { text-align: center; margin-bottom: 24px; }
-  .auth-header h1 { font: 700 24px 'Barlow Condensed', sans-serif; text-transform: uppercase; color: #fff; margin: 0 0 6px 0; }
-  .auth-header p { color: var(--accent); font-size: 12px; font-weight: 600; text-transform: uppercase; margin: 0; }
-  .auth-tabs { display: flex; gap: 4px; background: var(--bg); padding: 4px; border-radius: 8px; border: 1px solid var(--line); margin-bottom: 20px; }
-  .auth-tab { flex: 1; min-height: 38px; border: 0; background: transparent; font-weight: 600; font-size: 13px; color: var(--ink-2); text-transform: uppercase; border-radius: 6px; cursor: pointer; }
-  .auth-tab[aria-selected="true"] { background: var(--accent); color: var(--accent-ink); }
-  .form { display: grid; gap: 16px; }
-  .fld { display: flex; flex-direction: column; gap: 6px; }
-  .fld label { font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--ink-2); }
-  .fld input { width: 100%; min-height: 46px; padding: 10px 14px; font-size: 15px; background: var(--bg); border: 1.5px solid var(--line); border-radius: 8px; color: var(--ink); }
-  .password-wrapper { position: relative; display: flex; align-items: center; }
-  .password-wrapper input { padding-right: 45px; }
-  .toggle-pwd { position: absolute; right: 12px; background: none; border: 0; color: var(--ink-2); cursor: pointer; font-size: 16px; padding: 4px; }
-  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 46px; padding: 10px 20px; border: 1.5px solid var(--line); border-radius: 8px; background: var(--surface); font-weight: 600; font-size: 14px; color: var(--ink); width: 100%; cursor: pointer; }
-  .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
-  .link-row { display: flex; justify-content: space-between; align-items: center; font-size: 13px; margin-top: 4px; }
-  .link { background: none; border: 0; color: var(--accent); text-decoration: underline; cursor: pointer; font-weight: 600; padding: 0; }
-  .toast { position: fixed; z-index: 60; left: 50%; bottom: 24px; transform: translate(-50%, 20px); max-width: 90%; padding: 12px 20px; border-radius: 8px; background: #fff; color: #000; font-weight: 600; font-size: 14px; opacity: 0; pointer-events: none; transition: all .2s; }
-  .toast.show { opacity: 1; transform: translate(-50%, 0); }
+    :root { --bg: #030712; --surface: #0f172a; --surface-2: #1e293b; --ink: #f8fafc; --ink-2: #94a3b8; --line: #334155; --accent: #06b6d4; --accent-ink: #082f49; --bad: #ef4444; --good: #10b981; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font-family: 'Plus Jakarta Sans', sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 16px; box-sizing: border-box; }
+    .card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 24px; width: 100%; max-width: 400px; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+    h1 { font-family: 'Barlow Condensed', sans-serif; font-size: 28px; text-align: center; margin: 0 0 4px; color: #fff; text-transform: uppercase; }
+    .subtitle { text-align: center; font-size: 12px; color: var(--ink-2); text-transform: uppercase; margin-bottom: 20px; letter-spacing: 0.5px; }
+    
+    .tabs { display: flex; background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 4px; margin-bottom: 20px; }
+    .tab { flex: 1; padding: 10px; background: transparent; border: 0; color: var(--ink-2); font-weight: 600; font-size: 13px; text-transform: uppercase; cursor: pointer; border-radius: 6px; text-align: center; }
+    .tab.active { background: var(--accent); color: var(--accent-ink); }
+
+    .form-group { margin-bottom: 14px; }
+    label { display: block; font-size: 12px; font-weight: 600; color: var(--ink-2); text-transform: uppercase; margin-bottom: 6px; }
+    input { width: 100%; padding: 12px; background: var(--bg); border: 1px solid var(--line); border-radius: 8px; color: #fff; font-size: 15px; box-sizing: border-box; }
+    input:focus { outline: none; border-color: var(--accent); }
+    
+    .btn-submit { width: 100%; padding: 12px; background: var(--accent); color: var(--accent-ink); border: 0; border-radius: 8px; font-weight: 700; font-size: 14px; text-transform: uppercase; cursor: pointer; margin-top: 10px; }
+    .hidden { display: none; }
+    .msg { margin-top: 14px; font-size: 13px; text-align: center; }
   </style>
 </head>
 <body>
 
+<div class="card">
+  <h1>Clima Hogar</h1>
+  <div class="subtitle">Control de Accesos · CETis 116</div>
+
+  <div class="tabs">
+    <button type="button" class="tab active" id="btn-login" onclick="cambiarModo('login')">Iniciar Sesión</button>
+    <button type="button" class="tab" id="btn-reg" onclick="cambiarModo('registro')">Registrarse</button>
+  </div>
+
+  <form id="auth-form" onsubmit="manejarAccion(event)">
+    <div class="form-group">
+      <label>Correo Electrónico</label>
+      <input type="email" id="email" required placeholder="correo@dominio.com">
+    </div>
+
+    <!-- Campo nuevo de Teléfono / WhatsApp (Solo visible en Registro) -->
+    <div class="form-group hidden" id="group-telefono">
+      <label>Número de WhatsApp (10 dígitos)</label>
+      <input type="tel" id="telefono" placeholder="7441234567">
+    </div>
+
+    <div class="form-group">
+      <label>Contraseña</label>
+      <input type="password" id="password" required placeholder="Mínimo 6 caracteres">
+    </div>
+
+    <button type="submit" class="btn-submit" id="submit-btn">Iniciar Sesión</button>
+  </form>
+
+  <div class="msg" id="msg-status"></div>
+</div>
+
+<!-- Firebase SDKs -->
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
-<div class="auth-card">
-  <div class="auth-header">
-    <h1>Clima Hogar</h1>
-    <p>Control de Accesos · CETis 116</p>
-  </div>
-
-  <div class="auth-tabs" role="tablist">
-    <button type="button" class="auth-tab" id="tab-login" aria-selected="true" data-action="switch-tab" data-target="login">Iniciar Sesión</button>
-    <button type="button" class="auth-tab" id="tab-register" aria-selected="false" data-action="switch-tab" data-target="register">Registrarse</button>
-  </div>
-
-  <form id="form-login" class="form">
-    <div class="fld">
-      <label>Correo Electrónico</label>
-      <input type="email" id="login-email" required placeholder="tu.correo@dominio.com" autocomplete="email">
-    </div>
-    <div class="fld">
-      <label>Contraseña</label>
-      <div class="password-wrapper">
-        <input type="password" id="login-password" required placeholder="••••••••" autocomplete="current-password">
-        <button type="button" class="toggle-pwd" data-action="toggle-pwd" data-input="login-password">👁️</button>
-      </div>
-    </div>
-    <div class="link-row">
-      <span></span>
-      <button type="button" class="link" data-action="forgot-pwd">¿Olvidaste tu contraseña?</button>
-    </div>
-    <button type="submit" class="btn primary">Entrar al Sistema</button>
-  </form>
-
-  <form id="form-register" class="form" style="display: none;">
-    <div class="fld">
-      <label>Correo Electrónico</label>
-      <input type="email" id="reg-email" required placeholder="correo@dominio.com" autocomplete="email">
-    </div>
-    <div class="fld">
-      <label>Contraseña</label>
-      <div class="password-wrapper">
-        <input type="password" id="reg-password" required placeholder="Mínimo 6 caracteres" autocomplete="new-password">
-        <button type="button" class="toggle-pwd" data-action="toggle-pwd" data-input="reg-password">👁️</button>
-      </div>
-    </div>
-    <button type="submit" class="btn primary">Registrarse y Entrar</button>
-  </form>
-</div>
-
-<div id="toast" class="toast" role="status"></div>
-
 <script>
-(function() {
-  'use strict';
-  var $ = function(s) { return document.querySelector(s); };
-  firebase.initializeApp({
+  var firebaseConfig = {
     apiKey: "AIzaSyA_JufV6ZSCICVuUrVZEJropD1VKA2bzQs",
     authDomain: "mantenimientocetis116.firebaseapp.com",
     databaseURL: "https://mantenimientocetis116-default-rtdb.firebaseio.com",
@@ -101,93 +74,70 @@
     storageBucket: "mantenimientocetis116.firebasestorage.app",
     messagingSenderId: "556796465966",
     appId: "1:556796465966:web:b0636bf4ee5ba99c21a0bf"
-  });
+  };
+
+  firebase.initializeApp(firebaseConfig);
   var auth = firebase.auth();
   var db = firebase.firestore();
 
-  function toast(msg) {
-    var t = $('#toast'); t.textContent = msg; t.classList.add('show');
-    setTimeout(function() { t.classList.remove('show'); }, 3500);
-  }
+  var modoActual = 'login';
 
-  document.addEventListener('click', function(e) {
-    var el = e.target.closest('[data-action]');
-    if (!el) return;
-    var a = el.dataset.action;
-    if (a === 'switch-tab') {
-      var target = el.dataset.target;
-      $('#tab-login').setAttribute('aria-selected', target === 'login');
-      $('#tab-register').setAttribute('aria-selected', target === 'register');
-      $('#form-login').style.display = target === 'login' ? 'grid' : 'none';
-      $('#form-register').style.display = target === 'register' ? 'grid' : 'none';
-    }
-    if (a === 'toggle-pwd') {
-      var inp = document.getElementById(el.dataset.input);
-      if (inp) {
-        inp.type = inp.type === 'password' ? 'text' : 'password';
-        el.textContent = inp.type === 'password' ? '👁️' : '🔒';
-      }
-    }
-    if (a === 'forgot-pwd') {
-      var email = $('#login-email').value.trim();
-      if (!email) { toast('Escribe tu correo primero'); $('#login-email').focus(); return; }
-      auth.sendPasswordResetEmail(email).then(function() { toast('Correo de recuperación enviado'); });
-    }
-  });
+  window.cambiarModo = function(modo) {
+    modoActual = modo;
+    var esLogin = (modo === 'login');
+    document.getElementById('btn-login').classList.toggle('active', esLogin);
+    document.getElementById('btn-reg').classList.toggle('active', !esLogin);
+    document.getElementById('submit-btn').textContent = esLogin ? 'Iniciar Sesión' : 'Registrarse y Entrar';
+    document.getElementById('group-telefono').classList.toggle('hidden', esLogin);
+    document.getElementById('msg-status').textContent = '';
+  };
 
-  $('#form-login').addEventListener('submit', async function(e) {
+  window.manejarAccion = async function(e) {
     e.preventDefault();
-    var email = $('#login-email').value.trim();
-    var password = $('#login-password').value;
+    var email = document.getElementById('email').value.trim();
+    var password = document.getElementById('password').value;
+    var telefono = document.getElementById('telefono').value.trim();
+    var statusEl = document.getElementById('msg-status');
+
+    statusEl.style.color = '#fff';
+    statusEl.textContent = 'Procesando...';
 
     try {
-      var cred = await auth.signInWithEmailAndPassword(email, password);
-      var esAdmin = (email === 'josefranciisco17@gmail.com');
-
-      await db.collection('usuarios_registrados').doc(cred.user.uid).set({
-        email: email,
-        rol: esAdmin ? 'creador_admin' : 'usuario',
-        aprobado: esAdmin ? true : false,
-        ultimoAcceso: new Date().toISOString()
-      }, { merge: true });
-
-      if (!esAdmin) {
-        var docCheck = await db.collection('usuarios_registrados').doc(cred.user.uid).get();
-        if (docCheck.exists && docCheck.data().aprobado === false) {
-          toast('⏳ Tu cuenta está pendiente de aprobación por el administrador.');
+      if (modoActual === 'login') {
+        var cred = await auth.signInWithEmailAndPassword(email, password);
+        var userDoc = await db.collection('usuarios_registrados').doc(cred.user.uid).get();
+        
+        if (email === 'josefranciisco17@gmail.com' || (userDoc.exists && userDoc.data().aprobado === true)) {
+          window.location.href = 'index.html';
+        } else {
           auth.signOut();
+          statusEl.style.color = 'var(--bad)';
+          statusEl.textContent = 'Tu cuenta está pendiente de aprobación por el administrador.';
+        }
+      } else {
+        if (!telefono) {
+          statusEl.style.color = 'var(--bad)';
+          statusEl.textContent = 'Por favor ingresa tu número de WhatsApp.';
           return;
         }
+        var cred = await auth.createUserWithEmailAndPassword(email, password);
+        await db.collection('usuarios_registrados').doc(cred.user.uid).set({
+          email: email,
+          telefono: telefono,
+          aprobado: false,
+          fechaRegistro: new Date().toISOString(),
+          permisos: { addService: false, editService: false, facturar: false, dictamen: false }
+        });
+        statusEl.style.color = 'var(--good)';
+        statusEl.textContent = '¡Registro exitoso! Cuenta pendiente de aprobación.';
+        setTimeout(function() { cambiarModo('login'); }, 2500);
       }
-
-      toast('¡Acceso concedido! Entrando...');
-      setTimeout(function() { window.location.href = 'index.html'; }, 800);
     } catch (err) {
-      toast('Error de acceso: ' + err.message);
+      statusEl.style.color = 'var(--bad)';
+      statusEl.textContent = 'Error: ' + err.message;
     }
-  });
-
-  $('#form-register').addEventListener('submit', async function(e) {
-    e.preventDefault();
-    var email = $('#reg-email').value.trim();
-    var password = $('#reg-password').value;
-
-    try {
-      var cred = await auth.createUserWithEmailAndPassword(email, password);
-      await db.collection('usuarios_registrados').doc(cred.user.uid).set({
-        email: email,
-        rol: 'usuario',
-        aprobado: false,
-        fechaRegistro: new Date().toISOString()
-      });
-      toast('¡Registro exitoso! Cuenta pendiente de aprobación.');
-      $('#form-register').reset();
-      $('#tab-login').click();
-    } catch (err) {
-      toast('Error en el registro: ' + err.message);
-    }
-  });
-})();
+  };
 </script>
+
 </body>
 </html>
