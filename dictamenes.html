@@ -160,6 +160,13 @@
           <label>Ubicación / Aula / Edificio</label>
           <input type="text" id="dic-ubicacion" value="Biblioteca Escolar - Edificio B">
         </div>
+        <div class="fld">
+          <label>Técnico Responsable (Firma)</label>
+          <select id="select-tecnico">
+            <option value="J. Francisco Abarca M." selected>J. Francisco Abarca M.</option>
+            <option value="Miguel Angel Alvarado Díaz">Miguel Angel Alvarado Díaz</option>
+          </select>
+        </div>
 
         <h2 style="border:none; margin:20px 0 10px 0; padding:0; font-size:18px;">2. Evaluación y Fallas Detectadas</h2>
         
@@ -256,7 +263,7 @@
 
             <div class="signature-area">
               <div class="signature-line">
-                <strong>J. Francisco Abarca M.</strong><br>
+                <strong id="lbl-tecnico-nombre">J. Francisco Abarca M.</strong><br>
                 Clima Hogar Multi Servicios<br>
                 Técnico Especialista Responsable
               </div>
@@ -300,6 +307,10 @@
 
   function renderPreview() {
     $('#lbl-folio').textContent = $('#dic-folio').value;
+    var tecSel = $('#select-tecnico');
+    if (tecSel) {
+      $('#lbl-tecnico-nombre').textContent = tecSel.value;
+    }
     var fechaVal = $('#dic-fecha').value;
     $('#lbl-fecha').textContent = fechaVal ? formatLong(fechaVal) : 'Fecha actual';
     $('#lbl-cliente').textContent = $('#dic-cliente').value;
@@ -363,7 +374,7 @@
 
   document.addEventListener('change', function(e) {
     var target = e.target;
-    if (target.matches('#dic-folio, #dic-fecha, #dic-cliente, #dic-ubicacion, #dic-diagnostico, #dic-conclusion, .fail-chk')) {
+    if (target.matches('#dic-folio, #dic-fecha, #dic-cliente, #dic-ubicacion, #dic-diagnostico, #dic-conclusion, #select-tecnico, .fail-chk')) {
       renderPreview();
     }
     if (target.matches('#select-equipo')) {
