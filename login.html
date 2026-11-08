@@ -2,204 +2,136 @@
 <html lang="es">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Acceso Corporativo · Mantenimiento de Aires Acondicionados</title>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>Acceso al Sistema · Clima Hogar Multi Servicios</title>
+  
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+
   <style>
-    :root {
-      --bg: #0B131A;
-      --surface: #131E26;
-      --surface-2: #1B2934;
-      --ink: #E6EEF1;
-      --ink-2: #92A6B2;
-      --line: #2A3F4E;
-      --accent: #06B6D4;
-      --accent-ink: #041E26;
-      --accent-soft: rgba(6, 182, 212, 0.15);
-      --ok: #10B981;
-      --ok-soft: rgba(16, 185, 129, 0.15);
-      --bad: #EF4444;
-      --bad-soft: rgba(239, 68, 68, 0.15);
-      --font-display: 'Barlow Condensed', sans-serif;
-      --font-body: 'Plus Jakarta Sans', sans-serif;
-      --font-mono: 'JetBrains Mono', monospace;
-    }
-    * { box-sizing: border-box; }
-    body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 var(--font-body); display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; }
-    
-    .wrapper { width: 100%; max-width: 440px; }
-    
-    .brand-header { text-align: center; margin-bottom: 24px; }
-    .brand-header h1 { font-family: var(--font-display); font-size: 30px; text-transform: uppercase; letter-spacing: .02em; margin: 0; color: #FFFFFF; text-wrap: balance; line-height: 1.1; }
-    .brand-header p { color: var(--accent); font-size: 13px; font-weight: 600; margin-top: 6px; text-transform: uppercase; letter-spacing: .08em; }
+  :root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#0B131A;color:#E6EEF1}
+  
+  :root {
+    --bg: #0B131A;
+    --surface: #131E26;
+    --surface-2: #1B2934;
+    --surface-3: #223442;
+    --ink: #E6EEF1;
+    --ink-2: #92A6B2;
+    --line: #2A3F4E;
+    --accent: #06B6D4;
+    --accent-ink: #041E26;
+    --accent-soft: rgba(6, 182, 212, 0.15);
+    --bad: #EF4444;
+    --bad-soft: rgba(239, 68, 68, 0.15);
+    --warn: #F59E0B;
+    --warn-soft: rgba(245, 158, 11, 0.15);
+    --font-display: 'Barlow Condensed', sans-serif;
+    --font-body: 'Plus Jakarta Sans', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
 
-    .signature-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      margin-top: 12px;
-      padding: 6px 14px;
-      background: rgba(6, 182, 212, 0.08);
-      border: 1px solid rgba(6, 182, 212, 0.25);
-      border-radius: 99px;
-      font-family: var(--font-mono);
-      font-size: 11px;
-      font-weight: 500;
-      color: #67E8F9;
-      letter-spacing: .06em;
-      text-transform: uppercase;
-      box-shadow: 0 0 20px rgba(6, 182, 212, 0.1);
-    }
-    .signature-badge span {
-      display: inline-block;
-      width: 6px;
-      height: 6px;
-      background: var(--accent);
-      border-radius: 50%;
-      box-shadow: 0 0 8px var(--accent);
-    }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 var(--font-body); display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; }
+  
+  .auth-card { width: min(440px, 100%); background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 30px; box-shadow: 0 10px 30px rgba(0,0,0,.5); }
+  .auth-header { text-align: center; margin-bottom: 24px; }
+  .auth-header h1 { font: 700 24px var(--font-display); text-transform: uppercase; color: #fff; letter-spacing: .02em; margin: 0 0 6px 0; }
+  .auth-header p { color: var(--accent); font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; margin: 0; }
 
-    .card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 28px; box-shadow: 0 12px 32px rgba(0,0,0,.4); }
-    
-    .tabs { display: grid; grid-template-columns: 1fr 1fr; background: var(--surface-2); padding: 4px; border-radius: 8px; margin-bottom: 24px; gap: 4px; border: 1px solid var(--line); }
-    .tab-btn { background: transparent; border: 0; padding: 10px; font-weight: 600; color: var(--ink-2); font-size: 13px; border-radius: 6px; cursor: pointer; text-transform: uppercase; letter-spacing: .05em; transition: all .2s; }
-    .tab-btn.active { background: var(--accent); color: var(--accent-ink); box-shadow: 0 2px 8px rgba(6,182,212,.3); }
+  .auth-tabs { display: flex; gap: 4px; background: var(--bg); padding: 4px; border-radius: 8px; border: 1px solid var(--line); margin-bottom: 20px; }
+  .auth-tab { flex: 1; min-height: 38px; border: 0; background: transparent; font-weight: 600; font-size: 13px; color: var(--ink-2); text-transform: uppercase; border-radius: 6px; cursor: pointer; }
+  .auth-tab[aria-selected="true"] { background: var(--accent); color: var(--accent-ink); }
 
-    .form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
-    label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--ink-2); }
-    
-    .input-wrapper { position: relative; display: flex; align-items: center; }
-    input { width: 100%; height: 48px; padding: 0 44px 0 14px; background: var(--bg); border: 1.5px solid var(--line); border-radius: 8px; color: var(--ink); font-size: 15px; }
-    input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+  .form { display: grid; gap: 16px; }
+  .fld { display: flex; flex-direction: column; gap: 6px; }
+  .fld label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-2); }
+  .fld input { width: 100%; min-height: 46px; padding: 10px 14px; font-size: 15px; background: var(--bg); border: 1.5px solid var(--line); border-radius: 8px; color: var(--ink); }
+  .fld input:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 0 3px var(--accent-soft); }
+  
+  .password-wrapper { position: relative; display: flex; align-items: center; }
+  .password-wrapper input { padding-right: 45px; }
+  .toggle-pwd { position: absolute; right: 12px; background: none; border: 0; color: var(--ink-2); cursor: pointer; font-size: 16px; padding: 4px; }
 
-    .toggle-password { position: absolute; right: 12px; background: none; border: 0; cursor: pointer; color: var(--ink-2); display: flex; align-items: center; justify-content: center; padding: 4px; }
-    .toggle-password:hover { color: var(--accent); }
-    .toggle-password svg { width: 20px; height: 20px; }
+  .notice-box { background: var(--warn-soft); border: 1px solid rgba(245, 158, 11, 0.3); padding: 12px 14px; border-radius: 8px; color: #FCD34D; font-size: 13px; line-height: 1.4; }
 
-    .btn { width: 100%; height: 50px; background: var(--accent); color: var(--accent-ink); border: 0; border-radius: 8px; font-weight: 700; font-size: 15px; text-transform: uppercase; letter-spacing: .05em; margin-top: 8px; cursor: pointer; transition: filter .2s; }
-    .btn:hover { filter: brightness(1.1); }
-    .btn:disabled { opacity: .6; cursor: not-allowed; }
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 46px; padding: 10px 20px; border: 1.5px solid var(--line); border-radius: 8px; background: var(--surface); font-weight: 600; font-size: 14px; transition: all .2s; color: var(--ink); width: 100%; cursor: pointer; }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+  .btn.primary:hover { filter: brightness(1.1); }
 
-    .btn-admin-access {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      width: 100%;
-      height: 46px;
-      background: var(--surface-2);
-      color: var(--accent);
-      border: 1px solid rgba(6, 182, 212, 0.35);
-      border-radius: 8px;
-      font-weight: 700;
-      font-size: 13px;
-      text-transform: uppercase;
-      letter-spacing: .05em;
-      margin-top: 20px;
-      text-decoration: none;
-      transition: all 0.2s;
-    }
-    .btn-admin-access:hover {
-      background: rgba(6, 182, 212, 0.1);
-      border-color: var(--accent);
-      filter: brightness(1.1);
-    }
+  .link-row { display: flex; justify-content: space-between; align-items: center; font-size: 13px; margin-top: 4px; }
+  .link { background: none; border: 0; color: var(--accent); text-decoration: underline; cursor: pointer; font-weight: 600; padding: 0; }
 
-    .actions-row { display: flex; justify-content: space-between; align-items: center; margin-top: 14px; font-size: 13px; }
-    .link-btn { background: none; border: 0; color: var(--accent); cursor: pointer; padding: 0; text-decoration: underline; text-underline-offset: 3px; font-size: 13px; font-weight: 600; }
-    
-    .alert { margin-top: 16px; padding: 12px; border-radius: 8px; font-size: 13px; text-align: center; }
-    .alert.error { background: var(--bad-soft); color: var(--bad); border: 1px solid rgba(239,68,68,.3); }
-    .alert.success { background: var(--ok-soft); color: var(--ok); border: 1px solid rgba(16,185,129,.3); }
-    
-    .form-panel { display: none; }
-    .form-panel.active { display: block; }
+  .toast { position: fixed; z-index: 40; left: 50%; bottom: 24px; transform: translate(-50%, 20px); max-width: 90%; padding: 12px 20px; border-radius: 8px; background: #fff; color: #000; font-weight: 600; font-size: 14px; opacity: 0; pointer-events: none; transition: all .2s; box-shadow: 0 10px 30px rgba(0,0,0,.5); }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); }
   </style>
 </head>
 <body>
-
-<div class="wrapper">
-  <div class="brand-header">
-    <h1>Mantenimiento de Aires Acondicionados</h1>
-    <p>CETis 116 - Antonia Nava de Catalán</p>
-    <div class="signature-badge">
-      <span></span> By JFAM Tecno-Energy
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="tabs">
-      <button type="button" class="tab-btn active" id="btn-login-tab" onclick="switchTab('login')">Iniciar Sesión</button>
-      <button type="button" class="tab-btn" id="btn-reg-tab" onclick="switchTab('register')">Crear Cuenta</button>
-    </div>
-
-    <!-- Panel de Iniciar Sesión -->
-    <div id="panel-login" class="form-panel active">
-      <form id="form-login" onsubmit="handleLogin(event)">
-        <div class="form-group">
-          <label for="login-email">Correo Electrónico</label>
-          <input type="email" id="login-email" required placeholder="tecnico@clima.com">
-        </div>
-        <div class="form-group">
-          <label for="login-password">Contraseña</label>
-          <div class="input-wrapper">
-            <input type="password" id="login-password" required placeholder="••••••••">
-            <button type="button" class="toggle-password" onclick="togglePassword('login-password', this)" aria-label="Mostrar contraseña">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-            </button>
-          </div>
-        </div>
-        <div class="actions-row">
-          <span></span>
-          <button type="button" class="link-btn" onclick="handleForgotPassword()">¿Olvidaste tu contraseña?</button>
-        </div>
-        <button type="submit" class="btn" id="login-submit-btn">Ingresar al Sistema</button>
-      </form>
-    </div>
-
-    <!-- Panel de Registro de Cuenta -->
-    <div id="panel-register" class="form-panel">
-      <form id="form-register" onsubmit="handleRegister(event)">
-        <div class="form-group">
-          <label for="reg-email">Correo Electrónico</label>
-          <input type="email" id="reg-email" required placeholder="tu-correo@empresa.com">
-        </div>
-        <div class="form-group">
-          <label for="reg-password">Contraseña (Mínimo 6 caracteres)</label>
-          <div class="input-wrapper">
-            <input type="password" id="reg-password" required placeholder="••••••••">
-            <button type="button" class="toggle-password" onclick="togglePassword('reg-password', this)" aria-label="Mostrar contraseña">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-            </button>
-          </div>
-        </div>
-        <div class="form-group">
-          <label for="reg-password-confirm">Confirmar Contraseña</label>
-          <div class="input-wrapper">
-            <input type="password" id="reg-password-confirm" required placeholder="••••••••">
-            <button type="button" class="toggle-password" onclick="togglePassword('reg-password-confirm', this)" aria-label="Mostrar contraseña">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-            </button>
-          </div>
-        </div>
-        <button type="submit" class="btn" id="reg-submit-btn">Registrar Cuenta</button>
-      </form>
-    </div>
-
-    <!-- Acceso Extra de Administrador -->
-    <a href="admin.html" class="btn-admin-access">
-      🔒 Panel de Administrador
-    </a>
-
-    <div id="alert-box" class="alert" hidden></div>
-  </div>
-</div>
 
 <!-- Firebase SDKs -->
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+<div class="auth-card">
+  <div class="auth-header">
+    <h1>Clima Hogar</h1>
+    <p>Control de Accesos · CETis 116</p>
+  </div>
+
+  <div class="auth-tabs" role="tablist">
+    <button type="button" class="auth-tab" id="tab-login" aria-selected="true" data-action="switch-tab" data-target="login">Iniciar Sesión</button>
+    <button type="button" class="auth-tab" id="tab-register" aria-selected="false" data-action="switch-tab" data-target="register">Registrarse</button>
+  </div>
+
+  <!-- FORMULARIO DE LOGIN -->
+  <form id="form-login" class="form">
+    <div class="fld">
+      <label>Correo Electrónico</label>
+      <input type="email" id="login-email" required placeholder="tu.correo@dominio.com" autocomplete="email">
+    </div>
+    <div class="fld">
+      <label>Contraseña</label>
+      <div class="password-wrapper">
+        <input type="password" id="login-password" required placeholder="••••••••" autocomplete="current-password">
+        <button type="button" class="toggle-pwd" data-action="toggle-pwd" data-input="login-password">👁️</button>
+      </div>
+    </div>
+    <div class="link-row">
+      <span></span>
+      <button type="button" class="link" data-action="forgot-pwd">¿Olvidaste tu contraseña?</button>
+    </div>
+    <button type="submit" class="btn primary">Entrar al Sistema</button>
+  </form>
+
+  <!-- FORMULARIO DE REGISTRO CON LA LEYENDA INFORMATIVA -->
+  <form id="form-register" class="form" style="display: none;">
+    <div class="fld">
+      <label>Correo Electrónico</label>
+      <input type="email" id="reg-email" required placeholder="correo@dominio.com" autocomplete="email">
+    </div>
+    <div class="fld">
+      <label>Contraseña</label>
+      <div class="password-wrapper">
+        <input type="password" id="reg-password" required placeholder="Mínimo 6 caracteres" autocomplete="new-password">
+        <button type="button" class="toggle-pwd" data-action="toggle-pwd" data-input="reg-password">👁️</button>
+      </div>
+    </div>
+    
+    <div class="notice-box">
+      ⚠️ <strong>Aviso importante:</strong> Su cuenta se encuentra en un proceso de validación para tener acceso al sistema, será validada por un administrador en un lapso de 24 - 48 hrs.
+    </div>
+
+    <button type="submit" class="btn primary">Solicitar Registro</button>
+  </form>
+</div>
+
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+
 <script>
+(function() {
+  'use strict';
+  var $ = function(s) { return document.querySelector(s); };
+
   var firebaseConfig = {
     apiKey: "AIzaSyA_JufV6ZSCICVuUrVZEJropD1VKA2bzQs",
     authDomain: "mantenimientocetis116.firebaseapp.com",
@@ -214,141 +146,100 @@
   var auth = firebase.auth();
   var db = firebase.firestore();
 
-  auth.onAuthStateChanged(function(user) {
-    if (user) {
-      window.location.href = 'index.html';
+  function toast(msg) {
+    var t = $('#toast'); t.textContent = msg; t.classList.add('show');
+    setTimeout(function() { t.classList.remove('show'); }, 3500);
+  }
+
+  document.addEventListener('click', function(e) {
+    var el = e.target.closest('[data-action]');
+    if (!el) return;
+    var a = el.dataset.action;
+
+    if (a === 'switch-tab') {
+      var target = el.dataset.target;
+      $('#tab-login').setAttribute('aria-selected', target === 'login');
+      $('#tab-register').setAttribute('aria-selected', target === 'register');
+      $('#form-login').style.display = target === 'login' ? 'grid' : 'none';
+      $('#form-register').style.display = target === 'register' ? 'grid' : 'none';
+    }
+
+    if (a === 'toggle-pwd') {
+      var inp = document.getElementById(el.dataset.input);
+      if (inp) {
+        inp.type = inp.type === 'password' ? 'text' : 'password';
+        el.textContent = inp.type === 'password' ? '👁️' : '🔒';
+      }
+    }
+
+    if (a === 'forgot-pwd') {
+      var email = $('#login-email').value.trim();
+      if (!email) {
+        toast('Escribe tu correo electrónico primero');
+        $('#login-email').focus();
+        return;
+      }
+      auth.sendPasswordResetEmail(email).then(function() {
+        toast('Correo de recuperación enviado con éxito');
+      }).catch(function(err) {
+        toast('Error al enviar correo: ' + err.message);
+      });
     }
   });
 
-  function switchTab(tab) {
-    hideAlert();
-    if (tab === 'login') {
-      document.getElementById('panel-login').classList.add('active');
-      document.getElementById('panel-register').classList.remove('active');
-      document.getElementById('btn-login-tab').classList.add('active');
-      document.getElementById('btn-reg-tab').classList.remove('active');
-    } else {
-      document.getElementById('panel-register').classList.add('active');
-      document.getElementById('panel-login').classList.remove('active');
-      document.getElementById('btn-reg-tab').classList.add('active');
-      document.getElementById('btn-login-tab').classList.remove('active');
-    }
-  }
-
-  function togglePassword(fieldId, btn) {
-    var input = document.getElementById(fieldId);
-    if (input.type === 'password') {
-      input.type = 'text';
-      btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>';
-    } else {
-      input.type = 'password';
-      btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
-    }
-  }
-
-  function showAlert(msg, type) {
-    var box = document.getElementById('alert-box');
-    box.textContent = msg;
-    box.className = 'alert ' + type;
-    box.hidden = false;
-  }
-
-  function hideAlert() {
-    document.getElementById('alert-box').hidden = true;
-  }
-
-  function handleLogin(e) {
+  // INICIAR SESIÓN CON FILTRO DE APROBACIÓN
+  $('#form-login').addEventListener('submit', async function(e) {
     e.preventDefault();
-    hideAlert();
-    var email = document.getElementById('login-email').value.trim();
-    var password = document.getElementById('login-password').value;
-    var btn = document.getElementById('login-submit-btn');
+    var email = $('#login-email').value.trim();
+    var password = $('#login-password').value;
 
-    btn.disabled = true;
-    btn.textContent = 'Verificando...';
+    try {
+      var cred = await auth.signInWithEmailAndPassword(email, password);
+      
+      var userDoc = await db.collection('usuarios').doc(cred.user.uid).get();
+      
+      if (!userDoc.exists || !userDoc.data().aprobado) {
+        await auth.signOut();
+        toast('⚠️ Su cuenta se encuentra en proceso de validación.');
+        return;
+      }
 
-    auth.signInWithEmailAndPassword(email, password)
-      .then(function() {
+      toast('¡Acceso concedido! Entrando...');
+      setTimeout(function() {
         window.location.href = 'index.html';
-      })
-      .catch(function(error) {
-        btn.disabled = false;
-        btn.textContent = 'Ingresar al Sistema';
-        if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
-          showAlert('Correo o contraseña incorrectos.', 'error');
-        } else if (error.code === 'auth/too-many-requests') {
-          showAlert('Demasiados intentos fallidos. Intente más tarde.', 'error');
-        } else {
-          showAlert('Error al iniciar sesión. Verifique sus datos.', 'error');
-        }
-      });
-  }
+      }, 1000);
 
-  function handleRegister(e) {
+    } catch (err) {
+      toast('Error de acceso: ' + err.message);
+    }
+  });
+
+  // REGISTRO SEGURO CON ROL PENDIENTE
+  $('#form-register').addEventListener('submit', async function(e) {
     e.preventDefault();
-    hideAlert();
-    var email = document.getElementById('reg-email').value.trim();
-    var password = document.getElementById('reg-password').value;
-    var confirmPassword = document.getElementById('reg-password-confirm').value;
-    var btn = document.getElementById('reg-submit-btn');
+    var email = $('#reg-email').value.trim();
+    var password = $('#reg-password').value;
 
-    if (password !== confirmPassword) {
-      showAlert('Las contraseñas no coinciden.', 'error');
-      return;
-    }
-
-    if (password.length < 6) {
-      showAlert('La contraseña debe tener al menos 6 caracteres.', 'error');
-      return;
-    }
-
-    btn.disabled = true;
-    btn.textContent = 'Registrando...';
-
-    auth.createUserWithEmailAndPassword(email, password)
-      .then(function(userCredential) {
-        // Guardar automáticamente el perfil del usuario en Firestore para el panel admin
-        db.collection('usuarios_registrados').doc(userCredential.user.uid).set({
-          email: email,
-          uid: userCredential.user.uid,
-          rol: 'Trabajador',
-          fechaCreacion: new Date().toISOString(),
-          estado: 'Activo'
-        }).then(function() {
-          showAlert('¡Cuenta creada con éxito! Redirigiendo...', 'success');
-          setTimeout(function() {
-            window.location.href = 'index.html';
-          }, 1200);
-        });
-      })
-      .catch(function(error) {
-        btn.disabled = false;
-        btn.textContent = 'Registrar Cuenta';
-        if (error.code === 'auth/email-already-in-use') {
-          showAlert('Este correo ya está registrado en el sistema.', 'error');
-        } else if (error.code === 'auth/invalid-email') {
-          showAlert('El formato del correo electrónico no es válido.', 'error');
-        } else {
-          showAlert('No se pudo registrar la cuenta. Intente de nuevo.', 'error');
-        }
+    try {
+      var cred = await auth.createUserWithEmailAndPassword(email, password);
+      
+      await db.collection('usuarios').doc(cred.user.uid).set({
+        email: email,
+        rol: 'pendiente',
+        aprobado: false,
+        fechaRegistro: new Date().toISOString()
       });
-  }
 
-  function handleForgotPassword() {
-    var email = document.getElementById('login-email').value.trim();
-    if (!email) {
-      showAlert('Ingrese su correo electrónico en el campo de arriba para recuperar su contraseña.', 'error');
-      return;
+      await auth.signOut();
+      toast('Registro exitoso. Su cuenta está en proceso de validación.');
+      $('#form-register').reset();
+      $('#tab-login').click();
+
+    } catch (err) {
+      toast('Error en el registro: ' + err.message);
     }
-
-    auth.sendPasswordResetEmail(email)
-      .then(function() {
-        showAlert('Se ha enviado un enlace de recuperación a su correo electrónico.', 'success');
-      })
-      .catch(function(error) {
-        showAlert('No se pudo enviar el correo de recuperación. Verifique la dirección.', 'error');
-      });
-  }
+  });
+})();
 </script>
 
 </body>
