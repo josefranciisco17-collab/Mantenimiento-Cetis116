@@ -1,369 +1,112 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Panel Gerencial · TermoBit 116</title>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>Aprobación de Cuentas · Clima Hogar</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap">
   <style>
-    :root {
-      --bg: #0B131A;
-      --surface: #131E26;
-      --surface-2: #1B2934;
-      --ink: #E6EEF1;
-      --ink-2: #92A6B2;
-      --line: #2A3F4E;
-      --accent: #06B6D4;
-      --accent-ink: #041E26;
-      --bad: #EF4444;
-      --ok: #10B981;
-      --font-display: 'Barlow Condensed', sans-serif;
-      --font-body: 'Plus Jakarta Sans', sans-serif;
-      --font-mono: 'JetBrains Mono', monospace;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { background: var(--bg); color: var(--ink); font: 15px/1.5 var(--font-body); padding: 20px; }
-    
-    .wrapper { max-width: 900px; margin: 0 auto; display: none; }
-
-    .admin-header { display: flex; justify-content: space-between; align-items: center; background: var(--surface); border: 1px solid var(--line); padding: 20px 24px; border-radius: 12px; margin-bottom: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-    .admin-header h1 { font-family: var(--font-display); font-size: 24px; text-transform: uppercase; color: #fff; }
-    .admin-header p { color: var(--accent); font-size: 12px; font-family: var(--font-mono); text-transform: uppercase; }
-    .btn-exit { background: rgba(239, 68, 68, 0.15); color: var(--bad); border: 1px solid rgba(239, 68, 68, 0.4); padding: 8px 16px; border-radius: 8px; font-weight: 700; cursor: pointer; text-decoration: none; font-size: 13px; transition: all 0.2s; }
-    .btn-exit:hover { background: rgba(239, 68, 68, 0.3); }
-
-    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
-    .stat-card { background: var(--surface); border: 1px solid var(--line); padding: 20px; border-radius: 12px; text-align: center; }
-    .stat-card h3 { font-size: 12px; color: var(--ink-2); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
-    .stat-card .value { font-size: 28px; font-weight: 800; color: var(--accent); font-family: var(--font-mono); }
-
-    .card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 24px; margin-bottom: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.4); }
-    .card h2 { font-size: 18px; font-family: var(--font-display); text-transform: uppercase; margin-bottom: 16px; color: #fff; display: flex; align-items: center; gap: 10px; }
-    
-    .table-container { width: 100%; overflow-x: auto; }
-    table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }
-    th { background: var(--surface-2); color: var(--ink-2); padding: 12px; text-transform: uppercase; font-size: 11px; letter-spacing: 0.05em; border-bottom: 1px solid var(--line); }
-    td { padding: 12px; border-bottom: 1px solid var(--line); color: var(--ink); }
-    tr:hover td { background: rgba(255,255,255,0.02); }
-
-    .badge-status { display: inline-block; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
-    .badge-status.active { background: rgba(16, 185, 129, 0.15); color: var(--ok); border: 1px solid rgba(16,185,129,0.3); }
-    .badge-status.inactive { background: rgba(148, 163, 184, 0.15); color: var(--ink-2); border: 1px solid rgba(148,163,184,0.3); }
-
-    #auth-screen { max-width: 400px; margin: 80px auto; background: var(--surface); border: 1px solid var(--line); padding: 30px; border-radius: 16px; box-shadow: 0 20px 40px rgba(0,0,0,0.6); }
-    #auth-screen h2 { color: #fff; font-size: 22px; margin-bottom: 6px; text-align: center; font-family: var(--font-display); text-transform: uppercase; }
-    #auth-screen p { color: var(--ink-2); font-size: 12px; text-align: center; margin-bottom: 20px; }
-    .input-group { margin-bottom: 16px; }
-    .input-group label { display: block; font-size: 11px; color: var(--ink-2); margin-bottom: 6px; text-transform: uppercase; font-weight: 700; }
-    .input-group input { width: 100%; padding: 12px 14px; background: var(--bg); border: 1px solid var(--line); border-radius: 8px; color: #fff; font-size: 14px; }
-    .input-group input:focus { outline: none; border-color: var(--accent); }
-    .btn-main { width: 100%; background: var(--accent); color: var(--accent-ink); border: none; padding: 12px; font-weight: 800; border-radius: 8px; cursor: pointer; text-transform: uppercase; }
-    .error-msg { background: rgba(239,68,68,0.15); border: 1px solid var(--bad); color: #FCA5A5; padding: 10px; border-radius: 6px; font-size: 12px; text-align: center; margin-bottom: 15px; display: none; }
+    :root { --bg: #0B131A; --surface: #131E26; --ink: #E6EEF1; --ink-2: #92A6B2; --line: #2A3F4E; --accent: #06B6D4; --accent-ink: #041E26; --bad: #EF4444; --good: #10B981; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font-family: 'Plus Jakarta Sans', sans-serif; padding: 20px; }
+    .container { max-width: 700px; margin: 0 auto; }
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; border-bottom: 1px solid var(--line); padding-bottom: 12px; }
+    .header h1 { font-family: 'Barlow Condensed', sans-serif; font-size: 24px; margin: 0; color: #fff; text-transform: uppercase; }
+    .card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 20px; margin-bottom: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+    .user-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--line); }
+    .user-row:last-child { border-bottom: none; }
+    .btn { padding: 8px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; border: 0; font-size: 13px; }
+    .btn-approve { background: var(--good); color: #fff; }
+    .btn-back { background: var(--surface); color: var(--accent); border: 1px solid var(--accent); }
+    .empty { color: var(--ink-2); text-align: center; padding: 30px; }
   </style>
 </head>
 <body>
 
-  <!-- PANTALLA DE ACCESO CON LLAVE MAESTRA -->
-  <div id="auth-screen">
-    <h2>Panel Gerencial</h2>
-    <p>By JFAM Tecno-Energy · Seguridad Avanzada</p>
-    <div id="login-error" class="error-msg"></div>
-    <form onsubmit="verificarAccesoAdmin(event)">
-      <div class="input-group">
-        <label>Correo de Administrador</label>
-        <input type="email" id="adm-email" required placeholder="tucorreo@cetis116.com">
-      </div>
-      <div class="input-group">
-        <label>Contraseña</label>
-        <input type="password" id="adm-pass" required placeholder="••••••••">
-      </div>
-      <div class="input-group">
-        <label>Llave Maestra de Seguridad</label>
-        <input type="password" id="adm-key" required placeholder="PIN maestro">
-      </div>
-      <button type="submit" class="btn-main">Acceder al Panel</button>
-    </form>
-    <a href="login.html" style="display:block; text-align:center; margin-top:20px; color:var(--ink-2); font-size:12px; text-decoration:none;">← Volver al login general</a>
+<div class="container">
+  <div class="header">
+    <h1>Aprobación de Cuentas Nuevas</h1>
+    <button class="btn btn-back" onclick="window.location.href='index.html'">Volver al Inicio</button>
   </div>
 
-  <!-- PANEL GERENCIAL PRINCIPAL -->
-  <div id="dashboard-content" class="wrapper">
-    
-    <div class="admin-header">
-      <div>
-        <h1>Panel de Supervisión Gerencial</h1>
-        <p>By JFAM Tecno-Energy · Control Maestro</p>
-      </div>
-      <button onclick="cerrarSesionAdmin()" class="btn-exit">Cerrar Sesión</button>
+  <div class="card">
+    <p style="margin-top:0; color: var(--ink-2); font-size: 13px;">Las siguientes cuentas se han registrado y requieren tu validación para acceder al sistema:</p>
+    <div id="pending-users-list">
+      <p class="empty">Cargando solicitudes pendientes...</p>
     </div>
-
-    <!-- Estadísticas Globales -->
-    <div class="stats-grid">
-      <div class="stat-card">
-        <h3>Total Equipos</h3>
-        <div class="value" id="stat-equipos">--</div>
-      </div>
-      <div class="stat-card">
-        <h3>Total Servicios</h3>
-        <div class="value" id="stat-servicios">--</div>
-      </div>
-      <div class="stat-card">
-        <h3>Registros Auditoría</h3>
-        <div class="value" id="stat-auditoria">--</div>
-      </div>
-    </div>
-
-    <!-- APARTADO 1: USUARIOS CONECTADOS EN TIEMPO REAL -->
-    <div class="card" style="border-color: rgba(6, 182, 212, 0.4);">
-      <h2>🟢 Usuarios Conectados (Tiempo Real)</h2>
-      <p style="color: var(--ink-2); font-size: 12px; margin-bottom: 14px;">Monitoreo en vivo de sesiones activas, hora y fecha de conexión.</p>
-      <div class="table-container">
-        <table>
-          <thead>
-            <tr>
-              <th>Usuario / Correo</th>
-              <th>Estatus</th>
-              <th>Fecha y Hora de Conexión</th>
-            </tr>
-          </thead>
-          <tbody id="live-users-table-body">
-            <tr><td colspan="3" style="text-align:center; color:var(--ink-2);">Escuchando conexiones...</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- APARTADO 2: CUENTAS CREADAS (BASE DE DATOS FIREBASE) -->
-    <div class="card" style="border-color: rgba(16, 185, 129, 0.4);">
-      <h2>📁 Cuentas Creadas (Base de Datos)</h2>
-      <p style="color: var(--ink-2); font-size: 12px; margin-bottom: 14px;">Listado general con la información completa de todos los usuarios registrados.</p>
-      <div class="table-container">
-        <table>
-          <thead>
-            <tr>
-              <th>Correo Electrónico</th>
-              <th>UID de Firebase</th>
-              <th>Rol / Estado</th>
-              <th>Fecha de Creación</th>
-            </tr>
-          </thead>
-          <tbody id="accounts-table-body">
-            <tr><td colspan="4" style="text-align:center; color:var(--ink-2);">Cargando cuentas registradas...</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- Historial de Auditoría Global -->
-    <div class="card">
-      <h2>📋 Registro de Auditoría en Tiempo Real</h2>
-      <div class="table-container">
-        <table>
-          <thead>
-            <tr>
-              <th>Usuario</th>
-              <th>Acción Realizada</th>
-              <th>Fecha y Hora</th>
-            </tr>
-          </thead>
-          <tbody id="audit-table-body">
-            <tr><td colspan="3" style="text-align:center; color:var(--ink-2);">Cargando auditoría...</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
   </div>
+</div>
 
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyA_JufV6ZSCICVuUrVZEJropD1VKA2bzQs",
-      authDomain: "mantenimientocetis116.firebaseapp.com",
-      databaseURL: "https://mantenimientocetis116-default-rtdb.firebaseio.com",
-      projectId: "mantenimientocetis116",
-      storageBucket: "mantenimientocetis116.firebasestorage.app",
-      messagingSenderId: "556796465966",
-      appId: "1:556796465966:web:b0636bf4ee5ba99c21a0bf"
-    };
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
-    if (!firebase.apps.length) {
-      firebase.initializeApp(firebaseConfig);
+<script>
+(function() {
+  var firebaseConfig = {
+    apiKey: "AIzaSyA_JufV6ZSCICVuUrVZEJropD1VKA2bzQs",
+    authDomain: "mantenimientocetis116.firebaseapp.com",
+    databaseURL: "https://mantenimientocetis116-default-rtdb.firebaseio.com",
+    projectId: "mantenimientocetis116",
+    storageBucket: "mantenimientocetis116.firebasestorage.app",
+    messagingSenderId: "556796465966",
+    appId: "1:556796465966:web:b0636bf4ee5ba99c21a0bf"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  var auth = firebase.auth();
+  var db = firebase.firestore();
+
+  auth.onAuthStateChanged(function(user) {
+    if (!user || user.email !== 'josefranciisco17@gmail.com') {
+      alert('Acceso restringido al creador de la aplicación.');
+      window.location.href = 'index.html';
+      return;
     }
-    const auth = firebase.auth();
-    const db = firebase.firestore();
+    cargarSolicitudesPendientes();
+  });
 
-    const LLAVE_MAESTRA = "4864"; 
-    const CORREOS_ADMINS = [
-      "josefranciisco17@gmail.com"
-    ];
-
-    auth.onAuthStateChanged(user => {
-      if (user && CORREOS_ADMINS.includes(user.email)) {
-        document.getElementById('auth-screen').style.display = 'none';
-        document.getElementById('dashboard-content').style.display = 'block';
-        iniciarPanelGerencialEnVivo();
-      }
-    });
-
-    function verificarAccesoAdmin(e) {
-      e.preventDefault();
-      const email = document.getElementById('adm-email').value.trim().toLowerCase();
-      const pass = document.getElementById('adm-pass').value;
-      const key = document.getElementById('adm-key').value;
-      const errDiv = document.getElementById('login-error');
-
-      errDiv.style.display = 'none';
-
-      if (key !== LLAVE_MAESTRA) {
-        errDiv.textContent = "Llave maestra de seguridad incorrecta.";
-        errDiv.style.display = 'block';
+  async function cargarSolicitudesPendientes() {
+    var container = document.getElementById('pending-users-list');
+    try {
+      var snapshot = await db.collection('usuarios_registrados').where('aprobado', '==', false).get();
+      
+      if (snapshot.empty) {
+        container.innerHTML = '<p class="empty">No hay cuentas nuevas pendientes de aprobación.</p>';
         return;
       }
 
-      if (!CORREOS_ADMINS.includes(email)) {
-        errDiv.textContent = "Este correo no cuenta con privilegios gerenciales.";
-        errDiv.style.display = 'block';
-        return;
-      }
-
-      auth.signInWithEmailAndPassword(email, pass)
-        .then(() => {
-          document.getElementById('auth-screen').style.display = 'none';
-          document.getElementById('dashboard-content').style.display = 'block';
-          iniciarPanelGerencialEnVivo();
-        })
-        .catch(() => {
-          errDiv.textContent = "Credenciales de Firebase inválidas.";
-          errDiv.style.display = 'block';
-        });
-    }
-
-    function cerrarSesionAdmin() {
-      auth.signOut().then(() => {
-        window.location.href = "login.html";
+      var html = '';
+      snapshot.forEach(function(doc) {
+        var u = doc.data();
+        var uid = doc.id;
+        html += '<div class="user-row">' +
+                  '<div>' +
+                    '<strong style="color: #fff; font-size: 15px;">' + u.email + '</strong><br>' +
+                    '<span style="font-size: 12px; color: var(--ink-2);">Registrado: ' + (u.fechaRegistro ? new Date(u.fechaRegistro).toLocaleString() : 'N/D') + '</span>' +
+                  '</div>' +
+                  '<button class="btn btn-approve" onclick="aprobarUsuario(\'' + uid + '\')">Aprobar Cuenta</button>' +
+                '</div>';
       });
+      container.innerHTML = html;
+    } catch (err) {
+      container.innerHTML = '<p class="empty" style="color: var(--bad);">Error al cargar solicitudes: ' + err.message + '</p>';
     }
+  }
 
-    async function iniciarPanelGerencialEnVivo() {
-      try {
-        const equiposSnap = await db.collection('equipos').get();
-        const serviciosSnap = await db.collection('servicios').get();
-        document.getElementById('stat-equipos').textContent = equiposSnap.size;
-        document.getElementById('stat-servicios').textContent = serviciosSnap.size;
-
-        // Auto-respaldo de seguridad: Asegura que el admin actual siempre esté registrado en Firestore
-        if (auth.currentUser) {
-          const userRef = db.collection('usuarios_registrados').doc(auth.currentUser.uid);
-          const docSnap = await userRef.get();
-          if (!docSnap.exists) {
-            await userRef.set({
-              email: auth.currentUser.email,
-              uid: auth.currentUser.uid,
-              rol: 'Administrador',
-              fechaCreacion: new Date().toISOString(),
-              ultimaConexion: new Date().toISOString(),
-              estado: 'Activo'
-            });
-          } else {
-            // Actualizar latido de conexión en tiempo real
-            await userRef.update({
-              ultimaConexion: new Date().toISOString()
-            });
-          }
-        }
-
-        // Auditoría general en tiempo real
-        db.collection('auditoria').orderBy('fecha', 'desc').limit(15).onSnapshot(auditSnap => {
-          const auditBody = document.getElementById('audit-table-body');
-          auditBody.innerHTML = '';
-          if(auditSnap.empty) {
-            auditBody.innerHTML = '<tr><td colspan="3" style="text-align:center;">No hay movimientos registrados.</td></tr>';
-          } else {
-            document.getElementById('stat-auditoria').textContent = auditSnap.size;
-            auditSnap.forEach(doc => {
-              const data = doc.data();
-              const fechaFmt = data.fecha ? new Date(data.fecha).toLocaleString() : 'N/D';
-              auditBody.innerHTML += `
-                <tr>
-                  <td><strong>${data.usuario || 'Anónimo'}</strong></td>
-                  <td>${data.accion} - ${data.detalle || ''}</td>
-                  <td><small style="color:var(--ink-2);">${fechaFmt}</small></td>
-                </tr>
-              `;
-            });
-          }
-        });
-
-        // ESCUCHA EN TIEMPO REAL PARA USUARIOS CONECTADOS Y CUENTAS CREADAS
-        db.collection('usuarios_registrados').onSnapshot(usersSnap => {
-          const liveUsersBody = document.getElementById('live-users-table-body');
-          const accountsBody = document.getElementById('accounts-table-body');
-          
-          liveUsersBody.innerHTML = '';
-          accountsBody.innerHTML = '';
-
-          if (usersSnap.empty) {
-            liveUsersBody.innerHTML = '<tr><td colspan="3" style="text-align:center;">No hay usuarios conectados.</td></tr>';
-            accountsBody.innerHTML = '<tr><td colspan="4" style="text-align:center;">No hay cuentas registradas en la base de datos.</td></tr>';
-          } else {
-            const ahora = new Date();
-            
-            usersSnap.forEach(doc => {
-              const u = doc.data();
-              
-              // 1. Usuarios Conectados (< 15 minutos)
-              let esEnLinea = false;
-              if (u.ultimaConexion) {
-                const ultimaConx = new Date(u.ultimaConexion);
-                const diferenciaMinutos = (ahora - ultimaConx) / (1000 * 60);
-                if (diferenciaMinutos <= 15) {
-                  esEnLinea = true;
-                }
-              }
-              if (auth.currentUser && auth.currentUser.email === u.email) {
-                esEnLinea = true;
-              }
-
-              const estadoClase = esEnLinea ? 'active' : 'inactive';
-              const estadoTexto = esEnLinea ? '🟢 Conectado' : '⚪ Desconectado';
-              const fechaConexionFmt = u.ultimaConexion ? new Date(u.ultimaConexion).toLocaleString() : 'Sin registro';
-
-              if (esEnLinea) {
-                liveUsersBody.innerHTML += `
-                  <tr>
-                    <td><strong>${u.email}</strong></td>
-                    <td><span class="badge-status ${estadoClase}">${estadoTexto}</span></td>
-                    <td><small style="color:var(--ink-2);">${fechaConexionFmt}</small></td>
-                  </tr>
-                `;
-              }
-
-              // 2. Cuentas Creadas (Listado general)
-              const fechaCreacionFmt = u.fechaCreacion ? new Date(u.fechaCreacion).toLocaleDateString() : 'N/D';
-              accountsBody.innerHTML += `
-                <tr>
-                  <td><strong>${u.email}</strong></td>
-                  <td><code>${u.uid}</code></td>
-                  <td><span class="badge-status active">${u.rol || 'Trabajador'}</span></td>
-                  <td><small style="color:var(--ink-2);">${fechaCreacionFmt}</small></td>
-                </tr>
-              `;
-            });
-
-            if (liveUsersBody.innerHTML === '') {
-              liveUsersBody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:var(--ink-2);">No hay usuarios activos en este momento.</td></tr>';
-            }
-          }
-        });
-
-      } catch (error) {
-        console.error("Error al inicializar panel gerencial:", error);
-      }
+  window.aprobarUsuario = async function(uid) {
+    try {
+      await db.collection('usuarios_registrados').doc(uid).update({
+        aprobado: true
+      });
+      alert('¡Cuenta aprobada con éxito!');
+      cargarSolicitudesPendientes();
+    } catch (err) {
+      alert('Error al aprobar cuenta: ' + err.message);
     }
-  </script>
+  };
+})();
+</script>
+
 </body>
 </html>
