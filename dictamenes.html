@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Dictamen Técnico de Reemplazo · Clima Hogar Multi Servicios</title>
+​<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+​<!-- jsPDF y html2canvas para exportación exacta a PDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+​<style>
+:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#0B131A;color:#E6EEF1}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}
+​:root {
+--bg: #0B131A;
+--surface: #131E26;
+--surface-2: #1B2934;
+--surface-3: #223442;
+--ink: #E6EEF1;
+--ink-2: #92A6B2;
+--line: #2A3F4E;
+--accent: #06B6D4;
+--accent-ink: #041E26;
+--accent-soft: rgba(6, 182, 212, 0.15);
+--ok: #10B981;
+--warn: #F59E0B;
+--bad: #EF4444;
+--bad-soft: rgba(239, 68, 68, 0.15);
+--font-display: 'Barlow Condensed', sans-serif;
+--font-body: 'Plus Jakarta Sans', sans-serif;
+--font-mono: 'JetBrains Mono', monospace;
+}
+​* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 var(--font-body); }
+h1, h2, h3, p { margin: 0; }
+​.inner { max-width: 1200px; margin: 0 auto; padding-left: max(20px, env(safe-area-inset-left, 0px)); padding-right: max(20px, env(safe-area-inset-right, 0px)); }
+​/* Masthead */
+.top { background: linear-gradient(180deg, #101B22 0%, var(--bg) 100%); border-bottom: 1px solid var(--line); padding-block: 28px 20px; }
+.top .inner { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px 24px; }
+.brand h1 { font: 700 28px/1.1 var(--font-display); letter-spacing: .02em; text-transform: uppercase; color: #FFFFFF; }
+.brand p { color: var(--accent); margin-top: 6px; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; }
+.top-actions { display: flex; flex-wrap: wrap; gap: 10px; width: 100%; }
+@media (min-width: 640px) { .top-actions { width: auto; } }
+​.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 42px; padding: 8px 18px; border: 1.5px solid var(--line); border-radius: 6px; background: var(--surface); font-weight: 600; font-size: 14px; transition: all .2s; color: var(--ink); text-decoration: none; width: 100%; cursor: pointer; }
+@media (min-width: 640px) { .btn { width: auto; } }
+.btn:hover { border-color: var(--accent); background: var(--surface-2); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.btn.primary:hover { filter: brightness(1.1); }
+.btn.success { background: #10B981; border-color: #10B981; color: #fff; }
+.btn.small { min-height: 34px; padding: 4px 12px; font-size: 13px; width: auto; }
+​main { padding-block: 24px 60px; }
+​.grid-layout { display: grid; grid-template-columns: 1fr; gap: 24px; }
+@media (min-width: 1000px) { .grid-layout { grid-template-columns: 460px 1fr; } }
+​.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,.3); margin-bottom: 20px; }
+.panel h2 { font: 700 20px var(--font-display); text-transform: uppercase; color: var(--accent); margin-bottom: 16px; border-bottom: 1px solid var(--line); padding-bottom: 8px; letter-spacing: .04em; }
+​.fld { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+.fld label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-2); }
+.fld input, .fld select, .fld textarea { width: 100%; min-height: 46px; padding: 10px 14px; font-size: 15px; background: var(--bg); border: 1.5px solid var(--line); border-radius: 8px; color: var(--ink); }
+.fld textarea { min-height: 80px; resize: vertical; }
+.fld input:focus, .fld select:focus, .fld textarea:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 0 3px var(--accent-soft); }
+​.checks-group { display: grid; gap: 8px; margin-bottom: 14px; background: var(--bg); padding: 12px; border: 1.5px solid var(--line); border-radius: 8px; }
+.chk-label { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 500; cursor: pointer; color: var(--ink); }
+.chk-label input { width: 18px; height: 18px; accent-color: var(--accent); cursor: pointer; }
+​/* PREVISUALIZACIÓN DE DICTAMEN TÉCNICO */
+.preview-container { background: #1B2934; padding: 12px; border-radius: 10px; overflow-x: auto; border: 1px solid var(--line); display: flex; justify-content: center; }
+.dictamen-page { background: #FFFFFF; color: #000000; width: 794px; min-height: 1123px; padding: 50px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; box-shadow: 0 10px 30px rgba(0,0,0,.5); position: relative; font-size: 13px; line-height: 1.5; flex-shrink: 0; }
+​.dt-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 3px solid #041E26; padding-bottom: 15px; margin-bottom: 20px; }
+.dt-logo-area { display: flex; align-items: center; gap: 15px; }
+.dt-company h2 { font-size: 22px; font-weight: 800; color: #041E26; text-transform: uppercase; margin: 0; line-height: 1.1; }
+.dt-company p { font-size: 11px; color: #4b5563; margin: 2px 0; }
+​.dt-title-box { text-align: right; }
+.dt-title-box h1 { font-size: 20px; font-weight: 900; color: #EF4444; margin: 0; text-transform: uppercase; }
+.dt-title-box p { font-size: 11px; font-weight: 600; color: #374151; margin: 2px 0; }
+​.dt-section-title { font-size: 13px; font-weight: 700; color: #041E26; text-transform: uppercase; background: #e0f2fe; border-left: 4px solid #06B6D4; padding: 6px 10px; margin: 16px 0 8px 0; }
+.dt-grid-info { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: #f9fafb; border: 1px solid #e5e7eb; padding: 12px; border-radius: 6px; font-size: 12px; }
+​.dt-failure-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+.dt-failure-item { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; color: #374151; }
+.dt-failure-item::before { content: "☒"; color: #EF4444; font-size: 14px; }
+​.dt-conclusion-box { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; padding: 12px; border-radius: 6px; font-size: 12px; font-weight: 600; margin-top: 16px; }
+​.dt-signatures { display: flex; justify-content: space-between; margin-top: 80px; text-align: center; font-size: 11px; color: #4b5563; }
+.dt-sig-line { width: 220px; border-top: 1px solid #374151; padding-top: 6px; margin: 0 auto; }
+​.dt-footer { position: absolute; bottom: 30px; left: 50px; right: 50px; text-align: center; border-top: 1px solid #e5e7eb; padding-top: 10px; font-size: 10px; color: #9ca3af; }
+​.toast { position: fixed; z-index: 40; left: 50%; bottom: 24px; transform: translate(-50%, 20px); max-width: 90%; padding: 12px 20px; border-radius: 8px; background: #fff; color: #000; font-weight: 600; font-size: 14px; opacity: 0; pointer-events: none; transition: all .2s; box-shadow: 0 10px 30px rgba(0,0,0,.5); }
+.toast.show { opacity: 1; transform: translate(-50%, 0); }
+</style>
+</head>
+<body>
+​<header class="top">
+<div class="inner">
+<div class="brand">
+<h1>Clima Hogar Multi Servicios</h1>
+<p>Generador de Dictámenes Técnicos Oficiales</p>
+</div>
+<div class="top-actions">
+<a href="index.html" class="btn primary">Volver al sistema</a>
+<button type="button" class="btn success" id="btn-download">📥 Descargar Dictamen PDF</button>
+</div>
+</div>
+</header>
+​<main>
+<div class="inner">
+<div class="grid-layout">
+<!-- PANEL DE CONFIGURACIÓN -->
+<div class="panel">
+<h2>1. Datos del Dictamen</h2>
+​<div class="fld">
+<label>Importar Equipo Registrado (Opcional)</label>
+<select id="dt-select-eq">
+<option value="">-- Selecciona un equipo de la app --</option>
+</select>
+</div>
+​<div class="fld">
+<label>Folio de Dictamen</label>
+<input type="text" id="dt-folio" value="DT-2026-001">
+</div>
+<div class="fld">
+<label>Fecha de Emisión</label>
+<input type="date" id="dt-fecha">
+</div>
+<div class="fld">
+<label>Cliente / Institución</label>
+<input type="text" id="dt-cliente" value="CETis 116 &quot;Antonia Nava de Catalán&quot;">
+</div>
+<div class="fld">
+<label>Ubicación / Aula / Edificio</label>
+<input type="text" id="dt-ubicacion" value="Biblioteca Escolar - Edificio B">
+</div>
+<div class="fld">
+<label>Datos del Equipo (Marca / Modelo / Serie)</label>
+<input type="text" id="dt-equipo-info" value="Minisplit LG 4.0 Toneladas · S/N: LG1904425">
+</div>
+​<h2>2. Evaluación de Daños y Fallas</h2>
+<div class="checks-group" id="checks-container">
+<label class="chk-label"><input type="checkbox" value="Compresor dañado / Quemado mecánicamente" checked> Compresor dañado / Quemado mecánicamente</label>
+<label class="chk-label"><input type="checkbox" value="Microfugas múltiples ocultas en serpentín evaporador/condensador" checked> Microfugas múltiples ocultas en serpentín</label>
+<label class="chk-label"><input type="checkbox" value="Corrosión y oxidación severa en estructura y tarjeta principal"> Corrosión y oxidación severa (daño estructural)</label>
+<label class="chk-label"><input type="checkbox" value="Obsolescencia técnica por alto consumo eléctrico y falta de refacciones"> Obsolescencia técnica y falta de refacciones</label>
+<label class="chk-label"><input type="checkbox" value="Costos acumulados de reparaciones previas superiores al 70% de un equipo nuevo"> Costo de reparación superior al 70% de equipo nuevo</label>
+</div>
+​<div class="fld">
+<label>Observaciones y Recomendación Técnica</label>
+<textarea id="dt-obs">Tras realizar pruebas eléctricas y de presión con nitrógeno, el equipo presenta daños irreversibles en componentes críticos. Se dictamina inviable su reparación y se recomienda el reemplazo total por un sistema inverter nuevo para garantizar la seguridad y eficiencia del plantel.</textarea>
+</div>
+</div>
+​<!-- PREVISUALIZACIÓN EN VIVO -->
+<div>
+<h2 style="font: 700 18px var(--font-display); text-transform: uppercase; color: var(--ink-2); margin-bottom: 12px; letter-spacing: .04em;">Vista Previa del Dictamen</h2>
+<div class="preview-container">
+<div id="dictamen-pdf" class="dictamen-page">
+<div class="dt-header">
+<div class="dt-logo-area">
+<img src="logo-climahogar.png" alt="Logo" style="width: 70px; height: 70px; object-fit: contain;">
+<div class="dt-company">
+<h2>Clima Hogar Multi Servicios</h2>
+<p>Soluciones Completas para tu Hogar e Institución</p>
+<p>Acapulco, Gro. | Tel: 744 533 1689</p>
+</div>
+</div>
+<div class="dt-title-box">
+<h1>Dictamen Técnico</h1>
+<p><strong>Folio:</strong> <span id="lbl-folio">DT-2026-001</span></p>
+<p><strong>Fecha:</strong> <span id="lbl-fecha">7 de Noviembre de 2026</span></p>
+</div>
+</div>
+​<div class="dt-section-title">1. Datos del Solicitante y Ubicación</div>
+<div class="dt-grid-info">
+<div><strong>Institución / Cliente:</strong>
+<span id="lbl-cliente">CETis 116 "Antonia Nava de Catalán"</span></div>
+<div><strong>Ubicación Específica:</strong>
+<span id="lbl-ubicacion">Biblioteca Escolar - Edificio B</span></div>
+</div>
+​<div class="dt-section-title">2. Identificación del Equipo Evaluado</div>
+<div class="dt-grid-info">
+<div style="grid-column: span 2;"><strong>Descripción del Equipo:</strong>
+<span id="lbl-equipo-info">Minisplit LG 4.0 Toneladas · S/N: LG1904425</span></div>
+</div>
+​<div class="dt-section-title">3. Hallazgos e Incidencias Técnicas Detectadas</div>
+<div style="padding: 10px 0;">
+<ul class="dt-failure-list" id="lbl-failures-list">
+<!-- Se llena por JS -->
+</ul>
+</div>
+​<div class="dt-section-title">4. Observaciones e Informe del Especialista</div>
+<p id="lbl-obs" style="font-size: 12px; color: #1f2937; background: #f9fafb; padding: 12px; border: 1px solid #e5e7eb; border-radius: 6px; white-space: pre-wrap; margin: 0;"></p>
+​<div class="dt-conclusion-box">
+<strong>CONCLUSIÓN Y DICTAMEN FINAL:</strong>
+
+El equipo evaluado se declara <strong>INVIABLE PARA REPARACIÓN</strong>. Se aconseja su baja técnica y el reemplazo definitivo por unidad nueva.
+</div>
+​<div class="dt-signatures">
+<div>
+<div class="dt-sig-line"></div>
+<strong>Técnico Especialista Responsable</strong>
+Clima Hogar Multi Servicios
+</div>
+<div>
+<div class="dt-sig-line"></div>
+<strong>Vo. Bo. Dirección / Administración</strong>
+<span id="lbl-cliente-sig">CETis 116</span>
+</div>
+</div>
+​<div class="dt-footer">
+Clima Hogar Multi Servicios | Dictamen Técnico Oficial de Condición de Equipos · Página 1 de 1
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+​<div id="toast" class="toast" role="status" aria-live="polite"></div>
+​<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+​<script>
+(function() {
+'use strict';
+var $ = function(s) { return document.querySelector(s); };
+​var DB = null;
+​function toast(msg) {
+var t = $('#toast'); t.textContent = msg; t.classList.add('show');
+setTimeout(function() { t.classList.remove('show'); }, 3000);
+}
+​function formatDateLong(isoStr) {
+if (!isoStr) return '';
+var d = new Date(isoStr + 'T00:00:00');
+if (isNaN(d)) return isoStr;
+return new Intl.DateTimeFormat('es-MX', { day: 'numeric', month: 'long', year: 'numeric' }).format(d);
+}
+​function renderPreview() {
+$('#lbl-folio').textContent = $('#dt-folio').value;
+var fechaVal = $('#dt-fecha').value;
+$('#lbl-fecha').textContent = fechaVal ? formatDateLong(fechaVal) : 'Fecha actual';
+$('#lbl-cliente').textContent = $('#dt-cliente').value;
+$('#lbl-cliente-sig').textContent = $('#dt-cliente').value.split('"')[1] \vert{}\vert{} $('#dt-cliente').value;
+$('#lbl-ubicacion').textContent = $('#dt-ubicacion').value;
+$('#lbl-equipo-info').textContent = $('#dt-equipo-info').value;
+$('#lbl-obs').textContent = $('#dt-obs').value;
+​var checks = document.querySelectorAll('#checks-container input[type="checkbox"]');
+var listEl = $('#lbl-failures-list');
+listEl.innerHTML = '';
+checks.forEach(function(chk) {
+if (chk.checked) {
+var li = document.createElement('li');
+li.className = 'dt-failure-item';
+li.textContent = chk.value;
+listEl.appendChild(li);
+}
+});
+}
+​document.addEventListener('input', function() {
+renderPreview();
+});
+​document.addEventListener('change', function(e) {
+if (e.target.matches('#checks-container input')) {
+renderPreview();
+}
+if (e.target.matches('#dt-select-eq')) {
+var id = e.target.value;
+if (!id) return;
+if (DB) {
+DB.collection('equipos').doc(id).get().then(function(doc) {
+if (doc.exists) {
+var e = doc.data();
+$('#dt-ubicacion').value = (e.aula || '') + (e.edificio ? ' - ' + e.edificio : '');
+$('#dt-equipo-info').value = (e.tipo || 'Minisplit') + ' ' + (e.marca || '') + ' ' + (e.capacidad || '') + ' · S/N: ' + (e.serie || 'S/N');
+renderPreview();
+toast('Equipo importado correctamente');
+}
+});
+}
+}
+});
+​$('#btn-download').addEventListener('click', function() {
+var btn = this;
+btn.textContent = 'Generando PDF...';
+btn.disabled = true;
+​var element = document.getElementById('dictamen-pdf');
+​window.html2canvas(element, { scale: 2, useCORS: true }).then(function(canvas) {
+var imgData = canvas.toDataURL('image/png');
+var pdf = new jspdf.jsPDF('p', 'mm', 'a4');
+var pdfWidth = pdf.internal.pageSize.getWidth();
+var pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+​pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+var folio = $('#dt-folio').value || 'Dictamen';
+pdf.save('Dictamen_Tecnico_' + folio + '.pdf');
+​btn.textContent = '📥 Descargar Dictamen PDF';
+btn.disabled = false;
+toast('Dictamen descargado con éxito');
+}).catch(function(err) {
+console.error(err);
+btn.textContent = '📥 Descargar Dictamen PDF';
+btn.disabled = false;
+toast('Error al generar el PDF');
+});
+});
+​// Inicializar Firebase y fecha actual
+function init() {
+var firebaseConfig = {
+apiKey: "AIzaSyA_JufV6ZSCICVuUrVZEJropD1VKA2bzQs",
+authDomain: "mantenimientocetis116.firebaseapp.com",
+databaseURL: "https://mantenimientocetis116-default-rtdb.firebaseio.com",
+projectId: "mantenimientocetis116",
+storageBucket: "mantenimientocetis116.firebasestorage.app",
+messagingSenderId: "556796465966",
+appId: "1:556796465966:web:b0636bf4ee5ba99c21a0bf"
+};
+firebase.initializeApp(firebaseConfig);
+firebase.auth().onAuthStateChanged(function(user) {
+if (!user) {
+window.location.href = 'login.html';
+return;
+}
+DB = firebase.firestore();
+DB.collection('equipos').get().then(function(snap) {
+var sel = $('#dt-select-eq');
+snap.forEach(function(doc) {
+var eq = doc.data();
+var opt = document.createElement('option');
+opt.value = doc.id;
+opt.textContent = (eq.nombre || 'Equipo') + ' · ' + (eq.aula || 'Sin aula');
+sel.appendChild(opt);
+});
+});
+});
+​var todayIso = new Date().toISOString().split('T')[0];
+$('#dt-fecha').value = todayIso;
+renderPreview();
+}
+init();
+})();
+</script>
+​</body>
+</html>
