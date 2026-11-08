@@ -6,7 +6,7 @@
   <title>Panel de Administración · Clima Hogar</title>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap">
   <style>
-    :root { --bg: #0B131A; --surface: #131E26; --surface-2: #1B2934; --ink: #E6EEF1; --ink-2: #92A6B2; --line: #2A3F4E; --accent: #06B6D4; --accent-ink: #041E26; --bad: #EF4444; --good: #10B981; }
+    :root { --bg: #030712; --surface: #0f172a; --surface-2: #1e293b; --ink: #f8fafc; --ink-2: #94a3b8; --line: #334155; --accent: #06b6d4; --accent-ink: #082f49; --bad: #ef4444; --good: #10b981; }
     body { margin: 0; background: var(--bg); color: var(--ink); font-family: 'Plus Jakarta Sans', sans-serif; padding: 20px; }
     .container { max-width: 1024px; margin: 0 auto; }
     .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; border-bottom: 1px solid var(--line); padding-bottom: 12px; }
@@ -50,7 +50,7 @@
 
 <div class="container">
   <div class="header">
-    <h1>Panel de Administración</h1>
+    <h1>Panel de Administración · Clima Hogar</h1>
     <button class="btn btn-back" onclick="window.location.href='index.html'">Volver al Inicio</button>
   </div>
 
@@ -66,7 +66,7 @@
   <div id="seccion-aprobacion" class="section-content active">
     <div class="card">
       <h2>Cuentas Nuevas Pendientes de Validación</h2>
-      <p style="margin-top:0; color: var(--ink-2); font-size: 14px; margin-bottom: 20px;">Autoriza los registros nuevos para que puedan acceder al sistema:</p>
+      <p style="margin-top:0; color: var(--ink-2); font-size: 14px; margin-bottom: 20px;">Autoriza los registros nuevos y envía notificación directa por WhatsApp:</p>
       <div id="pending-users-list">
         <p class="empty">Cargando solicitudes pendientes...</p>
       </div>
@@ -77,7 +77,7 @@
   <div id="seccion-cuentas" class="section-content">
     <div class="card">
       <h2>Gestión de Cuentas (Activas e Inactivas)</h2>
-      <p style="margin-top:0; color: var(--ink-2); font-size: 14px; margin-bottom: 20px;">Visualiza todas las cuentas registradas y cambia su estado para bloquear o permitir el acceso cuando lo necesites:</p>
+      <p style="margin-top:0; color: var(--ink-2); font-size: 14px; margin-bottom: 20px;">Visualiza todas las cuentas registradas y cambia su estado para bloquear o permitir el acceso:</p>
       <div id="all-users-list">
         <p class="empty">Cargando listado de cuentas...</p>
       </div>
@@ -88,7 +88,7 @@
   <div id="seccion-permisos" class="section-content">
     <div class="card">
       <h2>Matriz de Permisos por Usuario</h2>
-      <p style="margin-top:0; color: var(--ink-2); font-size: 14px; margin-bottom: 20px;">Define detalladamente qué acciones puede realizar cada colaborador en la plataforma. Esta configuración es independiente del estado de la cuenta:</p>
+      <p style="margin-top:0; color: var(--ink-2); font-size: 14px; margin-bottom: 20px;">Define detalladamente qué acciones puede realizar cada colaborador en la plataforma:</p>
       <div id="permissions-users-list">
         <p class="empty">Cargando matriz de permisos...</p>
       </div>
@@ -142,7 +142,7 @@
   firebase.initializeApp(firebaseConfig);
   var auth = firebase.auth();
   var db = firebase.firestore();
-  var adminEmail = 'josefranciisco17@gmail.com'; // Correo del administrador principal
+  var adminEmail = 'josefranciisco17@gmail.com';
 
   // Control de Pestañas
   window.cambiarSeccion = function(seccion) {
@@ -166,7 +166,7 @@
     cargarEstadisticasAdmin();
   });
 
-  // 1. Cargar Solicitudes Pendientes (aprobado: false)
+  // 1. Cargar Solicitudes Pendientes (con soporte para teléfono de WhatsApp)
   async function cargarSolicitudesPendientes() {
     var container = document.getElementById('pending-users-list');
     try {
@@ -179,12 +179,14 @@
       snapshot.forEach(function(doc) {
         var u = doc.data();
         var uid = doc.id;
+        var tel = u.telefono || '';
         html += '<div class="user-row">' +
                   '<div>' +
                     '<strong style="color: #fff; font-size: 16px;">' + (u.email || 'Sin correo') + '</strong><br>' +
-                    '<span style="font-size: 13px; color: var(--ink-2);">Registrado: ' + (u.fechaRegistro ? new Date(u.fechaRegistro).toLocaleString() : 'N/D') + '</span>' +
+                    '<span style="font-size: 13px; color: var(--ink-2);">WhatsApp: ' + (tel ? tel : 'No registrado') + '</span><br>' +
+                    '<span style="font-size: 12px; color: var(--ink-2);">Registrado: ' + (u.fechaRegistro ? new Date(u.fechaRegistro).toLocaleString() : 'N/D') + '</span>' +
                   '</div>' +
-                  '<button class="btn btn-approve" onclick="actualizarEstadoUsuario(\'' + uid + '\', true, true)">Aprobar Cuenta</button>' +
+                  '<button class="btn btn-approve" onclick="actualizarEstadoUsuario(\'' + uid + '\', true, true, \'' + tel + '\')">Aprobar y Notificar</button>' +
                 '</div>';
       });
       container.innerHTML = html;
@@ -193,7 +195,7 @@
     }
   }
 
-  // 2. Cargar Todas las Cuentas (Gestionar Activas/Inactivas)
+  // 2. Cargar Todas las Cuentas
   async function cargarTodasLasCuentas() {
     var container = document.getElementById('all-users-list');
     try {
@@ -212,10 +214,11 @@
         html += '<div class="user-row">' +
                   '<div>' +
                     '<strong style="color: #fff; font-size: 16px;">' + (u.email || 'Sin correo') + '</strong><br>' +
-                    '<span style="font-size: 13px; color: ' + (activo ? 'var(--good)' : 'var(--bad)') + ';">● ' + (activo ? 'Cuenta Activa' : 'Cuenta Inactiva / Pendiente') + '</span>' +
+                    '<span style="font-size: 13px; color: var(--ink-2);">WhatsApp: ' + (u.telefono || 'N/D') + '</span><br>' +
+                    '<span style="font-size: 13px; color: ' + (activo ? 'var(--good)' : 'var(--bad)') + ';">● ' + (activo ? 'Cuenta Activa' : 'Cuenta Inactiva') + '</span>' +
                   '</div>';
         if (!esAdmin) {
-          html += '<button class="btn ' + (activo ? 'btn-deactivate' : 'btn-activate') + '" onclick="actualizarEstadoUsuario(\'' + uid + '\', ' + !activo + ', false)">' + (activo ? 'Desactivar' : 'Activar') + '</button>';
+          html += '<button class="btn ' + (activo ? 'btn-deactivate' : 'btn-activate') + '" onclick="actualizarEstadoUsuario(\'' + uid + '\', ' + !activo + ', false, \'\')">' + (activo ? 'Desactivar' : 'Activar') + '</button>';
         } else {
           html += '<span style="font-size: 12px; color: var(--accent); font-weight: 700; text-transform: uppercase;">Creador (Admin)</span>';
         }
@@ -227,7 +230,7 @@
     }
   }
 
-  // 3. Cargar Matriz de Permisos por Usuario
+  // 3. Matriz de Permisos
   async function cargarMatrizPermisos() {
     var container = document.getElementById('permissions-users-list');
     try {
@@ -240,7 +243,7 @@
       snapshot.forEach(function(doc) {
         var u = doc.data();
         var uid = doc.id;
-        var p = u.permisos || {}; // Objeto de permisos
+        var p = u.permisos || {};
         var esAdmin = (u.email === adminEmail);
 
         html += '<div style="padding: 16px 0; border-bottom: 1px solid var(--line);">' +
@@ -266,7 +269,6 @@
     }
   }
 
-  // Guardar Permisos Específicos en Firestore
   window.guardarPermisos = async function(uid) {
     var permisos = {
       addService: document.getElementById('p-add-' + uid).checked,
@@ -282,11 +284,28 @@
     }
   };
 
-  // Función para Activar/Desactivar/Aprobar Cuentas
-  window.actualizarEstadoUsuario = async function(uid, nuevoEstado, esAprobacion) {
+  // Función de actualización y envío automático a WhatsApp
+  window.actualizarEstadoUsuario = async function(uid, nuevoEstado, esAprobacion, telefonoUsuario) {
     try {
       await db.collection('usuarios_registrados').doc(uid).update({ aprobado: nuevoEstado });
-      alert(esAprobacion ? '¡Cuenta aprobada con éxito!' : (nuevoEstado ? 'Cuenta activada correctamente.' : 'Cuenta desactivada.'));
+      
+      if (esAprobacion && nuevoEstado) {
+        var textoMensaje = "¡Hola! Tu cuenta para la app de Mantenimiento de Aires Acondicionados (CETis 116) ha sido APROBADA con éxito. Ya puedes iniciar sesión y comenzar a registrar servicios.";
+        
+        if (telefonoUsuario) {
+          var numLimpio = telefonoUsuario.replace(/\D/g, '');
+          var urlWhatsApp = "https://api.whatsapp.com/send?phone=52" + numLimpio + "&text=" + encodeURIComponent(textoMensaje);
+          
+          if (confirm('¡Cuenta aprobada con éxito!\n\n¿Deseas abrir WhatsApp para enviar el mensaje de bienvenida al número ' + telefonoUsuario + '?')) {
+            window.open(urlWhatsApp, '_blank');
+          }
+        } else {
+          alert('¡Cuenta aprobada con éxito! (Nota: El usuario no proporcionó un número telefónico).');
+        }
+      } else {
+        alert(nuevoEstado ? 'Cuenta activada correctamente.' : 'Cuenta desactivada.');
+      }
+
       cargarSolicitudesPendientes();
       cargarTodasLasCuentas();
       cargarMatrizPermisos();
@@ -296,7 +315,7 @@
     }
   };
 
-  // 4. Cargar Estadísticas
+  // 4. Estadísticas
   async function cargarEstadisticasAdmin() {
     try {
       var eqSnap = await db.collection('equipos').get();
