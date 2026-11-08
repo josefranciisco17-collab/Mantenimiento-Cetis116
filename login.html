@@ -70,6 +70,7 @@
 <!-- Firebase SDKs -->
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
 <div class="auth-card">
   <div class="auth-header">
@@ -101,7 +102,7 @@
     </div>
     <button type="submit" class="btn primary">Entrar al Sistema</button>
     
-    <!-- Botón directo a admin.html sin claves ni modales -->
+    <!-- Botón directo a admin.html -->
     <button type="button" class="btn admin-btn" id="btn-direct-admin">Panel de Administración</button>
   </form>
 
@@ -141,6 +142,7 @@
 
   firebase.initializeApp(firebaseConfig);
   var auth = firebase.auth();
+  var db = firebase.firestore();
 
   function toast(msg) {
     var t = $('#toast'); t.textContent = msg; t.classList.add('show');
@@ -183,7 +185,6 @@
     }
   });
 
-  // Redirección directa al panel admin sin solicitar código
   $('#btn-direct-admin').addEventListener('click', function() {
     toast('Entrando al panel de administración...');
     setTimeout(function() {
@@ -191,14 +192,33 @@
     }, 400);
   });
 
-  // INICIO DE SESIÓN DIRECTO
+  // INICIO DE SESIÓN CON RECONOCIMIENTO DE CREADOR
   $('#form-login').addEventListener('submit', async function(e) {
     e.preventDefault();
     var email = $('#login-email').value.trim();
     var password = $('#login-password').value;
 
     try {
-      await auth.signInWithEmailAndPassword(email, password);
+      var cred = await auth.signInWithEmailAndPassword(email, password);
+      
+      // Registrar o actualizar metadatos del usuario en Firestore de forma automática
+      var esAdmin = (email === 'josefranciisco17@gmail.com');
+      await db.collection('usuarios_registrados').doc(cred.user.uid).set({
+        email: email,
+        rol: esAdmin ? 'creador_admin' : 'usuario',
+        aprobado: esAdmin ? true : false, // Si es el creador entra directo, los demás quedan pendientes de aprobación
+        ultimoAcceso: new Date().toISOString()
+      }, { merge: true });
+
+      if (!esAdmin) {
+        // Verificar si la cuenta fue aprobada
+        var docCheck = await db.collection('usuarios_registrados').doc(cred.user.uid).get();
+        if (docCheck.exists && docCheck.data().aprobado === false) {
+          toast('⏳ Tu cuenta está pendiente de aprobación por el administrador.');
+          return;
+        }
+      }
+
       toast('¡Acceso concedido! Entrando...');
       setTimeout(function() {
         window.location.href = 'index.html';
@@ -208,18 +228,26 @@
     }
   });
 
-  // REGISTRO DIRECTO
+  // REGISTRO DE NUEVAS CUENTAS
   $('#form-register').addEventListener('submit', async function(e) {
     e.preventDefault();
     var email = $('#reg-email').value.trim();
     var password = $('#reg-password').value;
 
     try {
-      await auth.createUserWithEmailAndPassword(email, password);
-      toast('¡Registro exitoso! Entrando...');
-      setTimeout(function() {
-        window.location.href = 'index.html';
-      }, 800);
+      var cred = await auth.createUserWithEmailAndPassword(email, password);
+      
+      // Se registran con aprobado: false para que aparezcan en tu bandeja de validación
+      await db.collection('usuarios_registrados').doc(cred.user.uid).set({
+        email: email,
+        rol: 'usuario',
+        aprobado: false,
+        fechaRegistro: new Date().toISOString()
+      });
+
+      toast('¡Registro exitoso! Cuenta pendiente de aprobación.');
+      $('#form-register').reset();
+      $('#tab-login').click();
     } catch (err) {
       toast('Error en el registro: ' + err.message);
     }
