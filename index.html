@@ -1073,6 +1073,16 @@
     };
 
     firebase.initializeApp(firebaseConfig);
+    DB = firebase.firestore();
+
+    // Habilitar persistencia offline en Firestore para trabajo sin conexión
+    DB.enablePersistence({ synchronizeTabs: true }).catch(function(err) {
+      if (err.code == 'failed-precondition') {
+        console.log('[OFFLINE] Múltiples pestañas abiertas, la persistencia solo funciona en una.');
+      } else if (err.code == 'unimplemented') {
+        console.log('[OFFLINE] El navegador no soporta persistencia offline.');
+      }
+    });
 
     firebase.auth().onAuthStateChanged(function(user) {
       if (!user) {
@@ -1080,17 +1090,31 @@
         return;
       }
       currentUser = user;
-      DB = firebase.firestore();
       S.backend = 'db';
 
       var nombreUsuario = obtenerNombreUsuario(user);
       console.log('[SISTEMA] Sesión iniciada correctamente por: ' + nombreUsuario);
 
       var sub = function (col, flag) {
-        DB.collection(col).onSnapshot(function (snap) {
+        DB.collection(col).onSnapshot({ includeMetadataChanges: true }, function (snap) {
           S[col] = snap.docs.map(function (d) { return Object.assign({}, d.data(), { id: d.id }); });
+          
+          try {
+            localStorage.setItem('clima_' + col + '_cache', JSON.stringify(S[col]));
+          } catch(e) {}
+
           S[flag] = true; S.ready = S.rE && S.rS; render();
-        }, function (err) { S.error = 'No se pudieron sincronizar los datos de la nube.'; S.ready = true; render(); });
+        }, function (err) { 
+          try {
+            var cached = localStorage.getItem('clima_' + col + '_cache');
+            if (cached) {
+              S[col] = JSON.parse(cached);
+              console.log('[OFFLINE] Cargando ' + col + ' desde caché local de respaldo.');
+            }
+          } catch(e) {}
+          S.error = 'Trabajando sin conexión (Modo Offline). Mostrando datos locales.'; 
+          S.ready = true; render(); 
+        });
       };
 
       DB.collection('auditoria').orderBy('fecha', 'desc').limit(50).onSnapshot(function(snap) {
