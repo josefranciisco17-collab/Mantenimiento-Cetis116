@@ -23,8 +23,6 @@
     --accent-soft: rgba(6, 182, 212, 0.15);
     --bad: #EF4444;
     --bad-soft: rgba(239, 68, 68, 0.15);
-    --warn: #F59E0B;
-    --warn-soft: rgba(245, 158, 11, 0.15);
     --font-display: 'Barlow Condensed', sans-serif;
     --font-body: 'Plus Jakarta Sans', sans-serif;
     --font-mono: 'JetBrains Mono', monospace;
@@ -51,8 +49,6 @@
   .password-wrapper { position: relative; display: flex; align-items: center; }
   .password-wrapper input { padding-right: 45px; }
   .toggle-pwd { position: absolute; right: 12px; background: none; border: 0; color: var(--ink-2); cursor: pointer; font-size: 16px; padding: 4px; }
-
-  .notice-box { background: var(--warn-soft); border: 1px solid rgba(245, 158, 11, 0.3); padding: 12px 14px; border-radius: 8px; color: #FCD34D; font-size: 13px; line-height: 1.4; }
 
   .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 46px; padding: 10px 20px; border: 1.5px solid var(--line); border-radius: 8px; background: var(--surface); font-weight: 600; font-size: 14px; transition: all .2s; color: var(--ink); width: 100%; cursor: pointer; }
   .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
@@ -103,7 +99,7 @@
     <button type="submit" class="btn primary">Entrar al Sistema</button>
   </form>
 
-  <!-- FORMULARIO DE REGISTRO CON LA LEYENDA INFORMATIVA -->
+  <!-- FORMULARIO DE REGISTRO DIRECTO -->
   <form id="form-register" class="form" style="display: none;">
     <div class="fld">
       <label>Correo Electrónico</label>
@@ -116,12 +112,7 @@
         <button type="button" class="toggle-pwd" data-action="toggle-pwd" data-input="reg-password">👁️</button>
       </div>
     </div>
-    
-    <div class="notice-box">
-      ⚠️ <strong>Aviso importante:</strong> Su cuenta se encuentra en un proceso de validación para tener acceso al sistema, será validada por un administrador en un lapso de 24 - 48 hrs.
-    </div>
-
-    <button type="submit" class="btn primary">Solicitar Registro</button>
+    <button type="submit" class="btn primary">Registrarse y Entrar</button>
   </form>
 </div>
 
@@ -144,7 +135,6 @@
 
   firebase.initializeApp(firebaseConfig);
   var auth = firebase.auth();
-  var db = firebase.firestore();
 
   function toast(msg) {
     var t = $('#toast'); t.textContent = msg; t.classList.add('show');
@@ -187,65 +177,35 @@
     }
   });
 
-  // INICIAR SESIÓN CON BYPASS TOTAL PARA EL ADMINISTRADOR PRINCIPAL
+  // INICIAR SESIÓN DIRECTO SIN BLOQUEOS
   $('#form-login').addEventListener('submit', async function(e) {
     e.preventDefault();
     var email = $('#login-email').value.trim();
     var password = $('#login-password').value;
 
     try {
-      var cred = await auth.signInWithEmailAndPassword(email, password);
-      
-      // SI ES TU CUENTA DE ADMINISTRADOR, ENTRA DIRECTAMENTE SIN NINGUNA RESTRICCIÓN
-      if (email === 'josefranciisco17@gmail.com') {
-        toast('¡Bienvenido, Administrador!');
-        setTimeout(function() {
-          window.location.href = 'index.html';
-        }, 800);
-        return;
-      }
-
-      // Validación normal para cualquier otro usuario registrado
-      var userRef = db.collection('usuarios_registrados').doc(cred.user.uid);
-      var userDoc = await userRef.get();
-      
-      if (!userDoc.exists || !userDoc.data().aprobado) {
-        await auth.signOut();
-        toast('⚠️ Su cuenta se encuentra en proceso de validación.');
-        return;
-      }
-
+      await auth.signInWithEmailAndPassword(email, password);
       toast('¡Acceso concedido! Entrando...');
       setTimeout(function() {
         window.location.href = 'index.html';
-      }, 1000);
-
+      }, 800);
     } catch (err) {
       toast('Error de acceso: ' + err.message);
     }
   });
 
-  // REGISTRO SEGURO CON ROL PENDIENTE
+  // REGISTRO DIRECTO
   $('#form-register').addEventListener('submit', async function(e) {
     e.preventDefault();
     var email = $('#reg-email').value.trim();
     var password = $('#reg-password').value;
 
     try {
-      var cred = await auth.createUserWithEmailAndPassword(email, password);
-      
-      await db.collection('usuarios_registrados').doc(cred.user.uid).set({
-        email: email,
-        rol: 'pendiente',
-        aprobado: false,
-        fechaRegistro: new Date().toISOString()
-      });
-
-      await auth.signOut();
-      toast('Registro exitoso. Su cuenta está en proceso de validación.');
-      $('#form-register').reset();
-      $('#tab-login').click();
-
+      await auth.createUserWithEmailAndPassword(email, password);
+      toast('¡Registro exitoso! Entrando al sistema...');
+      setTimeout(function() {
+        window.location.href = 'index.html';
+      }, 800);
     } catch (err) {
       toast('Error en el registro: ' + err.message);
     }
