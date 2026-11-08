@@ -1,87 +1,76 @@
-// Nombre de la versión del caché para Clima CETis 116 - By JFAM Tecno-Energy
-const CACHE_NAME = 'cetis116-clima-pwa-v1';
-
-// Archivos base que necesita la app para arrancar rápido
-const STATIC_ASSETS = [
-  './',
+var CACHE_NAME = 'climahogar-v2-offline';
+var urlsToCache = [
   './index.html',
-  './login.html',
+  './facturas.html',
+  './dictamenes.html',
   './manifest.json',
   './icono-192.png',
-  './icono-512.png',
-  'https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap'
+  './logo-climahogar.png',
+  'https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap',
+  'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js',
+  'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js',
+  'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
+  'https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js',
+  'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js',
+  'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js'
 ];
 
-// 1. INSTALACIÓN: Guarda los archivos base en la memoria del teléfono
-self.addEventListener('install', (event) => {
-  self.skipWaiting();
+// Instalación del Service Worker y guardado en caché
+self.addEventListener('install', function(event) {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      // Usamos map con catch individual por si algún ícono aún no se ha subido, que no falle el Service Worker
-      return Promise.allSettled(
-        STATIC_ASSETS.map((url) => cache.add(url).catch((err) => console.warn('No se pudo cachear:', url, err)))
-      );
+    caches.open(CACHE_NAME).then(function(cache) {
+      console.log('[ServiceWorker] Archivos en caché offline');
+      return cache.addAll(urlsToCache);
     })
   );
+  self.skipWaiting();
 });
 
-// 2. ACTIVACIÓN: Limpia versiones viejas cuando actualices tu código en GitHub
-self.addEventListener('activate', (event) => {
+// Activación y limpieza de cachés antiguas
+self.addEventListener('activate', function(event) {
   event.waitUntil(
-    caches.keys().then((keys) => {
+    caches.keys().then(function(cacheNames) {
       return Promise.all(
-        keys.map((key) => {
-          if (key !== CACHE_NAME) {
-            return caches.delete(key);
+        cacheNames.map(function(cacheName) {
+          if (cacheName !== CACHE_NAME) {
+            console.log('[ServiceWorker] Borrando caché vieja:', cacheName);
+            return caches.delete(cacheName);
           }
         })
       );
-    }).then(() => self.clients.claim())
+    })
   );
+  self.clients.claim();
 });
 
-// 3. INTERCEPTOR DE RED (Requisito obligatorio de PWABuilder para generar el APK)
-self.addEventListener('fetch', (event) => {
-  const req = event.request;
-  const url = new URL(req.url);
-
-  // REGLA CRÍTICA: Nunca interceptar ni guardar en caché las peticiones de Firebase Auth ni Firestore
-  // Esto garantiza que tus equipos, servicios y el historial de auditoría siempre estén en tiempo real
-  if (
-    req.method !== 'GET' ||
-    url.hostname.includes('firestore.googleapis.com') ||
-    url.hostname.includes('identitytoolkit.googleapis.com') ||
-    url.hostname.includes('securetoken.googleapis.com') ||
-    url.hostname.includes('firebase') ||
-    url.hostname.includes('gstatic.com')
-  ) {
+// Intercepción de peticiones (Estrategia: Cache primero, luego red con respaldo offline)
+self.addEventListener('fetch', function(event) {
+  // Ignorar peticiones de Firebase Firestore / Auth para que la app intente la red primero
+  if (event.request.url.includes('firestore.googleapis.com') || event.request.url.includes('firebase')) {
+    event.respondWith(
+      fetch(event.request).catch(function() {
+        // Si no hay red para Firebase, devolvemos un estado offline controlado
+        return new Response(JSON.stringify({ offline: true }), {
+          headers: { 'Content-Type': 'application/json' }
+        });
+      })
+    );
     return;
   }
 
-  // Estrategia "Network First" (Primero intenta internet para ver cambios recientes; si no hay red, usa caché)
   event.respondWith(
-    fetch(req)
-      .then((networkResponse) => {
-        // Si la respuesta de red es válida, actualizamos la copia en caché
-        if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
-          const responseClone = networkResponse.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(req, responseClone);
-          });
-        }
-        return networkResponse;
-      })
-      .catch(() => {
-        // Si se va el internet o falla la señal en algún aula, carga la interfaz guardada
-        return caches.match(req).then((cachedResponse) => {
-          if (cachedResponse) {
-            return cachedResponse;
-          }
-          // Si estaba navegando a una página y no hay red, devuelve index.html
-          if (req.mode === 'navigate') {
-            return caches.match('./index.html');
-          }
+    caches.match(event.request).then(function(response) {
+      return response || fetch(event.request).then(function(fetchResponse) {
+        return caches.open(CACHE_NAME).then(function(cache) {
+          cache.put(event.request, fetchResponse.clone());
+          return fetchResponse;
         });
-      })
+      }).catch(function() {
+        // Si falla la red y no está en caché, podemos retornar el index principal o una página de respaldo
+        if (event.request.mode === 'navigate') {
+          return caches.match('./index.html');
+        }
+      });
+    })
   );
 });
