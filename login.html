@@ -61,11 +61,6 @@
   .link-row { display: flex; justify-content: space-between; align-items: center; font-size: 13px; margin-top: 4px; }
   .link { background: none; border: 0; color: var(--accent); text-decoration: underline; cursor: pointer; font-weight: 600; padding: 0; }
 
-  /* Ventana Modal para Clave Maestra */
-  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 50; align-items: center; justify-content: center; padding: 20px; }
-  .modal-overlay.show { display: flex; }
-  .modal-box { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; width: min(400px, 100%); padding: 24px; display: grid; gap: 16px; }
-
   .toast { position: fixed; z-index: 60; left: 50%; bottom: 24px; transform: translate(-50%, 20px); max-width: 90%; padding: 12px 20px; border-radius: 8px; background: #fff; color: #000; font-weight: 600; font-size: 14px; opacity: 0; pointer-events: none; transition: all .2s; box-shadow: 0 10px 30px rgba(0,0,0,.5); }
   .toast.show { opacity: 1; transform: translate(-50%, 0); }
   </style>
@@ -106,8 +101,8 @@
     </div>
     <button type="submit" class="btn primary">Entrar al Sistema</button>
     
-    <!-- Botón de Acceso Administrador por Clave -->
-    <button type="button" class="btn admin-btn" id="btn-open-master">Panel de Administración (Código)</button>
+    <!-- Botón directo a admin.html sin claves ni modales -->
+    <button type="button" class="btn admin-btn" id="btn-direct-admin">Panel de Administración</button>
   </form>
 
   <!-- FORMULARIO DE REGISTRO -->
@@ -125,21 +120,6 @@
     </div>
     <button type="submit" class="btn primary">Registrarse y Entrar</button>
   </form>
-</div>
-
-<!-- VENTANA MODAL PARA CLAVE MAESTRA -->
-<div id="master-modal" class="modal-overlay">
-  <div class="modal-box">
-    <h3 style="margin:0; font-family: var(--font-display); font-size: 20px; color: #fff;">Acceso Restringido</h3>
-    <p style="margin:0; font-size: 13px; color: var(--ink-2);">Introduce la clave maestra de administrador:</p>
-    <div class="fld">
-      <input type="password" id="master-code-input" placeholder="Clave de administrador">
-    </div>
-    <div style="display: flex; gap: 8px;">
-      <button type="button" class="btn" id="btn-cancel-master">Cancelar</button>
-      <button type="button" class="btn primary" id="btn-submit-master">Verificar</button>
-    </div>
-  </div>
 </div>
 
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
@@ -203,29 +183,12 @@
     }
   });
 
-  // Lógica de la Clave Maestra (4864)
-  $('#btn-open-master').addEventListener('click', function() {
-    $('#master-code-input').value = '';
-    $('#master-modal').classList.add('show');
-    $('#master-code-input').focus();
-  });
-
-  $('#btn-cancel-master').addEventListener('click', function() {
-    $('#master-modal').classList.remove('show');
-  });
-
-  $('#btn-submit-master').addEventListener('click', function() {
-    var code = $('#master-code-input').value.trim();
-    if (code === '4864') {
-      toast('¡Clave correcta! Entrando al panel...');
-      $('#master-modal').classList.remove('show');
-      setTimeout(function() {
-        window.location.href = 'admin.html';
-      }, 500);
-    } else {
-      toast('❌ Clave de administración incorrecta');
-      $('#master-code-input').focus();
-    }
+  // Redirección directa al panel admin sin solicitar código
+  $('#btn-direct-admin').addEventListener('click', function() {
+    toast('Entrando al panel de administración...');
+    setTimeout(function() {
+      window.location.href = 'admin.html';
+    }, 400);
   });
 
   // INICIO DE SESIÓN DIRECTO
