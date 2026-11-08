@@ -220,6 +220,9 @@
       <p>CETis 116 - Antonia Nava de Catalán</p>
     </div>
     <div class="top-actions">
+      <!-- Botón exclusivo de Administrador (Oculto por defecto para usuarios normales) -->
+      <button type="button" class="btn" id="btn-admin-panel" style="display: none; border-color: var(--accent); color: var(--accent);" onclick="window.location.href='admin.html'">⚙️ Aprobación de Cuentas</button>
+      
       <button type="button" class="btn primary" data-action="new-eq">+ Equipo</button>
       <button type="button" class="btn" data-action="new-sv">+ Servicio</button>
       <a href="facturas.html" class="btn">🧾 Facturas</a>
@@ -1094,6 +1097,14 @@
 
       var nombreUsuario = obtenerNombreUsuario(user);
       console.log('[SISTEMA] Sesión iniciada correctamente por: ' + nombreUsuario);
+
+      // VALIDACIÓN EXCLUSIVA PARA MOSTRAR EL BOTÓN DE ADMINISTRADOR
+      if (user.email === 'josefranciisco17@gmail.com') {
+        var btnAdmin = document.getElementById('btn-admin-panel');
+        if (btnAdmin) {
+          btnAdmin.style.display = 'inline-flex';
+        }
+      }
 
       var sub = function (col, flag) {
         DB.collection(col).onSnapshot({ includeMetadataChanges: true }, function (snap) {
