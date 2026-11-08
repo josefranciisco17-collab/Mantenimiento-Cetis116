@@ -187,7 +187,7 @@
     }
   });
 
-  // INICIAR SESIÓN CON AUTO-CORRECCIÓN Y FILTRO DE APROBACIÓN
+  // INICIAR SESIÓN CON AUTO-CORRECCIÓN Y RECONOCIMIENTO DE ADMINISTRADOR
   $('#form-login').addEventListener('submit', async function(e) {
     e.preventDefault();
     var email = $('#login-email').value.trim();
@@ -195,7 +195,7 @@
 
     try {
       var cred = await auth.signInWithEmailAndPassword(email, password);
-      var userRef = db.collection('usuarios').doc(cred.user.uid);
+      var userRef = db.collection('usuarios_registrados').doc(cred.user.uid);
       var userDoc = await userRef.get();
       
       var esAdminPrincipal = (email === 'josefranciisco17@gmail.com');
@@ -238,7 +238,7 @@
     try {
       var cred = await auth.createUserWithEmailAndPassword(email, password);
       
-      await db.collection('usuarios').doc(cred.user.uid).set({
+      await db.collection('usuarios_registrados').doc(cred.user.uid).set({
         email: email,
         rol: 'pendiente',
         aprobado: false,
