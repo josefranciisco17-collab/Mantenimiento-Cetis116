@@ -3,35 +3,101 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <title>Aprobación de Cuentas · Clima Hogar</title>
+  <title>Panel de Administración · Clima Hogar</title>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap">
   <style>
-    :root { --bg: #0B131A; --surface: #131E26; --ink: #E6EEF1; --ink-2: #92A6B2; --line: #2A3F4E; --accent: #06B6D4; --accent-ink: #041E26; --bad: #EF4444; --good: #10B981; }
+    :root { --bg: #0B131A; --surface: #131E26; --surface-2: #1B2934; --ink: #E6EEF1; --ink-2: #92A6B2; --line: #2A3F4E; --accent: #06B6D4; --accent-ink: #041E26; --bad: #EF4444; --good: #10B981; }
     body { margin: 0; background: var(--bg); color: var(--ink); font-family: 'Plus Jakarta Sans', sans-serif; padding: 20px; }
-    .container { max-width: 700px; margin: 0 auto; }
+    .container { max-width: 960px; margin: 0 auto; }
     .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; border-bottom: 1px solid var(--line); padding-bottom: 12px; }
-    .header h1 { font-family: 'Barlow Condensed', sans-serif; font-size: 24px; margin: 0; color: #fff; text-transform: uppercase; }
-    .card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 20px; margin-bottom: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
-    .user-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--line); }
+    .header h1 { font-family: 'Barlow Condensed', sans-serif; font-size: 26px; margin: 0; color: #fff; text-transform: uppercase; }
+    
+    /* Pestañas de Navegación del Panel */
+    .admin-tabs { display: flex; gap: 8px; margin-bottom: 20px; background: var(--surface); padding: 6px; border-radius: 8px; border: 1px solid var(--line); flex-wrap: wrap; }
+    .admin-tab { flex: 1; min-width: 140px; padding: 10px 16px; background: transparent; border: 0; border-radius: 6px; color: var(--ink-2); font-weight: 600; font-size: 13px; text-transform: uppercase; cursor: pointer; text-align: center; }
+    .admin-tab[aria-selected="true"] { background: var(--accent); color: var(--accent-ink); }
+
+    .card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+    .card h2 { font-family: 'Barlow Condensed', sans-serif; font-size: 20px; color: #fff; margin-bottom: 14px; text-transform: uppercase; }
+    
+    .user-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--line); gap: 10px; flex-wrap: wrap; }
     .user-row:last-child { border-bottom: none; }
+    
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 20px; }
+    .stat-box { background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px; padding: 16px; text-align: center; }
+    .stat-box h3 { font-size: 11px; color: var(--ink-2); text-transform: uppercase; margin-bottom: 6px; }
+    .stat-box .number { font: 700 24px 'Barlow Condensed', sans-serif; color: var(--accent); }
+
     .btn { padding: 8px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; border: 0; font-size: 13px; }
     .btn-approve { background: var(--good); color: #fff; }
+    .btn-deactivate { background: var(--bad); color: #fff; }
+    .btn-activate { background: var(--accent); color: var(--accent-ink); }
     .btn-back { background: var(--surface); color: var(--accent); border: 1px solid var(--accent); }
     .empty { color: var(--ink-2); text-align: center; padding: 30px; }
+    .section-content { display: none; }
+    .section-content.active { display: block; }
   </style>
 </head>
 <body>
 
 <div class="container">
   <div class="header">
-    <h1>Aprobación de Cuentas Nuevas</h1>
+    <h1>Panel de Administración · Clima Hogar</h1>
     <button class="btn btn-back" onclick="window.location.href='index.html'">Volver al Inicio</button>
   </div>
 
-  <div class="card">
-    <p style="margin-top:0; color: var(--ink-2); font-size: 13px;">Las siguientes cuentas se han registrado y requieren tu validación para acceder al sistema:</p>
-    <div id="pending-users-list">
-      <p class="empty">Cargando solicitudes pendientes...</p>
+  <!-- Pestañas de Control -->
+  <div class="admin-tabs" role="tablist">
+    <button type="button" class="admin-tab" id="tab-aprobacion" aria-selected="true" onclick="cambiarSeccion('aprobacion')">👥 Solicitudes Pendientes</button>
+    <button type="button" class="admin-tab" id="tab-cuentas" aria-selected="false" onclick="cambiarSeccion('cuentas')">🔒 Cuentas Activas / Inactivas</button>
+    <button type="button" class="admin-tab" id="tab-gestion" aria-selected="false" onclick="cambiarSeccion('gestion')">📊 Estadísticas y Gestión</button>
+  </div>
+
+  <!-- SECCIÓN 1: APROBACIÓN DE CUENTAS NUEVAS -->
+  <div id="seccion-aprobacion" class="section-content active">
+    <div class="card">
+      <h2>Cuentas Nuevas Pendientes de Validación</h2>
+      <p style="margin-top:0; color: var(--ink-2); font-size: 13px; margin-bottom: 16px;">Autoriza los registros nuevos para que puedan acceder al sistema[span_1](start_span)[span_1](end_span):</p>
+      <div id="pending-users-list">
+        <p class="empty">Cargando solicitudes pendientes...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECCIÓN 2: CUENTAS ACTIVAS E INACTIVAS -->
+  <div id="seccion-cuentas" class="section-content">
+    <div class="card">
+      <h2>Gestión de Cuentas (Activas e Inactivas)</h2>
+      <p style="margin-top:0; color: var(--ink-2); font-size: 13px; margin-bottom: 16px;">Visualiza todas las cuentas registradas y cambia su estado para bloquear o permitir el acceso cuando lo necesites:</p>
+      <div id="all-users-list">
+        <p class="empty">Cargando listado de cuentas...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECCIÓN 3: ESTADÍSTICAS Y GESTIÓN GENERAL -->
+  <div id="seccion-gestion" class="section-content">
+    <div class="stats-grid">
+      <div class="stat-box">
+        <h3>Total Equipos</h3>
+        <div class="number" id="stat-equipos">—</div>
+      </div>
+      <div class="stat-box">
+        <h3>Total Servicios</h3>
+        <div class="number" id="stat-servicios">—</div>
+      </div>
+      <div class="stat-box">
+        <h3>Total Usuarios</h3>
+        <div class="number" id="stat-usuarios">—</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Resumen Operativo del CETis 116</h2>
+      <p style="color: var(--ink-2); font-size: 14px; margin-bottom: 16px;">Supervisión general de equipos de aire acondicionado y bitácoras sincronizadas con Firestore[span_2](start_span)[span_2](end_span).</p>
+      <div style="background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+        <p style="margin: 0; font-size: 13px; color: var(--accent);">💡 <b>Sistema operativo:</b> Los permisos de administrador están vinculados de forma exclusiva a tu cuenta principal.</p>
+      </div>
     </div>
   </div>
 </div>
@@ -57,6 +123,17 @@
   var auth = firebase.auth();
   var db = firebase.firestore();
 
+  // Cambio de pestañas
+  window.cambiarSeccion = function(seccion) {
+    document.getElementById('tab-aprobacion').setAttribute('aria-selected', seccion === 'aprobacion');
+    document.getElementById('tab-cuentas').setAttribute('aria-selected', seccion === 'cuentas');
+    document.getElementById('tab-gestion').setAttribute('aria-selected', seccion === 'gestion');
+    
+    document.getElementById('seccion-aprobacion').classList.toggle('active', seccion === 'aprobacion');
+    document.getElementById('seccion-cuentas').classList.toggle('active', seccion === 'cuentas');
+    document.getElementById('seccion-gestion').classList.toggle('active', seccion === 'gestion');
+  };
+
   auth.onAuthStateChanged(function(user) {
     if (!user || user.email !== 'josefranciisco17@gmail.com') {
       alert('Acceso restringido al creador de la aplicación.');
@@ -64,8 +141,11 @@
       return;
     }
     cargarSolicitudesPendientes();
+    cargarTodasLasCuentas();
+    cargarEstadisticasAdmin();
   });
 
+  // 1. Cargar solicitudes pendientes (aprobado == false)
   async function cargarSolicitudesPendientes() {
     var container = document.getElementById('pending-users-list');
     try {
@@ -82,10 +162,10 @@
         var uid = doc.id;
         html += '<div class="user-row">' +
                   '<div>' +
-                    '<strong style="color: #fff; font-size: 15px;">' + u.email + '</strong><br>' +
+                    '<strong style="color: #fff; font-size: 15px;">' + (u.email || 'Sin correo') + '</strong><br>' +
                     '<span style="font-size: 12px; color: var(--ink-2);">Registrado: ' + (u.fechaRegistro ? new Date(u.fechaRegistro).toLocaleString() : 'N/D') + '</span>' +
                   '</div>' +
-                  '<button class="btn btn-approve" onclick="aprobarUsuario(\'' + uid + '\')">Aprobar Cuenta</button>' +
+                  '<button class="btn btn-approve" onclick="actualizarEstadoUsuario(\'' + uid + '\', true)">Aprobar Cuenta</button>' +
                 '</div>';
       });
       container.innerHTML = html;
@@ -94,17 +174,77 @@
     }
   }
 
-  window.aprobarUsuario = async function(uid) {
+  // 2. Cargar todas las cuentas para gestionar activas e inactivas
+  async function cargarTodasLasCuentas() {
+    var container = document.getElementById('all-users-list');
+    try {
+      var snapshot = await db.collection('usuarios_registrados').get();
+      
+      if (snapshot.empty) {
+        container.innerHTML = '<p class="empty">No hay usuarios registrados en el sistema.</p>';
+        return;
+      }
+
+      var html = '';
+      snapshot.forEach(function(doc) {
+        var u = doc.data();
+        var uid = doc.id;
+        var esAdmin = (u.email === 'josefranciisco17@gmail.com');
+        var activo = u.aprobado === true;
+
+        html += '<div class="user-row">' +
+                  '<div>' +
+                    '<strong style="color: #fff; font-size: 15px;">' + (u.email || 'Sin correo') + '</strong><br>' +
+                    '<span style="font-size: 12px; color: ' + (activo ? 'var(--good)' : 'var(--bad)') + ';">● ' + (activo ? 'Cuenta Activa' : 'Cuenta Inactiva / Pendiente') + '</span>' +
+                  '</div>';
+        
+        if (!esAdmin) {
+          if (activo) {
+            html += '<button class="btn btn-deactivate" onclick="actualizarEstadoUsuario(\'' + uid + '\', false)">Desactivar</button>';
+          } else {
+            html += '<button class="btn btn-activate" onclick="actualizarEstadoUsuario(\'' + uid + '\', true)">Activar</button>';
+          }
+        } else {
+          html += '<span style="font-size: 12px; color: var(--accent); font-weight: 600;">Creador (Admin)</span>';
+        }
+
+        html += '</div>';
+      });
+      container.innerHTML = html;
+    } catch (err) {
+      container.innerHTML = '<p class="empty" style="color: var(--bad);">Error al cargar cuentas: ' + err.message + '</p>';
+    }
+  }
+
+  // Función global para cambiar el estado (aprobar / activar / desactivar)
+  window.actualizarEstadoUsuario = async function(uid, nuevoEstado) {
     try {
       await db.collection('usuarios_registrados').doc(uid).update({
-        aprobado: true
+        aprobado: nuevoEstado
       });
-      alert('¡Cuenta aprobada con éxito!');
+      alert(nuevoEstado ? '¡Cuenta activada/aprobada con éxito!' : 'Cuenta desactivada correctamente.');
       cargarSolicitudesPendientes();
+      cargarTodasLasCuentas();
+      cargarEstadisticasAdmin();
     } catch (err) {
-      alert('Error al aprobar cuenta: ' + err.message);
+      alert('Error al actualizar estado: ' + err.message);
     }
   };
+
+  // 3. Estadísticas generales
+  async function cargarEstadisticasAdmin() {
+    try {
+      var eqSnap = await db.collection('equipos').get();
+      var svSnap = await db.collection('servicios').get();
+      var usSnap = await db.collection('usuarios_registrados').get();
+
+      document.getElementById('stat-equipos').textContent = eqSnap.size;
+      document.getElementById('stat-servicios').textContent = svSnap.size;
+      document.getElementById('stat-usuarios').textContent = usSnap.size;
+    } catch (err) {
+      console.error('Error al cargar métricas de administración:', err);
+    }
+  }
 })();
 </script>
 
