@@ -3,6 +3,11 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <!-- Forzar que el navegador no guarde caché de esta página de acceso -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+
   <title>Acceso al Sistema · Clima Hogar Multi Servicios</title>
   
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
@@ -63,7 +68,7 @@
 </head>
 <body>
 
-<!-- Firebase SDKs -->
+<!-- Firebase SDKs con versión fija -->
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
@@ -177,7 +182,7 @@
     }
   });
 
-  // INICIAR SESIÓN DIRECTO SIN BLOQUEOS
+  // INICIAR SESIÓN DIRECTO SIN CONSULTAS A FIRESTORE NI BLOQUEOS
   $('#form-login').addEventListener('submit', async function(e) {
     e.preventDefault();
     var email = $('#login-email').value.trim();
