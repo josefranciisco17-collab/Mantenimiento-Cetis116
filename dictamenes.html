@@ -41,75 +41,81 @@
   }
 
   * { box-sizing: border-box; }
-  body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 var(--font-body); }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 var(--font-body); overflow-x: hidden; }
   h1, h2, h3, p { margin: 0; }
 
-  .inner { max-width: 1200px; margin: 0 auto; padding-left: max(20px, env(safe-area-inset-left, 0px)); padding-right: max(20px, env(safe-area-inset-right, 0px)); }
+  .inner { max-width: 1200px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
 
   /* Masthead Corporativo */
-  .top { background: linear-gradient(180deg, #101B22 0%, var(--bg) 100%); border-bottom: 1px solid var(--line); padding-block: 28px 20px; }
-  .top .inner { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px 24px; }
-  .brand h1 { font: 700 32px/1.1 var(--font-display); letter-spacing: .02em; text-transform: uppercase; color: #FFFFFF; text-wrap: balance; }
-  .brand p { color: var(--accent); margin-top: 6px; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; }
-  .top-actions { display: flex; flex-wrap: wrap; gap: 10px; width: 100%; }
-  @media (min-width: 640px) { .top-actions { width: auto; } }
+  .top { background: linear-gradient(180deg, #101B22 0%, var(--bg) 100%); border-bottom: 1px solid var(--line); padding-block: 20px 16px; }
+  .top .inner { display: flex; flex-direction: column; gap: 14px; }
+  @media (min-width: 768px) {
+    .top .inner { flex-direction: row; align-items: center; justify-content: space-between; }
+  }
+  .brand h1 { font: 700 26px/1.1 var(--font-display); letter-spacing: .02em; text-transform: uppercase; color: #FFFFFF; }
+  .brand p { color: var(--accent); margin-top: 4px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; }
+  .top-actions { display: flex; flex-direction: column; gap: 8px; width: 100%; }
+  @media (min-width: 640px) { .top-actions { flex-direction: row; width: auto; } }
 
   /* Botones Premium */
-  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 42px; padding: 8px 18px; border: 1.5px solid var(--line); border-radius: 6px; background: var(--surface); font-weight: 600; font-size: 14px; transition: all .2s; color: var(--ink); text-decoration: none; width: 100%; cursor: pointer; }
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 10px 18px; border: 1.5px solid var(--line); border-radius: 8px; background: var(--surface); font-weight: 600; font-size: 14px; transition: all .2s; color: var(--ink); text-decoration: none; width: 100%; cursor: pointer; }
   @media (min-width: 640px) { .btn { width: auto; } }
   .btn:hover { border-color: var(--accent); background: var(--surface-2); }
   .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
   .btn.primary:hover { filter: brightness(1.1); }
   .btn.success { background: #10B981; border-color: #10B981; color: #fff; }
   .btn.success:hover { filter: brightness(1.1); }
-  .btn.small { min-height: 34px; padding: 4px 12px; font-size: 13px; width: auto; }
+  .btn.small { min-height: 36px; padding: 6px 12px; font-size: 13px; width: auto; }
 
-  main { padding-block: 24px 60px; }
+  main { padding-block: 20px 60px; }
 
-  .grid-layout { display: grid; grid-template-columns: 1fr; gap: 24px; }
-  @media (min-width: 1024px) { .grid-layout { grid-template-columns: 480px 1fr; } }
+  .grid-layout { display: grid; grid-template-columns: 1fr; gap: 20px; }
+  @media (min-width: 1024px) { .grid-layout { grid-template-columns: 440px 1fr; } }
 
-  .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,.3); margin-bottom: 20px; }
-  .panel h2 { font: 700 20px var(--font-display); text-transform: uppercase; color: var(--accent); margin-bottom: 16px; border-bottom: 1px solid var(--line); padding-bottom: 8px; letter-spacing: .04em; }
+  .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px; box-shadow: 0 4px 20px rgba(0,0,0,.3); margin-bottom: 20px; }
+  .panel h2 { font: 700 18px var(--font-display); text-transform: uppercase; color: var(--accent); margin-bottom: 14px; border-bottom: 1px solid var(--line); padding-bottom: 8px; letter-spacing: .04em; }
 
-  .fld { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
-  .fld label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-2); }
-  .fld input, .fld select, .fld textarea { width: 100%; min-height: 46px; padding: 10px 14px; font-size: 15px; background: var(--bg); border: 1.5px solid var(--line); border-radius: 8px; color: var(--ink); }
-  .fld textarea { min-height: 90px; resize: vertical; }
+  .fld { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+  .fld label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-2); }
+  .fld input, .fld select, .fld textarea { width: 100%; min-height: 44px; padding: 10px 12px; font-size: 14px; background: var(--bg); border: 1.5px solid var(--line); border-radius: 8px; color: var(--ink); }
+  .fld textarea { min-height: 80px; resize: vertical; }
   .fld input:focus, .fld select:focus, .fld textarea:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 0 3px var(--accent-soft); }
 
   .checkbox-group { display: grid; gap: 8px; margin-top: 8px; }
   .checkbox-label { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--ink); background: var(--bg); padding: 10px 12px; border-radius: 6px; border: 1px solid var(--line); cursor: pointer; }
   .checkbox-label input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--accent); cursor: pointer; }
 
-  /* PREVISUALIZACIÓN DE DICTAMEN (Centrada y adaptada) */
-  .preview-container { background: #1B2934; padding: 12px; border-radius: 10px; overflow-x: auto; border: 1px solid var(--line); display: flex; justify-content: center; }
-  .invoice-page { background: #FFFFFF; color: #000000; width: 794px; min-height: 1123px; padding: 50px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; box-shadow: 0 10px 30px rgba(0,0,0,.5); position: relative; font-size: 13px; line-height: 1.5; flex-shrink: 0; }
+  /* PREVISUALIZACIÓN DE DICTAMEN ADAPTADA A MOVIL Y ESCRITORIO */
+  .preview-wrapper { background: #1B2934; padding: 10px; border-radius: 12px; border: 1px solid var(--line); width: 100%; overflow: hidden; display: flex; justify-content: center; }
+  
+  .invoice-scaler { width: 100%; max-width: 794px; position: relative; }
+  
+  .invoice-page { background: #FFFFFF; color: #000000; width: 794px; min-height: 1123px; padding: 45px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; box-shadow: 0 10px 30px rgba(0,0,0,.5); position: relative; font-size: 13px; line-height: 1.4; transform-origin: top left; }
   
   .inv-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 3px solid #041E26; padding-bottom: 15px; margin-bottom: 20px; }
-  .inv-logo-area { display: flex; align-items: center; gap: 15px; }
-  .inv-company h2 { font-size: 22px; font-weight: 800; color: #041E26; text-transform: uppercase; margin: 0; line-height: 1.1; }
-  .inv-company p { font-size: 11px; color: #4b5563; margin: 2px 0; }
+  .inv-logo-area { display: flex; align-items: center; gap: 12px; }
+  .inv-company h2 { font-size: 20px; font-weight: 800; color: #041E26; text-transform: uppercase; margin: 0; line-height: 1.1; }
+  .inv-company p { font-size: 10.5px; color: #4b5563; margin: 2px 0; }
   
   .inv-title-box { text-align: right; }
   .inv-title-box h1 { font-size: 22px; font-weight: 900; color: #06B6D4; margin: 0; text-transform: uppercase; }
   .inv-title-box p { font-size: 11px; font-weight: 600; color: #374151; margin: 2px 0; }
 
-  .inv-client-section { display: flex; justify-content: space-between; background: #f3f4f6; padding: 12px 16px; border-radius: 6px; margin-bottom: 20px; font-size: 12px; border-left: 4px solid #06B6D4; }
+  .inv-client-section { display: flex; justify-content: space-between; background: #f3f4f6; padding: 12px 14px; border-radius: 6px; margin-bottom: 18px; font-size: 12px; border-left: 4px solid #06B6D4; }
   
-  .dictamen-section-title { font-size: 13px; font-weight: 700; text-transform: uppercase; color: #041E26; border-bottom: 2px solid #041E26; padding-bottom: 4px; margin-bottom: 10px; margin-top: 15px; }
+  .dictamen-section-title { font-size: 12.5px; font-weight: 700; text-transform: uppercase; color: #041E26; border-bottom: 2px solid #041E26; padding-bottom: 4px; margin-bottom: 8px; margin-top: 14px; }
   
-  .specs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 16px; font-size: 12px; margin-bottom: 15px; background: #f9fafb; padding: 12px; border-radius: 6px; border: 1px solid #e5e7eb; }
+  .specs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 14px; font-size: 12px; margin-bottom: 14px; background: #f9fafb; padding: 10px; border-radius: 6px; border: 1px solid #e5e7eb; }
   .specs-grid div span { color: #6b7280; display: block; font-size: 10px; text-transform: uppercase; font-weight: 600; }
 
-  .conclusion-box { background: #fef2f2; border: 1px solid #fecaca; border-left: 4px solid #ef4444; padding: 12px; border-radius: 6px; margin-top: 15px; margin-bottom: 25px; }
-  .conclusion-box h4 { margin: 0 0 4px 0; color: #991b1b; font-size: 13px; text-transform: uppercase; }
-  .conclusion-box p { margin: 0; color: #7f1d1d; font-size: 12px; font-weight: 600; }
+  .conclusion-box { background: #fef2f2; border: 1px solid #fecaca; border-left: 4px solid #ef4444; padding: 10px; border-radius: 6px; margin-top: 14px; margin-bottom: 20px; }
+  .conclusion-box h4 { margin: 0 0 4px 0; color: #991b1b; font-size: 12px; text-transform: uppercase; }
+  .conclusion-box p { margin: 0; color: #7f1d1d; font-size: 11.5px; font-weight: 600; }
 
-  .signature-area { display: flex; justify-content: space-around; margin-top: 60px; text-align: center; }
+  .signature-area { display: flex; justify-content: space-around; margin-top: 40px; text-align: center; }
   .signature-line { width: 220px; border-top: 1px solid #374151; padding-top: 6px; font-size: 11px; color: #374151; font-weight: 600; }
 
-  .inv-footer { position: absolute; bottom: 30px; left: 50px; right: 50px; text-align: center; border-top: 1px solid #e5e7eb; padding-top: 10px; font-size: 10px; color: #9ca3af; }
+  .inv-footer { position: absolute; bottom: 25px; left: 45px; right: 45px; text-align: center; border-top: 1px solid #e5e7eb; padding-top: 8px; font-size: 10px; color: #9ca3af; }
 
   .toast { position: fixed; z-index: 40; left: 50%; bottom: 24px; transform: translate(-50%, 20px); max-width: 90%; padding: 12px 20px; border-radius: 8px; background: #fff; color: #000; font-weight: 600; font-size: 14px; opacity: 0; pointer-events: none; transition: all .2s; box-shadow: 0 10px 30px rgba(0,0,0,.5); }
   .toast.show { opacity: 1; transform: translate(-50%, 0); }
@@ -168,7 +174,7 @@
           </select>
         </div>
 
-        <h2 style="border:none; margin:20px 0 10px 0; padding:0; font-size:18px;">2. Evaluación y Fallas Detectadas</h2>
+        <h2 style="border:none; margin:20px 0 10px 0; padding:0; font-size:16px;">2. Evaluación y Fallas Detectadas</h2>
         
         <div class="checkbox-group">
           <label class="checkbox-label">
@@ -203,79 +209,81 @@
         </div>
       </div>
 
-      <!-- PREVISUALIZACIÓN EN VIVO CON LOGOTIPO -->
+      <!-- PREVISUALIZACIÓN EN VIVO ESCALADA PARA CELULAR -->
       <div>
-        <h2 style="font: 700 18px var(--font-display); text-transform: uppercase; color: var(--ink-2); margin-bottom: 12px; letter-spacing: .04em;">Vista Previa en Vivo</h2>
-        <div class="preview-container">
-          <div id="dictamen-pdf" class="invoice-page">
-            <div class="inv-header">
-              <div class="inv-logo-area">
-                <img src="logo-climahogar.png" alt="Clima Hogar Logo" style="width: 75px; height: 75px; object-fit: contain;">
-                <div class="inv-company">
-                  <h2>Clima Hogar Multi Servicios</h2>
-                  <p>Soluciones Técnicas Especializadas en Climatización</p>
-                  <p>Acapulco, Gro., México | Tel: 744 533 1689</p>
+        <h2 style="font: 700 16px var(--font-display); text-transform: uppercase; color: var(--ink-2); margin-bottom: 10px; letter-spacing: .04em;">Vista Previa en Vivo</h2>
+        <div class="preview-wrapper">
+          <div class="invoice-scaler" id="invoice-scaler">
+            <div id="dictamen-pdf" class="invoice-page">
+              <div class="inv-header">
+                <div class="inv-logo-area">
+                  <img src="logo-climahogar.png" alt="Clima Hogar Logo" style="width: 70px; height: 70px; object-fit: contain;">
+                  <div class="inv-company">
+                    <h2>Clima Hogar Multi Servicios</h2>
+                    <p>Soluciones Técnicas Especializadas en Climatización</p>
+                    <p>Acapulco, Gro., México | Tel: 744 533 1689</p>
+                  </div>
+                </div>
+                <div class="inv-title-box">
+                  <h1>Dictamen Técnico</h1>
+                  <p><strong>Folio:</strong> <span id="lbl-folio">DT-2026-001</span></p>
+                  <p><strong>Fecha:</strong> <span id="lbl-fecha">28 de Septiembre de 2026</span></p>
                 </div>
               </div>
-              <div class="inv-title-box">
-                <h1>Dictamen Técnico</h1>
-                <p><strong>Folio:</strong> <span id="lbl-folio">DT-2026-001</span></p>
-                <p><strong>Fecha:</strong> <span id="lbl-fecha">28 de Septiembre de 2026</span></p>
+
+              <div class="inv-client-section">
+                <div>
+                  <strong>CLIENTE / SOLICITANTE:</strong><br>
+                  <span id="lbl-cliente">CETis 116 "Antonia Nava de Catalán"</span><br>
+                  <span id="lbl-ubicacion">Ubicación: Biblioteca Escolar - Edificio B</span>
+                </div>
+                <div style="text-align: right;">
+                  <strong>TIPO DE DOCUMENTO:</strong><br>
+                  Dictamen de Condición y Reemplazo
+                </div>
               </div>
-            </div>
 
-            <div class="inv-client-section">
-              <div>
-                <strong>CLIENTE / SOLICITANTE:</strong><br>
-                <span id="lbl-cliente">CETis 116 "Antonia Nava de Catalán"</span><br>
-                <span id="lbl-ubicacion">Ubicación: Biblioteca Escolar - Edificio B</span>
+              <div class="dictamen-section-title">Especificaciones del Equipo Evaluado</div>
+              <div class="specs-grid">
+                <div><span>Nombre / Identificador</span><strong id="lbl-eq-nombre">Minisplit LG 4.0 Toneladas</strong></div>
+                <div><span>Marca</span><strong id="lbl-eq-marca">LG</strong></div>
+                <div><span>Modelo</span><strong id="lbl-eq-modelo">ATNQ48GPLA2</strong></div>
+                <div><span>Número de Serie</span><strong id="lbl-eq-serie">LG1904425</strong></div>
+                <div><span>Tipo / Capacidad</span><strong id="lbl-eq-cap">Cassette · 4.0 Toneladas (36,000 BTU)</strong></div>
+                <div><span>Refrigerante</span><strong id="lbl-eq-ref">R-410A</strong></div>
               </div>
-              <div style="text-align: right;">
-                <strong>TIPO DE DOCUMENTO:</strong><br>
-                Dictamen de Condición y Reemplazo
+
+              <div class="dictamen-section-title">Análisis de Fallas y Hallazgos en Campo</div>
+              <ul id="lbl-fails-list" style="margin: 6px 0 14px 20px; font-size: 12px; color: #1f2937;">
+                <!-- Se llena dinámicamente -->
+              </ul>
+
+              <div class="dictamen-section-title">Dictamen Técnico Detallado</div>
+              <p id="lbl-diagnostico" style="font-size: 12px; color: #374151; background: #f9fafb; padding: 10px; border-radius: 6px; border: 1px solid #e5e7eb; margin-bottom: 12px;">
+                Tras la revisión física, eléctrica y de presiones...
+              </p>
+
+              <div class="conclusion-box">
+                <h4 id="lbl-conclusion-title">Conclusión: REEMPLAZO TOTAL RECOMENDADO</h4>
+                <p id="lbl-conclusion-desc">Se dictamina que el equipo ha cumplido su ciclo de vida útil operativa y representa costos de mantenimiento insostenibles, recomendando su baja y sustitución por un equipo nuevo.</p>
               </div>
-            </div>
 
-            <div class="dictamen-section-title">Especificaciones del Equipo Evaluado</div>
-            <div class="specs-grid">
-              <div><span>Nombre / Identificador</span><strong id="lbl-eq-nombre">Minisplit LG 4.0 Toneladas</strong></div>
-              <div><span>Marca</span><strong id="lbl-eq-marca">LG</strong></div>
-              <div><span>Modelo</span><strong id="lbl-eq-modelo">ATNQ48GPLA2</strong></div>
-              <div><span>Número de Serie</span><strong id="lbl-eq-serie">LG1904425</strong></div>
-              <div><span>Tipo / Capacidad</span><strong id="lbl-eq-cap">Cassette · 4.0 Toneladas (36,000 BTU)</strong></div>
-              <div><span>Refrigerante</span><strong id="lbl-eq-ref">R-410A</strong></div>
-            </div>
-
-            <div class="dictamen-section-title">Análisis de Fallas y Hallazgos en Campo</div>
-            <ul id="lbl-fails-list" style="margin: 8px 0 16px 20px; font-size: 12px; color: #1f2937;">
-              <!-- Se llena dinámicamente -->
-            </ul>
-
-            <div class="dictamen-section-title">Dictamen Técnico Detallado</div>
-            <p id="lbl-diagnostico" style="font-size: 12px; color: #374151; background: #f9fafb; padding: 12px; border-radius: 6px; border: 1px solid #e5e7eb; margin-bottom: 15px;">
-              Tras la revisión física, eléctrica y de presiones...
-            </p>
-
-            <div class="conclusion-box">
-              <h4 id="lbl-conclusion-title">Conclusión: REEMPLAZO TOTAL RECOMENDADO</h4>
-              <p id="lbl-conclusion-desc">Se dictamina que el equipo ha cumplido su ciclo de vida útil operativa y representa costos de mantenimiento insostenibles, recomendando su baja y sustitución por un equipo nuevo.</p>
-            </div>
-
-            <div class="signature-area">
-              <div class="signature-line">
-                <strong id="lbl-tecnico-nombre">J. Francisco Abarca M.</strong><br>
-                Clima Hogar Multi Servicios<br>
-                Técnico Especialista Responsable
+              <div class="signature-area">
+                <div class="signature-line">
+                  <strong id="lbl-tecnico-nombre">J. Francisco Abarca M.</strong><br>
+                  Clima Hogar Multi Servicios<br>
+                  Técnico Especialista Responsable
+                </div>
+                <div class="signature-line">
+                  <strong>Dirección / Administración</strong><br>
+                  CETis 116 "Antonia Nava de Catalán"<br>
+                  Visto Bueno de Conformidad
+                </div>
               </div>
-              <div class="signature-line">
-                <strong>Dirección / Administración</strong><br>
-                CETis 116 "Antonia Nava de Catalán"<br>
-                Visto Bueno de Conformidad
-              </div>
-            </div>
 
-            <div class="inv-footer">
-              Clima Hogar Multi Servicios | Dictamen Técnico Oficial e Ingeniería de Climatización · Página 1 de 1
+              <div class="inv-footer">
+                Clima Hogar Multi Servicios | Dictamen Técnico Oficial e Ingeniería de Climatización · Página 1 de 1
+              </div>
             </div>
           </div>
         </div>
@@ -303,6 +311,22 @@
   function toast(msg) {
     var t = $('#toast'); t.textContent = msg; t.classList.add('show');
     setTimeout(function() { t.classList.remove('show'); }, 3000);
+  }
+
+  function ajustarEscalaPrevisualizacion() {
+    var scaler = $('#invoice-scaler');
+    var page = $('#dictamen-pdf');
+    if (!scaler || !page) return;
+    
+    var containerWidth = scaler.parentElement.clientWidth - 20;
+    if (containerWidth < 794) {
+      var scale = containerWidth / 794;
+      page.style.transform = 'scale(' + scale + ')';
+      scaler.style.height = (1123 * scale) + 'px';
+    } else {
+      page.style.transform = 'scale(1)';
+      scaler.style.height = '1123px';
+    }
   }
 
   function renderPreview() {
@@ -342,6 +366,8 @@
         failList.appendChild(li);
       });
     }
+    
+    setTimeout(ajustarEscalaPrevisualizacion, 50);
   }
 
   // Cargar equipos desde localStorage o Firebase si está disponible
@@ -404,14 +430,19 @@
     }
   });
 
+  window.addEventListener('resize', ajustarEscalaPrevisualizacion);
+
   $('#btn-download').addEventListener('click', function() {
     var btn = this;
     btn.textContent = 'Generando PDF...';
     btn.disabled = true;
 
     var element = document.getElementById('dictamen-pdf');
+    var originalTransform = element.style.transform;
+    element.style.transform = 'scale(1)';
     
     window.html2canvas(element, { scale: 2, useCORS: true }).then(function(canvas) {
+      element.style.transform = originalTransform;
       var imgData = canvas.toDataURL('image/png');
       var pdf = new jspdf.jsPDF('p', 'mm', 'a4');
       var pdfWidth = pdf.internal.pageSize.getWidth();
@@ -426,6 +457,7 @@
       toast('Dictamen descargado con éxito');
     }).catch(function(err) {
       console.error(err);
+      element.style.transform = originalTransform;
       btn.textContent = '📥 Descargar Dictamen PDF';
       btn.disabled = false;
       toast('Error al generar el PDF');
