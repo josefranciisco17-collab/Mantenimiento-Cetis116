@@ -1,8 +1,7 @@
 var CACHE_NAME = 'climahogar-v2-offline';
 var urlsToCache = [
   './index.html',
-  './facturas.html',
-  './dictamenes.html',
+  './login.html',
   './manifest.json',
   './icono-192.png',
   './logo-climahogar.png',
@@ -15,7 +14,7 @@ var urlsToCache = [
   'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js'
 ];
 
-// Instalación del Service Worker y guardado en caché
+// Instalación del Service Worker y guardado en caché inicial
 self.addEventListener('install', function(event) {
   event.waitUntil(
     caches.open(CACHE_NAME).then(function(cache) {
@@ -26,7 +25,7 @@ self.addEventListener('install', function(event) {
   self.skipWaiting();
 });
 
-// Activación y limpieza de cachés antiguas
+// Activación y limpieza inmediata de cachés antiguas
 self.addEventListener('activate', function(event) {
   event.waitUntil(
     caches.keys().then(function(cacheNames) {
@@ -43,13 +42,12 @@ self.addEventListener('activate', function(event) {
   self.clients.claim();
 });
 
-// Intercepción de peticiones (Estrategia: Cache primero, luego red con respaldo offline)
+// Intercepción de peticiones (Estrategia modificada: Red primero, respaldo en caché)
 self.addEventListener('fetch', function(event) {
-  // Ignorar peticiones de Firebase Firestore / Auth para que la app intente la red primero
+  // Ignorar peticiones de Firebase Firestore / Auth para ir directo a la red
   if (event.request.url.includes('firestore.googleapis.com') || event.request.url.includes('firebase')) {
     event.respondWith(
       fetch(event.request).catch(function() {
-        // Si no hay red para Firebase, devolvemos un estado offline controlado
         return new Response(JSON.stringify({ offline: true }), {
           headers: { 'Content-Type': 'application/json' }
         });
@@ -58,19 +56,30 @@ self.addEventListener('fetch', function(event) {
     return;
   }
 
+  // Para los archivos de la app: Intentamos descargar la versión más reciente de la red primero
   event.respondWith(
-    caches.match(event.request).then(function(response) {
-      return response || fetch(event.request).then(function(fetchResponse) {
-        return caches.open(CACHE_NAME).then(function(cache) {
-          cache.put(event.request, fetchResponse.clone());
-          return fetchResponse;
-        });
-      }).catch(function() {
-        // Si falla la red y no está en caché, podemos retornar el index principal o una página de respaldo
-        if (event.request.mode === 'navigate') {
-          return caches.match('./index.html');
+    fetch(event.request)
+      .then(function(networkResponse) {
+        // Si hay internet y responde bien, actualizamos la caché en segundo plano con la nueva versión
+        if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
+          var responseToCache = networkResponse.clone();
+          caches.open(CACHE_NAME).then(function(cache) {
+            cache.put(event.request, responseToCache);
+          });
         }
-      });
-    })
+        return networkResponse;
+      })
+      .catch(function() {
+        // Si no hay red (offline), recurrimos inmediatamente a la caché local
+        return caches.match(event.request).then(function(cachedResponse) {
+          if (cachedResponse) {
+            return cachedResponse;
+          }
+          // Si es una ruta de navegación y no hay nada, devolvemos el index
+          if (event.request.mode === 'navigate') {
+            return caches.match('./index.html');
+          }
+        });
+      })
   );
 });
