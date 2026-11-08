@@ -61,7 +61,7 @@
   .link-row { display: flex; justify-content: space-between; align-items: center; font-size: 13px; margin-top: 4px; }
   .link { background: none; border: 0; color: var(--accent); text-decoration: underline; cursor: pointer; font-weight: 600; padding: 0; }
 
-  /* Modal de Clave de Administrador */
+  /* Ventana Modal para Clave Maestra */
   .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 50; align-items: center; justify-content: center; padding: 20px; }
   .modal-overlay.show { display: flex; }
   .modal-box { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; width: min(400px, 100%); padding: 24px; display: grid; gap: 16px; }
@@ -106,7 +106,7 @@
     </div>
     <button type="submit" class="btn primary">Entrar al Sistema</button>
     
-    <!-- Botón de Acceso Administrador por Código -->
+    <!-- Botón de Acceso Administrador por Clave -->
     <button type="button" class="btn admin-btn" id="btn-open-master">Panel de Administración (Código)</button>
   </form>
 
@@ -127,11 +127,11 @@
   </form>
 </div>
 
-<!-- VENTANA MODAL PARA INGRESAR CLAVE MAESTRA -->
+<!-- VENTANA MODAL PARA CLAVE MAESTRA -->
 <div id="master-modal" class="modal-overlay">
   <div class="modal-box">
     <h3 style="margin:0; font-family: var(--font-display); font-size: 20px; color: #fff;">Acceso Restringido</h3>
-    <p style="margin:0; font-size: 13px; color: var(--ink-2);">Introduce la clave maestra de administrador para ingresar directamente:</p>
+    <p style="margin:0; font-size: 13px; color: var(--ink-2);">Introduce la clave maestra de administrador:</p>
     <div class="fld">
       <input type="password" id="master-code-input" placeholder="Clave de administrador">
     </div>
@@ -203,7 +203,7 @@
     }
   });
 
-  // Lógica de la Clave Maestra de Administrador
+  // Lógica de la Clave Maestra (4864)
   $('#btn-open-master').addEventListener('click', function() {
     $('#master-code-input').value = '';
     $('#master-modal').classList.add('show');
@@ -216,13 +216,12 @@
 
   $('#btn-submit-master').addEventListener('click', function() {
     var code = $('#master-code-input').value.trim();
-    // Clave maestra configurada para el acceso rápido de administrador
-    if (code === 'Flor7272') {
-      toast('¡Clave correcta! Entrando al sistema...');
+    if (code === '4864') {
+      toast('¡Clave correcta! Entrando al panel...');
       $('#master-modal').classList.remove('show');
       setTimeout(function() {
-        window.location.href = 'index.html';
-      }, 800);
+        window.location.href = 'admin.html';
+      }, 500);
     } else {
       toast('❌ Clave de administración incorrecta');
       $('#master-code-input').focus();
