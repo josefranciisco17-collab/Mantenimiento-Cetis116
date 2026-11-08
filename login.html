@@ -198,16 +198,16 @@
       var userRef = db.collection('usuarios').doc(cred.user.uid);
       var userDoc = await userRef.get();
       
-      // AUTO-CORRECCIÓN: Si el documento no existe en Firestore, lo creamos en automático.
-      // Si es tu correo principal, te da privilegios de admin y acceso inmediato.
-      if (!userDoc.exists) {
-        var esAdminPrincipal = (email === 'josefranciisco17@gmail.com');
+      var esAdminPrincipal = (email === 'josefranciisco17@gmail.com');
+
+      if (!userDoc.exists || esAdminPrincipal) {
         await userRef.set({
           email: email,
-          rol: esAdminPrincipal ? 'admin' : 'pendiente',
-          aprobado: esAdminPrincipal ? true : false,
-          fechaRegistro: new Date().toISOString()
-        });
+          rol: esAdminPrincipal ? 'admin' : (userDoc.exists ? userDoc.data().rol : 'pendiente'),
+          aprobado: esAdminPrincipal ? true : (userDoc.exists ? userDoc.data().aprobado : false),
+          fechaRegistro: userDoc.exists && userDoc.data().fechaRegistro ? userDoc.data().fechaRegistro : new Date().toISOString()
+        }, { merge: true });
+        
         userDoc = await userRef.get();
       }
 
