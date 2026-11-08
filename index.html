@@ -19,6 +19,9 @@
 
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
   
+  <!-- Motor OCR / IA para el escáner de placas -->
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+
   <style>
   :root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#0B131A;color:#E6EEF1}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}
   
@@ -676,6 +679,18 @@
 
     return '<div class="sheet-h"><h2>' + (e.id ? 'Editar equipo' : 'Registrar equipo') + '</h2>' + closeBtn() + '</div>' +
       '<form class="form" id="form-eq" novalidate>' +
+      
+      /* --- BOTÓN ESCÁNER DE PLACA CON IA --- */
+      '<div style="background:var(--surface-2); padding:14px; border-radius:8px; border:1.5px dashed var(--accent); margin-bottom:4px; text-align:center;">' +
+        '<label style="cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:6px;">' +
+          '<span style="font-weight:700; color:var(--accent); font-size:14px; text-transform:uppercase;">📷 Escanear Placa con IA (Cámara)</span>' +
+          '<span style="font-size:12px; color:var(--ink-2);">Toma foto a la placa del equipo para autocompletar marca, modelo y serie</span>' +
+          '<input type="file" id="scan-plate-input" accept="image/*" capture="environment" style="display:none;">' +
+        '</label>' +
+        '<div id="scan-status" style="font-size:13px; font-weight:600; color:var(--warn); margin-top:8px;" hidden>⏳ Analizando placa y extrayendo datos con IA...</div>' +
+      '</div>' +
+      /* ------------------------------------- */
+
       fld('Nombre del equipo', 'nombre', e.nombre || '', { req: 1, ph: 'Minisplit Aula 101', first: 1 }) +
       '<div class="grid2">' + fld('Aula / Zona', 'aula', e.aula || '', { req: 1, list: 'dl-aulas', ph: 'Aula 101' }) + fld('Edificio o planta', 'edificio', e.edificio || '', { ph: 'Edificio A' }) + '</div>' +
       '<div class="grid2"><div class="fld"><label for="x-marca">Marca <span class="req">*</span></label><select id="x-marca" name="marca">' + marcasOptionsHtml + '</select><p class="err" data-err="marca" hidden></p></div>' + fld('Modelo', 'modelo', e.modelo || '') + '</div>' +
@@ -961,6 +976,71 @@
     else if (t.id === 'f-desde') { S.desde = t.value; render(); }
     else if (t.id === 'f-hasta') { S.hasta = t.value; render(); }
     else if (t.id === 'x-equipoId') { var e = S.equipos.find(function (x) { return x.id === t.value; }); $('#x-aula-hint').textContent = e ? 'Aula: ' + (e.aula || 'sin aula') : ''; }
+    
+    // --- MANEJO DE ESCANEO DE PLACA CON IA ---
+    else if (t.id === 'scan-plate-input' && t.files && t.files[0]) {
+      var file = t.files[0];
+      var statusEl = $('#scan-status');
+      if (statusEl) { statusEl.hidden = false; }
+
+      Tesseract.recognize(file, 'eng', {
+        logger: function(m) { /* console.log(m); */ }
+      }).then(function(result) {
+        var text = result.data.text || '';
+        var upperText = text.toUpperCase();
+
+        // 1. Detectar Marca
+        var marcas = ['CARRIER', 'MIRAGE', 'LG', 'YORK', 'TRANE', 'MIDEA', 'DAIKIN', 'SAMSUNG', 'PANASONIC', 'MITSUBISHI', 'HISENSE', 'GREE', 'WHIRLPOOL', 'ELECTROLUX'];
+        for (var i = 0; i < marcas.length; i++) {
+          if (upperText.indexOf(marcas[i]) > -1) {
+            var foundM = marcas[i].charAt(0) + marcas[i].slice(1).toLowerCase();
+            var selM = $('#x-marca');
+            if (selM) selM.value = foundM;
+            break;
+          }
+        }
+
+        // 2. Detectar Refrigerante
+        var refrigerantes = ['R-410A', 'R410A', 'R-32', 'R32', 'R-22', 'R22', 'R-134A', 'R134A'];
+        for (var j = 0; j < refrigerantes.length; j++) {
+          if (upperText.indexOf(refrigerantes[j]) > -1) {
+            var foundR = refrigerantes[j].replace('410', '-410').replace('32', '-32').replace('22', '-22').replace('134', '-134a');
+            if (foundR.indexOf('R-') !== 0) foundR = 'R-' + foundR;
+            var inpR = $('#x-refrigerante');
+            if (inpR) inpR.value = foundR;
+            break;
+          }
+        }
+
+        // 3. Extraer líneas para Modelo y Serie
+        var lines = text.split('\n').map(function(l){ return l.trim(); }).filter(Boolean);
+        for (var k = 0; k < lines.length; k++) {
+          var line = lines[k];
+          var upLine = line.toUpperCase();
+          if (upLine.indexOf('S/N') > -1 || upLine.indexOf('SERIE') > -1 || upLine.indexOf('SERIAL') > -1) {
+            var parts = line.split(/[:#]/);
+            if (parts[1] && parts[1].trim().length > 3) {
+              var inpS = $('#x-serie');
+              if (inpS) inpS.value = parts[1].trim();
+            }
+          }
+          if (upLine.indexOf('MODEL') > -1 || upLine.indexOf('MOD.') > -1) {
+            var partsM = line.split(/[:#]/);
+            if (partsM[1] && partsM[1].trim().length > 2) {
+              var inpMod = $('#x-modelo');
+              if (inpMod) inpMod.value = partsM[1].trim();
+            }
+          }
+        }
+
+        if (statusEl) { statusEl.hidden = true; }
+        toast('¡Placa escaneada con éxito!');
+      }).catch(function(err) {
+        console.error(err);
+        if (statusEl) { statusEl.hidden = true; }
+        toast('No se pudo leer la placa claramente. Intenta de nuevo.');
+      });
+    }
   });
 
   document.addEventListener('input', function (ev) {
