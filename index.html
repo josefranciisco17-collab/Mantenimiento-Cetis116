@@ -139,12 +139,11 @@
     .card-title { font-size: 16px; font-weight: 700; color: #fff; }
     .badge { padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
     .badge-good { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); }
-    .badge-bad { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4); }
 
     .card-body { font-size: 13px; color: var(--ink-2); line-height: 1.5; margin-bottom: 14px; }
     .empty-state { text-align: center; padding: 40px; color: var(--ink-2); font-style: italic; }
 
-    /* Estilos para modales flotantes */
+    /* Modales */
     .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 16px; box-sizing: border-box; }
     .modal-card { background: #0f172a; border: 1px solid var(--line); border-radius: 16px; padding: 24px; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; }
     .modal-card h2 { margin-top: 0; font-family: 'Barlow Condensed', sans-serif; font-size: 22px; color: #fff; text-transform: uppercase; }
@@ -163,7 +162,7 @@
     <div class="header-subtitle">CETis 116 - Antonia Nava de Catalán</div>
 
     <div class="actions-grid" id="admin-actions-container">
-      <!-- Se carga dinámicamente según sesión -->
+      <!-- Se carga dinámicamente -->
     </div>
   </div>
 
@@ -304,8 +303,8 @@
     }
     html += '<button class="btn btn-primary" onclick="abrirModalEquipo()">+ Equipo</button>';
     html += '<button class="btn btn-secondary" onclick="abrirModalServicio()">+ Servicio</button>';
-    html += '<button class="btn btn-secondary" onclick="generarFacturas()">📄 Facturas</button>';
-    html += '<button class="btn btn-secondary" onclick="generarDictamenes()">📋 Dictámenes</button>';
+    html += '<button class="btn btn-secondary" onclick="window.location.href=\'facturas.html\'">📄 Facturas</button>';
+    html += '<button class="btn btn-secondary" onclick="window.location.href=\'dictamenes.html\'">📋 Dictámenes</button>';
     html += '<button class="btn btn-danger" onclick="auth.signOut().then(() => window.location.href=\'login.html\')">🚪 Salir</button>';
     container.innerHTML = html;
   }
@@ -403,7 +402,6 @@
     return str ? String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') : '';
   }
 
-  // Operatividad real de Modales y Botones
   window.abrirModalEquipo = function() {
     document.getElementById('modal-equipo').style.display = 'flex';
   };
@@ -449,15 +447,6 @@
     } catch (err) {
       alert('Error al registrar servicio: ' + err.message);
     }
-  };
-
-  window.generarFacturas = function() {
-    cambiarTab('servicios');
-    alert('Mostrando historial de servicios para facturación y reportes del CETis 116.');
-  };
-
-  window.generarDictamenes = function() {
-    alert('Generando dictamen técnico operativo de aires acondicionados para la dirección del plantel.');
   };
 </script>
 
