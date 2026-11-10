@@ -3,454 +3,182 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <title>Módulo de Facturación · Clima Hogar Multi Servicios</title>
-  
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
-  
-  <!-- jsPDF y html2canvas para la descarga limpia en PDF -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-
+  <title>Módulo de Facturación · Clima Hogar</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap">
   <style>
-  :root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#0B131A;color:#E6EEF1;overflow-x:hidden}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}
-  
-  :root {
-    --bg: #0B131A;
-    --surface: #131E26;
-    --surface-2: #1B2934;
-    --surface-3: #223442;
-    --ink: #E6EEF1;
-    --ink-2: #92A6B2;
-    --line: #2A3F4E;
-    --accent: #06B6D4;
-    --accent-ink: #041E26;
-    --accent-soft: rgba(6, 182, 212, 0.15);
-    --ok: #10B981;
-    --warn: #F59E0B;
-    --bad: #EF4444;
-    --bad-soft: rgba(239, 68, 68, 0.15);
-    --scrim: rgba(5, 9, 13, 0.75);
-    --font-display: 'Barlow Condensed', sans-serif;
-    --font-body: 'Plus Jakarta Sans', sans-serif;
-    --font-mono: 'JetBrains Mono', monospace;
-  }
+    :root { 
+      --bg-gradient: linear-gradient(135deg, #0284c7 0%, #0369a1 50%, #0f172a 100%);
+      --surface: rgba(15, 23, 42, 0.85);
+      --surface-2: rgba(30, 41, 59, 0.7);
+      --line: rgba(255, 255, 255, 0.12);
+      --ink: #f8fafc;
+      --ink-2: #94a3b8;
+      --accent: #38bdf8;
+      --accent-ink: #0f172a;
+      --good: #10b981;
+      --bad: #ef4444;
+    }
+    body { 
+      margin: 0; 
+      background: var(--bg-gradient); 
+      background-attachment: fixed;
+      color: var(--ink); 
+      font-family: 'Plus Jakarta Sans', sans-serif; 
+      padding: 16px; 
+      box-sizing: border-box;
+    }
+    .container { max-width: 800px; margin: 0 auto; padding-bottom: 40px; }
+    
+    .header-card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 20px;
+      margin-bottom: 20px;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    }
+    .header-title { font-family: 'Barlow Condensed', sans-serif; font-size: 24px; margin: 0 0 4px; color: #fff; text-transform: uppercase; letter-spacing: 0.5px; }
+    .header-subtitle { font-size: 12px; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; font-weight: 700; margin-bottom: 16px; }
 
-  * { box-sizing: border-box; }
-  body { margin: 0; background: var(--bg); color: var(--ink); }
-  h1, h2, h3, p { margin: 0; }
+    .actions-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 16px; }
+    .btn { 
+      padding: 12px 14px; 
+      border-radius: 12px; 
+      font-weight: 700; 
+      font-size: 12px; 
+      text-transform: uppercase; 
+      cursor: pointer; 
+      border: 1px solid var(--line); 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      gap: 6px; 
+      transition: all 0.2s ease;
+      text-decoration: none;
+    }
+    .btn-primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+    .btn-secondary { background: var(--surface-2); color: var(--ink); }
+    .btn:hover { opacity: 0.9; transform: translateY(-1px); }
 
-  .inner { max-width: 1200px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 20px;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    }
+    .card h2 { font-family: 'Barlow Condensed', sans-serif; font-size: 20px; color: #fff; margin-top: 0; margin-bottom: 16px; text-transform: uppercase; border-bottom: 1px solid var(--line); padding-bottom: 8px; }
 
-  /* Masthead Corporativo */
-  .top { background: linear-gradient(180deg, #101B22 0%, var(--bg) 100%); border-bottom: 1px solid var(--line); padding-block: 20px 16px; }
-  .top .inner { display: flex; flex-direction: column; gap: 14px; }
-  @media (min-width: 768px) {
-    .top .inner { flex-direction: row; align-items: center; justify-content: space-between; }
-  }
-  .brand h1 { font: 700 26px/1.1 var(--font-display); letter-spacing: .02em; text-transform: uppercase; color: #FFFFFF; }
-  .brand p { color: var(--accent); margin-top: 4px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; }
-  .top-actions { display: flex; flex-direction: column; gap: 8px; width: 100%; }
-  @media (min-width: 640px) { .top-actions { flex-direction: row; width: auto; } }
+    .form-group { margin-bottom: 14px; }
+    label { display: block; font-size: 11px; font-weight: 700; color: var(--ink-2); text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.5px; }
+    input, select, textarea { 
+      width: 100%; 
+      padding: 12px; 
+      background: var(--surface-2); 
+      border: 1px solid var(--line); 
+      border-radius: 10px; 
+      color: #fff; 
+      font-size: 14px; 
+      box-sizing: border-box; 
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); }
 
-  /* Botones Premium */
-  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 10px 18px; border: 1.5px solid var(--line); border-radius: 8px; background: var(--surface); font-weight: 600; font-size: 14px; transition: all .2s; color: var(--ink); text-decoration: none; width: 100%; cursor: pointer; }
-  @media (min-width: 640px) { .btn { width: auto; } }
-  .btn:hover { border-color: var(--accent); background: var(--surface-2); }
-  .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
-  .btn.primary:hover { filter: brightness(1.1); }
-  .btn.success { background: #10B981; border-color: #10B981; color: #fff; }
-  .btn.success:hover { filter: brightness(1.1); }
-  .btn.small { min-height: 36px; padding: 6px 12px; font-size: 13px; width: auto; }
-
-  main { padding-block: 20px 60px; }
-
-  .grid-layout { display: grid; grid-template-columns: 1fr; gap: 24px; }
-  @media (min-width: 1024px) { .grid-layout { grid-template-columns: 440px 1fr; } }
-
-  .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 18px; box-shadow: 0 4px 20px rgba(0,0,0,.3); margin-bottom: 20px; }
-  .panel h2 { font: 700 18px var(--font-display); text-transform: uppercase; color: var(--accent); margin-bottom: 14px; border-bottom: 1px solid var(--line); padding-bottom: 8px; letter-spacing: .04em; }
-
-  .fld { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
-  .fld label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-2); }
-  .fld input, .fld select, .fld textarea { width: 100%; min-height: 44px; padding: 10px 12px; font-size: 14px; background: var(--bg); border: 1.5px solid var(--line); border-radius: 8px; color: var(--ink); }
-  .fld textarea { min-height: 80px; resize: vertical; }
-  .fld input:focus, .fld select:focus, .fld textarea:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 0 3px var(--accent-soft); }
-
-  .items-table-edit { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 13px; }
-  .items-table-edit th, .items-table-edit td { border: 1px solid var(--line); padding: 6px; text-align: left; }
-  .items-table-edit th { background: var(--surface-2); color: var(--accent); font-size: 10px; text-transform: uppercase; letter-spacing: .05em; }
-  .items-table-edit input { width: 100%; background: var(--bg); border: 1px solid var(--line); color: #fff; padding: 6px 8px; border-radius: 6px; font-size: 13px; min-height: 34px; }
-
-  /* PREVISUALIZACIÓN DE FACTURA PERFECTAMENTE CENTRADA Y CONTENIDA */
-  .preview-wrapper { background: #1B2934; padding: 14px; border-radius: 12px; border: 1px solid var(--line); width: 100%; display: flex; justify-content: center; align-items: center; overflow: hidden; }
-  .invoice-scaler { width: 100%; max-width: 794px; position: relative; margin: 0 auto; display: flex; justify-content: center; }
-  .invoice-page { background: #FFFFFF; color: #000000; width: 794px; min-height: 1123px; padding: 45px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; box-shadow: 0 10px 30px rgba(0,0,0,.5); position: relative; font-size: 13px; line-height: 1.4; transform-origin: top center; }
-  
-  .inv-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 3px solid #041E26; padding-bottom: 15px; margin-bottom: 20px; }
-  .inv-logo-area { display: flex; align-items: center; gap: 12px; }
-  .inv-company h2 { font-size: 20px; font-weight: 800; color: #041E26; text-transform: uppercase; margin: 0; line-height: 1.1; }
-  .inv-company p { font-size: 10.5px; color: #4b5563; margin: 2px 0; }
-  
-  .inv-title-box { text-align: right; }
-  .inv-title-box h1 { font-size: 24px; font-weight: 900; color: #06B6D4; margin: 0; text-transform: uppercase; }
-  .inv-title-box p { font-size: 11px; font-weight: 600; color: #374151; margin: 2px 0; }
-
-  .inv-client-section { display: flex; justify-content: space-between; background: #f3f4f6; padding: 12px 14px; border-radius: 6px; margin-bottom: 18px; font-size: 12px; border-left: 4px solid #06B6D4; }
-  .inv-summary-bar { background: #e0f2fe; color: #0369a1; padding: 10px 14px; border-radius: 6px; font-size: 12px; margin-bottom: 18px; font-weight: 500; border: 1px solid #bae6fd; }
-
-  .inv-table { width: 100%; border-collapse: collapse; margin-bottom: 18px; }
-  .inv-table th { background: #041E26; color: #FFFFFF; font-size: 11px; text-transform: uppercase; padding: 10px 8px; text-align: left; }
-  .inv-table td { padding: 9px 8px; border-bottom: 1px solid #e5e7eb; font-size: 12px; color: #1f2937; }
-  .inv-table td:nth-child(1), .inv-table th:nth-child(1) { text-align: center; width: 45px; }
-  .inv-table td:nth-child(3), .inv-table th:nth-child(3),
-  .inv-table td:nth-child(4), .inv-table th:nth-child(4) { text-align: right; width: 105px; }
-
-  .inv-totals { display: flex; justify-content: flex-end; margin-top: 10px; }
-  .inv-totals-box { width: 260px; font-size: 12px; }
-  .inv-totals-row { display: flex; justify-content: space-between; padding: 6px 10px; border-bottom: 1px solid #e5e7eb; }
-  .inv-totals-row.final { background: #041E26; color: #FFFFFF; font-weight: 700; font-size: 13.5px; border-radius: 4px; margin-top: 4px; }
-
-  .inv-footer { position: absolute; bottom: 25px; left: 45px; right: 45px; text-align: center; border-top: 1px solid #e5e7eb; padding-top: 8px; font-size: 10px; color: #9ca3af; }
-
-  .toast { position: fixed; z-index: 40; left: 50%; bottom: 24px; transform: translate(-50%, 20px); max-width: 90%; padding: 12px 20px; border-radius: 8px; background: #fff; color: #000; font-weight: 600; font-size: 14px; opacity: 0; pointer-events: none; transition: all .2s; box-shadow: 0 10px 30px rgba(0,0,0,.5); }
-  .toast.show { opacity: 1; transform: translate(-50%, 0); }
+    .table-container { width: 100%; overflow-x: auto; margin-top: 10px; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--line); }
+    th { color: var(--accent); font-weight: 700; text-transform: uppercase; font-size: 11px; }
   </style>
 </head>
 <body>
 
-<header class="top">
-  <div class="inner">
-    <div class="brand">
-      <h1>Clima Hogar Multi Servicios</h1>
-      <p>Módulo de Facturación y Comprobantes</p>
-    </div>
-    <div class="top-actions">
-      <a href="index.html" class="btn primary">Volver al sistema</a>
-      <button type="button" class="btn success" id="btn-download">📥 Descargar Factura PDF</button>
-    </div>
-  </div>
-</header>
+<div class="container">
+  
+  <div class="header-card">
+    <div class="header-title">Clima Hogar Multi Servicios</div>
+    <div class="header-subtitle">Módulo de Facturación y Comprobantes</div>
 
-<main>
-  <div class="inner">
-    <div class="grid-layout">
-      <!-- PANEL DE CONFIGURACIÓN Y CONCEPTOS -->
-      <div class="panel">
-        <h2>1. Datos de la Factura</h2>
-        <div class="fld">
-          <label>Folio</label>
-          <input type="text" id="inv-folio" value="CH-2026-089">
-        </div>
-        <div class="fld">
-          <label>Fecha</label>
-          <input type="date" id="inv-fecha">
-        </div>
-        <div class="fld">
-          <label>Cliente</label>
-          <input type="text" id="inv-cliente" value="CETis 116 &quot;Antonia Nava de Catalán&quot;">
-        </div>
-        <div class="fld">
-          <label>Ubicación / Ciudad</label>
-          <input type="text" id="inv-ubicacion" value="Acapulco, Guerrero">
-        </div>
-        <div class="fld">
-          <label>Método de Pago</label>
-          <input type="text" id="inv-metodo" value="Transferencia / Efectivo">
-        </div>
-        <div class="fld">
-          <label>Aplicar I.V.A. (16%)</label>
-          <select id="inv-iva">
-            <option value="si" selected>Sí (16% IVA)</option>
-            <option value="no">No aplicar IVA</option>
-          </select>
-        </div>
-
-        <div class="fld">
-          <label>Resumen Técnico General</label>
-          <textarea id="inv-resumen">Reparación de tubería condensadora, instalación, limpieza profunda de equipos en biblioteca y áreas administrativas, y carga de gas refrigerante.</textarea>
-        </div>
-
-        <div style="display:flex; justify-content:space-between; align-items:center; margin:16px 0 10px 0;">
-          <h2 style="border:none; margin:0; padding:0; font-size:16px;">2. Conceptos</h2>
-          <button type="button" class="btn small primary" id="btn-add-row">+ Agregar concepto</button>
-        </div>
-        
-        <div style="overflow-x:auto;">
-          <table class="items-table-edit">
-            <thead>
-              <tr>
-                <th style="width:40px;">Cant</th>
-                <th>Descripción</th>
-                <th style="width:80px;">P. Unit</th>
-                <th style="width:35px;"></th>
-              </tr>
-            </thead>
-            <tbody id="edit-items-body">
-              <!-- Se llena dinámicamente -->
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- PREVISUALIZACIÓN EN VIVO ESCALADA Y CENTRADA -->
-      <div>
-        <h2 style="font: 700 16px var(--font-display); text-transform: uppercase; color: var(--ink-2); margin-bottom: 10px; letter-spacing: .04em;">Vista Previa en Vivo</h2>
-        <div class="preview-wrapper">
-          <div class="invoice-scaler" id="invoice-scaler">
-            <div id="invoice-pdf" class="invoice-page">
-              <div class="inv-header">
-                <div class="inv-logo-area">
-                  <img src="logo-climahogar.png" alt="Clima Hogar Logo" style="width: 70px; height: 70px; object-fit: contain;">
-                  <div class="inv-company">
-                    <h2>Clima Hogar Multi Servicios</h2>
-                    <p>Soluciones Completas para tu Hogar e Institución</p>
-                    <p>Especialistas en Aire Acondicionado, Refrigeración y Electricidad</p>
-                    <p>Acapulco, Gro., México | Tel: 744 533 1689</p>
-                  </div>
-                </div>
-                <div class="inv-title-box">
-                  <h1>Factura</h1>
-                  <p><strong>Folio:</strong> <span id="lbl-folio">CH-2026-089</span></p>
-                  <p><strong>Fecha:</strong> <span id="lbl-fecha">28 de Septiembre de 2026</span></p>
-                  <p><strong>Condiciones:</strong> Contado</p>
-                </div>
-              </div>
-
-              <div class="inv-client-section">
-                <div>
-                  <strong>FACTURAR A:</strong><br>
-                  <span id="lbl-cliente">CETis 116 "Antonia Nava de Catalán"</span><br>
-                  <span id="lbl-ubicacion">Ubicación: Acapulco, Guerrero</span>
-                </div>
-                <div style="text-align: right;">
-                  <strong>MÉTODO DE PAGO:</strong><br>
-                  <span id="lbl-metodo">Transferencia / Efectivo</span>
-                </div>
-              </div>
-
-              <div class="inv-summary-bar">
-                <strong>RESUMEN TÉCNICO DE SERVICIOS:</strong> <span id="lbl-resumen">Reparación de tubería condensadora, instalación, limpieza profunda de equipos en biblioteca y áreas administrativas, y carga de gas refrigerante.</span>
-              </div>
-
-              <table class="inv-table">
-                <thead>
-                  <tr>
-                    <th>CANT.</th>
-                    <th>DESCRIPCIÓN DEL SERVICIO, MATERIAL Y UBICACIÓN</th>
-                    <th>PRECIO UNIT.</th>
-                    <th>IMPORTE</th>
-                  </tr>
-                </thead>
-                <tbody id="preview-items-body">
-                  <!-- Renglones de factura -->
-                </tbody>
-              </table>
-
-              <div class="inv-totals">
-                <div class="inv-totals-box">
-                  <div class="inv-totals-row">
-                    <span>Subtotal:</span>
-                    <span id="lbl-subtotal">$0.00</span>
-                  </div>
-                  <div class="inv-totals-row" id="row-iva">
-                    <span>I.V.A. (16%):</span>
-                    <span id="lbl-iva">$0.00</span>
-                  </div>
-                  <div class="inv-totals-row final">
-                    <span>Total General:</span>
-                    <span id="lbl-total">$0.00</span>
-                  </div>
-                </div>
-              </div>
-
-              <div class="inv-footer">
-                Clima Hogar Multi Servicios | Factura Oficial y Comprobante de Servicios · Página 1 de 1
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+    <div class="actions-grid">
+      <button class="btn btn-secondary" onclick="window.location.href='index.html'">Volver al Sistema</button>
+      <button class="btn btn-primary" onclick="window.print()">Descargar Factura PDF</button>
     </div>
   </div>
-</main>
 
-<div id="toast" class="toast" role="status" aria-live="polite"></div>
-
-<script>
-(function() {
-  'use strict';
-  var $ = function(s) { return document.querySelector(s); };
-
-  var items = [
-    { cant: 1, desc: 'Reparación de tubería condensadora', precio: 1500 },
-    { cant: 1, desc: 'Instalación de aire acondicionado - Ubicación: Aula 19', precio: 2000 },
-    { cant: 4, desc: 'Limpieza profunda de aires acondicionados - Ubicación: Biblioteca Escolar', precio: 1500 },
-    { cant: 3, desc: 'Limpieza de aires acondicionados - Ubicación: Áreas de Planeación, Titulación y Financieros', precio: 1500 },
-    { cant: 2, desc: 'Reparación de condensadoras - Ubicación: Biblioteca Escolar', precio: 2500 },
-    { cant: 1, desc: 'Reparación de condensadora - Ubicación: Oficina de Recursos Financieros', precio: 2500 },
-    { cant: 1, desc: 'Reparación de condensadora - Ubicación: Oficina de Orientación Educativa', precio: 2500 },
-    { cant: 1, desc: 'Carga de gas refrigerante para sistema', precio: 1000 }
-  ];
-
-  function formatMoney(num) {
-    return '$' + Number(num || 0).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  }
-
-  function formatDateLong(isoStr) {
-    if (!isoStr) return '';
-    var d = new Date(isoStr + 'T00:00:00');
-    if (isNaN(d)) return isoStr;
-    return new Intl.DateTimeFormat('es-MX', { day: 'numeric', month: 'long', year: 'numeric' }).format(d);
-  }
-
-  function toast(msg) {
-    var t = $('#toast'); t.textContent = msg; t.classList.add('show');
-    setTimeout(function() { t.classList.remove('show'); }, 3000);
-  }
-
-  function ajustarEscalaPrevisualizacion() {
-    var scaler = $('#invoice-scaler');
-    var page = $('#invoice-pdf');
-    if (!scaler || !page) return;
+  <div class="card">
+    <h2>1. Datos de la Factura</h2>
     
-    var containerWidth = scaler.parentElement.clientWidth - 28;
-    if (containerWidth < 794) {
-      var scale = containerWidth / 794;
-      page.style.transform = 'scale(' + scale + ')';
-      scaler.style.height = (1123 * scale) + 'px';
-    } else {
-      page.style.transform = 'scale(1)';
-      scaler.style.height = '1123px';
-    }
-  }
+    <div class="form-group">
+      <label>Folio</label>
+      <input type="text" value="CH-2026-089" readonly>
+    </div>
 
-  function renderEditor() {
-    var tbody = $('#edit-items-body');
-    tbody.innerHTML = '';
-    items.forEach(function(item, idx) {
-      var tr = document.createElement('tr');
-      tr.innerHTML = '<td><input type="number" min="1" value="' + item.cant + '" data-idx="' + idx + '" data-field="cant"></td>' +
-                     '<td><input type="text" value="' + item.desc.replace(/"/g, '&quot;') + '" data-idx="' + idx + '" data-field="desc"></td>' +
-                     '<td><input type="number" step="0.01" value="' + item.precio + '" data-idx="' + idx + '" data-field="precio"></td>' +
-                     '<td style="text-align:center;"><button type="button" class="btn small danger" data-idx="' + idx + '" data-action="del-item" style="padding:2px 6px; color:#EF4444; border:none; background:transparent; font-size:16px; cursor:pointer;">✕</button></td>';
-      tbody.appendChild(tr);
-    });
-  }
+    <div class="form-group">
+      <label>Fecha</label>
+      <input type="text" value="10/11/2026" readonly>
+    </div>
 
-  function renderPreview() {
-    $('#lbl-folio').textContent = $('#inv-folio').value;
-    var fechaVal = $('#inv-fecha').value;
-    $('#lbl-fecha').textContent = fechaVal ? formatDateLong(fechaVal) : 'Fecha actual';
-    $('#lbl-cliente').textContent = $('#inv-cliente').value;
-    $('#lbl-ubicacion').textContent = 'Ubicación: ' + $('#inv-ubicacion').value;
-    $('#lbl-metodo').textContent = $('#inv-metodo').value;
-    $('#lbl-resumen').textContent = $('#inv-resumen').value;
+    <div class="form-group">
+      <label>Cliente</label>
+      <input type="text" value="CETis 116 Antonia Nava de Catalán" readonly>
+    </div>
 
-    var prevBody = $('#preview-items-body');
-    prevBody.innerHTML = '';
-    
-    var subtotal = 0;
-    items.formatMoney = formatMoney;
-    items.forEach(function(item) {
-      var importe = (Number(item.cant) || 0) * (Number(item.precio) || 0);
-      subtotal += importe;
-      var tr = document.createElement('tr');
-      tr.innerHTML = '<td>' + item.cant + '</td>' +
-                     '<td>' + item.desc + '</td>' +
-                     '<td>' + formatMoney(item.precio) + '</td>' +
-                     '<td>' + formatMoney(importe) + '</td>';
-      prevBody.appendChild(tr);
-    });
+    <div class="form-group">
+      <label>Ubicación / Ciudad</label>
+      <input type="text" value="Acapulco, Guerrero" readonly>
+    </div>
 
-    var applyIva = $('#inv-iva').value === 'si';
-    var ivaRow = $('#row-iva');
-    var ivaVal = applyIva ? (subtotal * 0.16) : 0;
-    var total = subtotal + ivaVal;
+    <div class="form-group">
+      <label>Método de Pago</label>
+      <input type="text" value="Transferencia / Efectivo" readonly>
+    </div>
 
-    if (applyIva) {
-      ivaRow.style.display = 'flex';
-      $('#lbl-iva').textContent = formatMoney(ivaVal);
-    } else {
-      ivaRow.style.display = 'none';
-    }
+    <div class="form-group">
+      <label>Aplicar I.V.A. (16%)</label>
+      <input type="text" value="Sí (16% IVA)" readonly>
+    </div>
 
-    $('#lbl-subtotal').textContent = formatMoney(subtotal);
-    $('#lbl-total').textContent = formatMoney(total);
-    
-    setTimeout(ajustarEscalaPrevisualizacion, 50);
-  }
+    <div class="form-group">
+      <label>Resumen Técnico General</label>
+      <textarea rows="3" readonly>Reparación de tubería condensadora, instalación, limpieza profunda biblioteca y áreas administrativas, y carga de gas refrigerante.</textarea>
+    </div>
+  </div>
 
-  function updateAll() {
-    renderEditor();
-    renderPreview();
-  }
+  <div class="card">
+    <h2>2. Conceptos</h2>
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 50px;">Cant</th>
+            <th>Descripción</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>1</td>
+            <td>Reparación de tubería condensadora</td>
+          </tr>
+          <tr>
+            <td>1</td>
+            <td>Instalación de aire acondicionado - Ubicación: Aula 19</td>
+          </tr>
+          <tr>
+            <td>4</td>
+            <td>Limpieza profunda de aires acondicionados - Ubicación: Biblioteca Escolar</td>
+          </tr>
+          <tr>
+            <td>3</td>
+            <td>Limpieza de aires acondicionados - Ubicación: Áreas de Planeación, Titulación y Financieros</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
 
-  document.addEventListener('input', function(e) {
-    var target = e.target;
-    if (target.matches('#inv-folio, #inv-fecha, #inv-cliente, #inv-ubicacion, #inv-metodo, #inv-resumen, #inv-iva')) {
-      renderPreview();
-    }
-    if (target.matches('.items-table-edit input')) {
-      var idx = target.dataset.idx;
-      var field = target.dataset.field;
-      if (idx != null && field) {
-        items[idx][field] = field === 'cant' || field === 'precio' ? Number(target.value) : target.value;
-        renderPreview();
-      }
-    }
-  });
-
-  document.addEventListener('click', function(e) {
-    if (e.target.matches('#btn-add-row')) {
-      items.push({ cant: 1, desc: 'Nuevo servicio o material', precio: 500 });
-      updateAll();
-    }
-    if (e.target.matches('[data-action="del-item"]')) {
-      var idx = e.target.dataset.idx;
-      items.splice(idx, 1);
-      updateAll();
-    }
-  });
-
-  window.addEventListener('resize', ajustarEscalaPrevisualizacion);
-
-  $('#btn-download').addEventListener('click', function() {
-    var btn = this;
-    btn.textContent = 'Generando PDF...';
-    btn.disabled = true;
-
-    var element = document.getElementById('invoice-pdf');
-    var originalTransform = element.style.transform;
-    element.style.transform = 'scale(1)';
-    
-    window.html2canvas(element, { scale: 2, useCORS: true }).then(function(canvas) {
-      element.style.transform = originalTransform;
-      var imgData = canvas.toDataURL('image/png');
-      var pdf = new jspdf.jsPDF('p', 'mm', 'a4');
-      var pdfWidth = pdf.internal.pageSize.getWidth();
-      var pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-      
-      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-      var folio = $('#inv-folio').value || 'Factura';
-      pdf.save('Factura_' + folio + '.pdf');
-      
-      btn.textContent = '📥 Descargar Factura PDF';
-      btn.disabled = false;
-      toast('Factura descargada con éxito');
-    }).catch(function(err) {
-      console.error(err);
-      element.style.transform = originalTransform;
-      btn.textContent = '📥 Descargar Factura PDF';
-      btn.disabled = false;
-      toast('Error al generar el PDF');
-    });
-  });
-
-  var todayIso = new Date().toISOString().split('T')[0];
-  $('#inv-fecha').value = todayIso;
-  updateAll();
-})();
-</script>
+</div>
 
 </body>
 </html>
