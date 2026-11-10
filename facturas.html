@@ -88,16 +88,18 @@
     }
     input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); }
 
-    .concept-edit-row { display: grid; grid-template-columns: 60px 1fr 90px 40px; gap: 8px; margin-bottom: 10px; align-items: center; }
+    .concept-edit-row { display: grid; grid-template-columns: 55px 1fr 85px 40px; gap: 6px; margin-bottom: 10px; align-items: center; }
     
-    /* Estilos del Preview en vivo tipo Documento */
-    .preview-box { background: #fff; color: #1e293b; border-radius: 12px; padding: 24px; margin-top: 20px; font-family: 'Plus Jakarta Sans', sans-serif; }
-    .preview-header { display: flex; justify-content: space-between; border-bottom: 2px solid #0284c7; padding-bottom: 12px; margin-bottom: 16px; }
-    .preview-title { font-family: 'Barlow Condensed', sans-serif; font-size: 20px; color: #0284c7; font-weight: 700; text-transform: uppercase; }
-    .preview-table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 12px; }
-    .preview-table th, .preview-table td { padding: 8px; border-bottom: 1px solid #e2e8f0; text-align: left; color: #1e293b; }
-    .preview-table th { background: #f1f5f9; color: #0f172a; font-weight: 700; text-transform: uppercase; }
-    .preview-totals { margin-top: 16px; text-align: right; font-size: 13px; line-height: 1.5; }
+    /* Estilos mejorados y totalmente responsivos para el Preview */
+    .preview-box { background: #fff; color: #1e293b; border-radius: 12px; padding: 16px; margin-top: 20px; font-family: 'Plus Jakarta Sans', sans-serif; overflow: hidden; box-sizing: border-box; }
+    .preview-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #0284c7; padding-bottom: 10px; margin-bottom: 12px; gap: 10px; flex-wrap: wrap; }
+    .preview-title { font-family: 'Barlow Condensed', sans-serif; font-size: 18px; color: #0284c7; font-weight: 700; text-transform: uppercase; }
+    
+    .preview-table { width: 100%; table-layout: fixed; border-collapse: collapse; margin-top: 10px; font-size: 11px; }
+    .preview-table th, .preview-table td { padding: 6px 4px; border-bottom: 1px solid #e2e8f0; text-align: left; color: #1e293b; word-break: break-word; overflow: hidden; }
+    .preview-table th { background: #f1f5f9; color: #0f172a; font-weight: 700; text-transform: uppercase; font-size: 10px; }
+    
+    .preview-totals { margin-top: 14px; text-align: right; font-size: 12px; line-height: 1.4; }
 
     @media print {
       body { background: #fff; color: #000; padding: 0; }
@@ -200,7 +202,7 @@
                 '<input type="number" value="' + item.cant + '" onchange="actualizarItem(' + index + ', \'cant\', this.value)" placeholder="Cant">' +
                 '<input type="text" value="' + item.desc + '" onchange="actualizarItem(' + index + ', \'desc\', this.value)" placeholder="Descripción">' +
                 '<input type="number" value="' + item.precio + '" onchange="actualizarItem(' + index + ', \'precio\', this.value)" placeholder="Precio $">' +
-                '<button type="button" class="btn btn-danger" style="padding: 10px; height: 100%;" onclick="eliminarItem(' + index + ')">✕</button>' +
+                '<button type="button" class="btn btn-danger" style="padding: 8px; height: 100%;" onclick="eliminarItem(' + index + ')">✕</button>' +
               '</div>';
     });
     container.innerHTML = html;
@@ -241,10 +243,10 @@
       var totalFila = c.cant * c.precio;
       subtotal += totalFila;
       filasHtml += '<tr>' +
-                     '<td><b>' + c.cant + '</b></td>' +
-                     '<td>' + c.desc + '</td>' +
-                     '<td>$' + c.precio.toLocaleString('es-MX', {minimumFractionDigits: 2}) + '</td>' +
-                     '<td><b>$' + totalFila.toLocaleString('es-MX', {minimumFractionDigits: 2}) + '</b></td>' +
+                     '<td style="width: 12%; text-align: center;"><b>' + c.cant + '</b></td>' +
+                     '<td style="width: 48%;">' + c.desc + '</td>' +
+                     '<td style="width: 20%;">$' + c.precio.toLocaleString('es-MX', {minimumFractionDigits: 2}) + '</td>' +
+                     '<td style="width: 20%;"><b>$' + totalFila.toLocaleString('es-MX', {minimumFractionDigits: 2}) + '</b></td>' +
                    '</tr>';
     });
 
@@ -255,28 +257,28 @@
       '<div class="preview-header">' +
         '<div>' +
           '<div class="preview-title">Clima Hogar Multi Servicios</div>' +
-          '<div style="font-size:11px; color:#64748b;">JFAM Tecno-Energy · CETis 116</div>' +
+          '<div style="font-size:10px; color:#64748b;">JFAM Tecno-Energy · CETis 116</div>' +
         '</div>' +
-        '<div style="text-align:right; font-size:12px;">' +
+        '<div style="text-align:right; font-size:11px;">' +
           '<b>Folio:</b> ' + folio + '<br>' +
           '<b>Fecha:</b> ' + fecha +
         '</div>' +
       '</div>' +
-      '<div style="font-size:12px; margin-bottom:12px; line-height:1.4;">' +
+      '<div style="font-size:11px; margin-bottom:10px; line-height:1.4;">' +
         '<b>Cliente:</b> ' + cliente + '<br>' +
         '<b>Ubicación:</b> ' + ubicacion + '<br>' +
         '<b>Método de Pago:</b> ' + metodo +
       '</div>' +
-      '<div style="font-size:12px; margin-bottom:12px; background:#f8fafc; padding:8px; border-radius:6px;">' +
+      '<div style="font-size:11px; margin-bottom:10px; background:#f8fafc; padding:8px; border-radius:6px; border-left:3px solid #0284c7;">' +
         '<b>Resumen Técnico:</b> ' + resumen +
       '</div>' +
       '<table class="preview-table">' +
         '<thead>' +
           '<tr>' +
-            '<th style="width:40px;">Cant</th>' +
-            '<th>Descripción</th>' +
-            '<th style="width:70px;">P. Unit</th>' +
-            '<th style="width:80px;">Importe</th>' +
+            '<th style="width: 12%; text-align: center;">Cant</th>' +
+            '<th style="width: 48%;">Descripción</th>' +
+            '<th style="width: 20%;">P. Unit</th>' +
+            '<th style="width: 20%;">Importe</th>' +
           '</tr>' +
         '</thead>' +
         '<tbody>' + filasHtml + '</tbody>' +
@@ -284,13 +286,12 @@
       '<div class="preview-totals">' +
         'Subtotal: $' + subtotal.toLocaleString('es-MX', {minimumFractionDigits: 2}) + '<br>' +
         (aplicaIva ? 'I.V.A. (16%): $' + iva.toLocaleString('es-MX', {minimumFractionDigits: 2}) + '<br>' : '') +
-        '<b style="font-size:15px; color:#0284c7;">Total: $' + totalGeneral.toLocaleString('es-MX', {minimumFractionDigits: 2}) + '</b>' +
+        '<b style="font-size:14px; color:#0284c7;">Total: $' + totalGeneral.toLocaleString('es-MX', {minimumFractionDigits: 2}) + '</b>' +
       '</div>';
 
     document.getElementById('preview-content').innerHTML = previewHtml;
   };
 
-  // Inicializar
   renderizarEditor();
 </script>
 
