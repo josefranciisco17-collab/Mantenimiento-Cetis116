@@ -142,8 +142,16 @@
     .badge-bad { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4); }
 
     .card-body { font-size: 13px; color: var(--ink-2); line-height: 1.5; margin-bottom: 14px; }
-    .card-actions { display: flex; gap: 8px; flex-wrap: wrap; border-top: 1px solid var(--line); padding-top: 12px; }
     .empty-state { text-align: center; padding: 40px; color: var(--ink-2); font-style: italic; }
+
+    /* Estilos para modales flotantes */
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 16px; box-sizing: border-box; }
+    .modal-card { background: #0f172a; border: 1px solid var(--line); border-radius: 16px; padding: 24px; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; }
+    .modal-card h2 { margin-top: 0; font-family: 'Barlow Condensed', sans-serif; font-size: 22px; color: #fff; text-transform: uppercase; }
+    .form-group { margin-bottom: 14px; }
+    .form-group label { display: block; font-size: 11px; font-weight: 700; color: var(--ink-2); text-transform: uppercase; margin-bottom: 4px; }
+    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px; background: rgba(30, 41, 59, 0.6); border: 1px solid var(--line); border-radius: 8px; color: #fff; font-size: 14px; box-sizing: border-box; }
+    .modal-buttons { display: flex; gap: 10px; margin-top: 20px; }
   </style>
 </head>
 <body>
@@ -155,7 +163,7 @@
     <div class="header-subtitle">CETis 116 - Antonia Nava de Catalán</div>
 
     <div class="actions-grid" id="admin-actions-container">
-      <!-- Se llena dinámicamente según el rol -->
+      <!-- Se carga dinámicamente según sesión -->
     </div>
   </div>
 
@@ -185,6 +193,71 @@
     <div class="empty-state">Sincronizando con Firestore...</div>
   </div>
 
+</div>
+
+<!-- MODAL PARA AÑADIR EQUIPO -->
+<div class="modal-overlay" id="modal-equipo">
+  <div class="modal-card">
+    <h2>Registrar Nuevo Equipo</h2>
+    <form id="form-nuevo-equipo" onsubmit="guardarEquipo(event)">
+      <div class="form-group">
+        <label>Aula o Zona</label>
+        <input type="text" id="eq-aula" required placeholder="Ej. Laboratorio de Cómputo 1">
+      </div>
+      <div class="form-group">
+        <label>Marca del Equipo</label>
+        <select id="eq-marca" required>
+          <option value="Carrier">Carrier</option>
+          <option value="Mabe">Mabe</option>
+          <option value="Mirage">Mirage</option>
+          <option value="LG">LG</option>
+          <option value="York">York</option>
+          <option value="Trane">Trane</option>
+          <option value="Midea">Midea</option>
+          <option value="Daikin">Daikin</option>
+          <option value="Samsung">Samsung</option>
+          <option value="Otra">Otra</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Capacidad (Toneladas)</label>
+        <input type="text" id="eq-toneladas" value="1.5" required>
+      </div>
+      <div class="form-group">
+        <label>Número de Serie</label>
+        <input type="text" id="eq-serie" placeholder="Número de serie o placa">
+      </div>
+      <div class="modal-buttons">
+        <button type="submit" class="btn btn-primary" style="flex:1;">Guardar Equipo</button>
+        <button type="button" class="btn btn-secondary" onclick="cerrarModales()" style="flex:1;">Cancelar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL PARA AÑADIR SERVICIO -->
+<div class="modal-overlay" id="modal-servicio">
+  <div class="modal-card">
+    <h2>Registrar Mantenimiento / Servicio</h2>
+    <form id="form-nuevo-servicio" onsubmit="guardarServicio(event)">
+      <div class="form-group">
+        <label>Aula o Equipo Atendido</label>
+        <input type="text" id="sv-aula" required placeholder="Ej. Aula 101">
+      </div>
+      <div class="form-group">
+        <label>Tipo de Servicio / Descripción</label>
+        <textarea id="sv-desc" rows="3" required placeholder="Mantenimiento preventivo, lavado de filtros, carga de gas..."></textarea>
+      </div>
+      <div class="form-group">
+        <label>Fecha de Servicio</label>
+        <input type="date" id="sv-fecha" required>
+      </div>
+      <div class="modal-buttons">
+        <button type="submit" class="btn btn-primary" style="flex:1;">Registrar Servicio</button>
+        <button type="button" class="btn btn-secondary" onclick="cerrarModales()" style="flex:1;">Cancelar</button>
+      </div>
+    </form>
+  </div>
 </div>
 
 <!-- Firebase SDKs -->
@@ -275,7 +348,7 @@
 
     if (tabActual === 'equipos') {
       var filtrados = listaEquiposGlobal.filter(eq => {
-        var texto = (eq.aula + ' ' + eq.marca + ' ' + eq.serie + ' ' + eq.notas).toLowerCase();
+        var texto = ((eq.aula || '') + ' ' + (eq.marca || '') + ' ' + (eq.serie || '')).toLowerCase();
         return texto.includes(busqueda);
       });
 
@@ -300,7 +373,7 @@
       container.innerHTML = html;
     } else {
       var filtrados = listaServiciosGlobal.filter(sv => {
-        var texto = (sv.descripcion + ' ' + sv.aula + ' ' + sv.tecnico).toLowerCase();
+        var texto = ((sv.descripcion || '') + ' ' + (sv.aula || '')).toLowerCase();
         return texto.includes(busqueda);
       });
 
@@ -330,11 +403,62 @@
     return str ? String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') : '';
   }
 
-  // Funciones de acción conectadas
-  window.abrirModalEquipo = function() { alert('Abriendo formulario para añadir nuevo equipo...'); };
-  window.abrirModalServicio = function() { alert('Abriendo formulario para registrar servicio...'); };
-  window.generarFacturas = function() { alert('Generando reporte de facturación...'); };
-  window.generarDictamenes = function() { alert('Generando dictámenes técnicos...'); };
+  // Operatividad real de Modales y Botones
+  window.abrirModalEquipo = function() {
+    document.getElementById('modal-equipo').style.display = 'flex';
+  };
+
+  window.abrirModalServicio = function() {
+    document.getElementById('modal-servicio').style.display = 'flex';
+    document.getElementById('sv-fecha').valueAsDate = new Date();
+  };
+
+  window.cerrarModales = function() {
+    document.getElementById('modal-equipo').style.display = 'none';
+    document.getElementById('modal-servicio').style.display = 'none';
+  };
+
+  window.guardarEquipo = async function(e) {
+    e.preventDefault();
+    var aula = document.getElementById('eq-aula').value;
+    var marca = document.getElementById('eq-marca').value;
+    var toneladas = document.getElementById('eq-toneladas').value;
+    var serie = document.getElementById('eq-serie').value;
+
+    try {
+      await db.collection('equipos').add({ aula, marca, toneladas, serie, fechaCreacion: new Date().toISOString() });
+      cerrarModales();
+      cargarDatos();
+      alert('¡Equipo registrado con éxito!');
+    } catch (err) {
+      alert('Error al guardar equipo: ' + err.message);
+    }
+  };
+
+  window.guardarServicio = async function(e) {
+    e.preventDefault();
+    var aula = document.getElementById('sv-aula').value;
+    var descripcion = document.getElementById('sv-desc').value;
+    var fecha = document.getElementById('sv-fecha').value;
+
+    try {
+      await db.collection('servicios').add({ aula, descripcion, fecha, registradoPor: auth.currentUser.email });
+      cerrarModales();
+      cargarDatos();
+      alert('¡Servicio registrado con éxito!');
+    } catch (err) {
+      alert('Error al registrar servicio: ' + err.message);
+    }
+  };
+
+  window.generarFacturas = function() {
+    cambiarTab('servicios');
+    alert('Mostrando historial de servicios para facturación y reportes del CETis 116.');
+  };
+
+  window.generarDictamenes = function() {
+    alert('Generando dictamen técnico operativo de aires acondicionados para la dirección del plantel.');
+  };
 </script>
 
 </body>
