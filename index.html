@@ -139,8 +139,10 @@
     .card-title { font-size: 16px; font-weight: 700; color: #fff; }
     .badge { padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
     .badge-good { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); }
+    .badge-bad { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4); }
 
-    .card-body { font-size: 13px; color: var(--ink-2); line-height: 1.5; margin-bottom: 14px; }
+    .card-body { font-size: 13px; color: var(--ink-2); line-height: 1.6; margin-bottom: 12px; }
+    .card-actions { display: flex; gap: 8px; border-top: 1px solid var(--line); padding-top: 12px; justify-content: flex-end; }
     .empty-state { text-align: center; padding: 40px; color: var(--ink-2); font-style: italic; }
 
     /* Modales */
@@ -162,7 +164,7 @@
     <div class="header-subtitle">CETis 116 - Antonia Nava de Catalán</div>
 
     <div class="actions-grid" id="admin-actions-container">
-      <!-- Se carga dinámicamente -->
+      <!-- Se carga dinámicamente según sesión -->
     </div>
   </div>
 
@@ -223,8 +225,8 @@
         <input type="text" id="eq-toneladas" value="1.5" required>
       </div>
       <div class="form-group">
-        <label>Número de Serie</label>
-        <input type="text" id="eq-serie" placeholder="Número de serie o placa">
+        <label>Número de Serie / Placa</label>
+        <input type="text" id="eq-serie" placeholder="Ej. 449801416211200838">
       </div>
       <div class="modal-buttons">
         <button type="submit" class="btn btn-primary" style="flex:1;">Guardar Equipo</button>
@@ -347,7 +349,7 @@
 
     if (tabActual === 'equipos') {
       var filtrados = listaEquiposGlobal.filter(eq => {
-        var texto = ((eq.aula || '') + ' ' + (eq.marca || '') + ' ' + (eq.serie || '')).toLowerCase();
+        var texto = ((eq.aula || '') + ' ' + (eq.marca || '') + ' ' + (eq.serie || '') + ' ' + (eq.toneladas || '')).toLowerCase();
         return texto.includes(busqueda);
       });
 
@@ -367,12 +369,15 @@
                     '<b>Marca:</b> ' + esc(eq.marca || 'N/D') + ' · <b>Capacidad:</b> ' + esc(eq.toneladas || '1.5') + ' Ton<br>' +
                     '<b>Serie:</b> ' + esc(eq.serie || 'N/D') +
                   '</div>' +
+                  '<div class="card-actions">' +
+                    '<button class="btn btn-danger" style="padding: 6px 12px; font-size: 11px;" onclick="eliminarEquipo(\'' + eq.id + '\')">Eliminar</button>' +
+                  '</div>' +
                 '</div>';
       });
       container.innerHTML = html;
     } else {
       var filtrados = listaServiciosGlobal.filter(sv => {
-        var texto = ((sv.descripcion || '') + ' ' + (sv.aula || '')).toLowerCase();
+        var texto = ((sv.descripcion || '') + ' ' + (sv.aula || '') + ' ' + (sv.registradoPor || '')).toLowerCase();
         return texto.includes(busqueda);
       });
 
@@ -390,7 +395,8 @@
                   '</div>' +
                   '<div class="card-body">' +
                     '<b>Descripción:</b> ' + esc(sv.descripcion || 'Mantenimiento preventivo') + '<br>' +
-                    '<b>Fecha:</b> ' + (sv.fecha ? new Date(sv.fecha).toLocaleDateString() : 'N/D') +
+                    '<b>Fecha:</b> ' + (sv.fecha ? new Date(sv.fecha).toLocaleDateString() : 'N/D') + '<br>' +
+                    '<b>Registrado por:</b> ' + esc(sv.registradoPor || 'N/D') +
                   '</div>' +
                 '</div>';
       });
@@ -446,6 +452,17 @@
       alert('¡Servicio registrado con éxito!');
     } catch (err) {
       alert('Error al registrar servicio: ' + err.message);
+    }
+  };
+
+  window.eliminarEquipo = async function(id) {
+    if (confirm('¿Estás seguro de eliminar este equipo?')) {
+      try {
+        await db.collection('equipos').doc(id).delete();
+        cargarDatos();
+      } catch (err) {
+        alert('Error al eliminar: ' + err.message);
+      }
     }
   };
 </script>
