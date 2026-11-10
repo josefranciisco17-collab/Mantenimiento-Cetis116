@@ -61,6 +61,7 @@
     .btn-primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
     .btn-secondary { background: var(--surface-2); color: var(--ink); }
     .btn-danger { background: rgba(239, 68, 68, 0.2); color: #f87171; border-color: rgba(239, 68, 68, 0.4); }
+    .btn-warning { background: rgba(245, 158, 11, 0.2); color: #fbbf24; border-color: rgba(245, 158, 11, 0.4); }
     .btn:hover { opacity: 0.9; transform: translateY(-1px); }
 
     .search-box {
@@ -142,7 +143,7 @@
     .badge-bad { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4); }
 
     .card-body { font-size: 13px; color: var(--ink-2); line-height: 1.6; margin-bottom: 12px; }
-    .card-actions { display: flex; gap: 8px; border-top: 1px solid var(--line); padding-top: 12px; justify-content: flex-end; }
+    .card-actions { display: flex; gap: 8px; border-top: 1px solid var(--line); padding-top: 12px; justify-content: flex-end; flex-wrap: wrap; }
     .empty-state { text-align: center; padding: 40px; color: var(--ink-2); font-style: italic; }
 
     /* Modales */
@@ -164,7 +165,7 @@
     <div class="header-subtitle">CETis 116 - Antonia Nava de Catalán</div>
 
     <div class="actions-grid" id="admin-actions-container">
-      <!-- Se carga dinámicamente según sesión -->
+      <!-- Se carga dinámicamente -->
     </div>
   </div>
 
@@ -196,11 +197,12 @@
 
 </div>
 
-<!-- MODAL PARA AÑADIR EQUIPO -->
+<!-- MODAL PARA CREAR / EDITAR EQUIPO -->
 <div class="modal-overlay" id="modal-equipo">
   <div class="modal-card">
-    <h2>Registrar Nuevo Equipo</h2>
+    <h2 id="modal-equipo-titulo">Registrar Nuevo Equipo</h2>
     <form id="form-nuevo-equipo" onsubmit="guardarEquipo(event)">
+      <input type="hidden" id="eq-id">
       <div class="form-group">
         <label>Aula o Zona</label>
         <input type="text" id="eq-aula" required placeholder="Ej. Laboratorio de Cómputo 1">
@@ -228,6 +230,10 @@
         <label>Número de Serie / Placa</label>
         <input type="text" id="eq-serie" placeholder="Ej. 449801416211200838">
       </div>
+      <div class="form-group">
+        <label>Último Servicio Realizado</label>
+        <input type="date" id="eq-ultimo-servicio">
+      </div>
       <div class="modal-buttons">
         <button type="submit" class="btn btn-primary" style="flex:1;">Guardar Equipo</button>
         <button type="button" class="btn btn-secondary" onclick="cerrarModales()" style="flex:1;">Cancelar</button>
@@ -236,7 +242,7 @@
   </div>
 </div>
 
-<!-- MODAL PARA AÑADIR SERVICIO -->
+<!-- MODAL PARA REGISTRAR SERVICIO -->
 <div class="modal-overlay" id="modal-servicio">
   <div class="modal-card">
     <h2>Registrar Mantenimiento / Servicio</h2>
@@ -286,13 +292,27 @@
   var filtroActual = 'todos';
   var listaEquiposGlobal = [];
   var listaServiciosGlobal = [];
+  var permisosUsuario = { addService: true, editService: true, facturar: true, dictamen: true };
 
-  auth.onAuthStateChanged(function(user) {
+  auth.onAuthStateChanged(async function(user) {
     if (!user) {
       window.location.href = 'login.html';
       return;
     }
     document.getElementById('user-email-display').textContent = user.email;
+
+    // Verificar si es admin o usuario regular para permisos
+    if (user.email !== adminEmail) {
+      try {
+        var docUser = await db.collection('usuarios_registrados').doc(user.uid).get();
+        if (docUser.exists && docUser.data().permisos) {
+          permisosUsuario = docUser.data().permisos;
+        }
+      } catch(e) {}
+    } else {
+      permisosUsuario = { addService: true, editService: true, facturar: true, dictamen: true };
+    }
+
     construirBotonera(user.email);
     cargarDatos();
   });
@@ -303,8 +323,10 @@
     if (email === adminEmail) {
       html += '<button class="btn btn-secondary" onclick="window.location.href=\'admin.html\'">⚙️ Aprobación</button>';
     }
-    html += '<button class="btn btn-primary" onclick="abrirModalEquipo()">+ Equipo</button>';
-    html += '<button class="btn btn-secondary" onclick="abrirModalServicio()">+ Servicio</button>';
+    if (email === adminEmail || permisosUsuario.addService) {
+      html += '<button class="btn btn-primary" onclick="abrirModalEquipo()">+ Equipo</button>';
+      html += '<button class="btn btn-secondary" onclick="abrirModalServicio()">+ Servicio</button>';
+    }
     html += '<button class="btn btn-secondary" onclick="window.location.href=\'facturas.html\'">📄 Facturas</button>';
     html += '<button class="btn btn-secondary" onclick="window.location.href=\'dictamenes.html\'">📋 Dictámenes</button>';
     html += '<button class="btn btn-danger" onclick="auth.signOut().then(() => window.location.href=\'login.html\')">🚪 Salir</button>';
@@ -346,11 +368,26 @@
   function renderizarDatos() {
     var container = document.getElementById('content-list-container');
     var busqueda = document.getElementById('input-buscar').value.toLowerCase();
+    var emailActual = auth.currentUser ? auth.currentUser.email : '';
+    var esAdmin = (emailActual === adminEmail);
 
     if (tabActual === 'equipos') {
       var filtrados = listaEquiposGlobal.filter(eq => {
         var texto = ((eq.aula || '') + ' ' + (eq.marca || '') + ' ' + (eq.serie || '') + ' ' + (eq.toneladas || '')).toLowerCase();
-        return texto.includes(busqueda);
+        if (!texto.includes(busqueda)) return false;
+
+        // Filtros de Vencimiento (>2m, etc.)
+        if (filtroActual !== 'todos') {
+          if (!eq.ultimoServicio) return filtroActual === 'pendientes';
+          var fechaServ = new Date(eq.ultimoServicio);
+          var hoy = new Date();
+          var mesesDif = (hoy.getFullYear() - fechaServ.getFullYear()) * 12 + (hoy.getMonth() - fechaServ.getMonth());
+          
+          if (filtroActual === 'vencidos' && mesesDif < 2) return false;
+          if (filtroActual === 'proximos' && (mesesDif < 1 || mesesDif > 2)) return false;
+          if (filtroActual === 'pendientes' && mesesDif < 2) return false;
+        }
+        return true;
       });
 
       if (filtrados.length === 0) {
@@ -360,19 +397,33 @@
 
       var html = '';
       filtrados.forEach(eq => {
+        var fechaServTxt = eq.ultimoServicio ? new Date(eq.ultimoServicio).toLocaleDateString() : 'Sin servicio registrado';
+        var esVencido = false;
+        if (eq.ultimoServicio) {
+          var fS = new Date(eq.ultimoServicio);
+          var hoy = new Date();
+          var mD = (hoy.getFullYear() - fS.getFullYear()) * 12 + (hoy.getMonth() - fS.getMonth());
+          if (mD >= 2) esVencido = true;
+        }
+
         html += '<div class="card-item">' +
                   '<div class="card-header">' +
                     '<div class="card-title">🏷️ ' + esc(eq.aula || 'Aula sin nombre') + '</div>' +
-                    '<span class="badge badge-good">Operativo</span>' +
+                    '<span class="badge ' + (esVencido ? 'badge-bad' : 'badge-good') + '">' + (esVencido ? 'Vencido (>2m)' : 'Operativo') + '</span>' +
                   '</div>' +
                   '<div class="card-body">' +
                     '<b>Marca:</b> ' + esc(eq.marca || 'N/D') + ' · <b>Capacidad:</b> ' + esc(eq.toneladas || '1.5') + ' Ton<br>' +
-                    '<b>Serie:</b> ' + esc(eq.serie || 'N/D') +
-                  '</div>' +
-                  '<div class="card-actions">' +
+                    '<b>Serie:</b> ' + esc(eq.serie || 'N/D') + '<br>' +
+                    '<b>Último Servicio:</b> ' + fechaServTxt +
+                  '</div>';
+        
+        if (esAdmin || permisosUsuario.editService) {
+          html += '<div class="card-actions">' +
+                    '<button class="btn btn-warning" style="padding: 6px 12px; font-size: 11px;" onclick="editarEquipo(\'' + eq.id + '\')">Editar</button>' +
                     '<button class="btn btn-danger" style="padding: 6px 12px; font-size: 11px;" onclick="eliminarEquipo(\'' + eq.id + '\')">Eliminar</button>' +
-                  '</div>' +
-                '</div>';
+                  '</div>';
+        }
+        html += '</div>';
       });
       container.innerHTML = html;
     } else {
@@ -409,6 +460,26 @@
   }
 
   window.abrirModalEquipo = function() {
+    document.getElementById('modal-equipo-titulo').textContent = 'Registrar Nuevo Equipo';
+    document.getElementById('eq-id').value = '';
+    document.getElementById('eq-aula').value = '';
+    document.getElementById('eq-marca').value = 'Carrier';
+    document.getElementById('eq-toneladas').value = '1.5';
+    document.getElementById('eq-serie').value = '';
+    document.getElementById('eq-ultimo-servicio').value = '';
+    document.getElementById('modal-equipo').style.display = 'flex';
+  };
+
+  window.editarEquipo = function(id) {
+    var eq = listaEquiposGlobal.find(e => e.id === id);
+    if (!eq) return;
+    document.getElementById('modal-equipo-titulo').textContent = 'Editar Equipo';
+    document.getElementById('eq-id').value = eq.id;
+    document.getElementById('eq-aula').value = eq.aula || '';
+    document.getElementById('eq-marca').value = eq.marca || 'Carrier';
+    document.getElementById('eq-toneladas').value = eq.toneladas || '1.5';
+    document.getElementById('eq-serie').value = eq.serie || '';
+    document.getElementById('eq-ultimo-servicio').value = eq.ultimoServicio || '';
     document.getElementById('modal-equipo').style.display = 'flex';
   };
 
@@ -424,16 +495,23 @@
 
   window.guardarEquipo = async function(e) {
     e.preventDefault();
+    var id = document.getElementById('eq-id').value;
     var aula = document.getElementById('eq-aula').value;
     var marca = document.getElementById('eq-marca').value;
     var toneladas = document.getElementById('eq-toneladas').value;
     var serie = document.getElementById('eq-serie').value;
+    var ultimoServicio = document.getElementById('eq-ultimo-servicio').value;
 
     try {
-      await db.collection('equipos').add({ aula, marca, toneladas, serie, fechaCreacion: new Date().toISOString() });
+      if (id) {
+        await db.collection('equipos').doc(id).update({ aula, marca, toneladas, serie, ultimoServicio });
+        alert('¡Equipo actualizado con éxito!');
+      } else {
+        await db.collection('equipos').add({ aula, marca, toneladas, serie, ultimoServicio, fechaCreacion: new Date().toISOString() });
+        alert('¡Equipo registrado con éxito!');
+      }
       cerrarModales();
       cargarDatos();
-      alert('¡Equipo registrado con éxito!');
     } catch (err) {
       alert('Error al guardar equipo: ' + err.message);
     }
