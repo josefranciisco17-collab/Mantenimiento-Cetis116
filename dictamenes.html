@@ -59,6 +59,7 @@
     }
     .btn-primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
     .btn-secondary { background: var(--surface-2); color: var(--ink); }
+    .btn-danger { background: rgba(239, 68, 68, 0.2); color: #f87171; border-color: rgba(239, 68, 68, 0.4); }
     .btn:hover { opacity: 0.9; transform: translateY(-1px); }
 
     .card {
@@ -70,7 +71,7 @@
       backdrop-filter: blur(10px);
       box-shadow: 0 4px 16px rgba(0,0,0,0.2);
     }
-    .card h2 { font-family: 'Barlow Condensed', sans-serif; font-size: 20px; color: #fff; margin-top: 0; margin-bottom: 16px; text-transform: uppercase; border-bottom: 1px solid var(--line); padding-bottom: 8px; }
+    .card h2 { font-family: 'Barlow Condensed', sans-serif; font-size: 20px; color: #fff; margin-top: 0; margin-bottom: 16px; text-transform: uppercase; border-bottom: 1px solid var(--line); padding-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
 
     .form-group { margin-bottom: 14px; }
     label { display: block; font-size: 11px; font-weight: 700; color: var(--ink-2); text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.5px; }
@@ -86,6 +87,29 @@
       font-family: 'Plus Jakarta Sans', sans-serif;
     }
     input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); }
+
+    .concept-edit-row { display: grid; grid-template-columns: 55px 1fr 40px; gap: 6px; margin-bottom: 10px; align-items: center; }
+    
+    /* Estilos formales de Documento Carta con Logotipo corporativo */
+    .preview-box { background: #fff; color: #000; border-radius: 12px; padding: 36px; margin-top: 20px; font-family: 'Plus Jakarta Sans', sans-serif; box-sizing: border-box; width: 100%; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+    .preview-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #0284c7; padding-bottom: 16px; margin-bottom: 20px; gap: 20px; }
+    .preview-logo-img { width: 65px; height: 65px; object-fit: contain; flex-shrink: 0; }
+    .preview-title { font-family: 'Barlow Condensed', sans-serif; font-size: 24px; color: #0284c7; font-weight: 700; text-transform: uppercase; line-height: 1.1; }
+    
+    .preview-table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 13px; }
+    .preview-table th, .preview-table td { padding: 10px; border-bottom: 1px solid #cbd5e1; text-align: left; color: #000; }
+    .preview-table th { background: #f1f5f9; color: #0f172a; font-weight: 700; text-transform: uppercase; font-size: 11px; border-top: 1px solid #cbd5e1; }
+    
+    .preview-firma { margin-top: 40px; display: flex; justify-content: space-between; font-size: 12px; }
+    .firma-box { text-align: center; width: 45%; border-top: 1px solid #000; padding-top: 6px; }
+
+    @media print {
+      body { background: #fff; color: #000; padding: 0; }
+      .card:not(#preview-card), .header-card { display: none !important; }
+      .container { max-width: 100% !important; padding: 0 !important; margin: 0 !important; }
+      .card#preview-card { background: #fff !important; border: none !important; box-shadow: none !important; padding: 0 !important; margin: 0 !important; }
+      .preview-box { background: #fff !important; color: #000 !important; padding: 0 !important; margin: 0 !important; border-radius: 0 !important; box-shadow: none !important; }
+    }
   </style>
 </head>
 <body>
@@ -94,61 +118,169 @@
   
   <div class="header-card">
     <div class="header-title">Clima Hogar Multi Servicios</div>
-    <div class="header-subtitle">Módulo de Dictámenes Técnicos · CETis 116</div>
+    <div class="header-subtitle">Módulo de Dictámenes Técnicos</div>
 
     <div class="actions-grid">
       <button class="btn btn-secondary" onclick="window.location.href='index.html'">Volver al Sistema</button>
-      <button class="btn btn-primary" onclick="window.print()">Descargar Dictamen PDF</button>
+      <button class="btn btn-primary" onclick="window.print()">Imprimir / Guardar PDF</button>
     </div>
   </div>
 
   <div class="card">
-    <h2>1. Datos Generales del Dictamen</h2>
+    <h2>1. Datos del Dictamen</h2>
     
     <div class="form-group">
       <label>Folio del Dictamen</label>
-      <input type="text" value="DIC-2026-042" readonly>
+      <input type="text" id="dic-folio" value="DIC-2026-042" oninput="actualizarPreview()">
     </div>
 
     <div class="form-group">
       <label>Fecha de Emisión</label>
-      <input type="text" value="10/11/2026" readonly>
+      <input type="text" id="dic-fecha" value="10/11/2026" oninput="actualizarPreview()">
     </div>
 
     <div class="form-group">
-      <label>Institución / Plantel</label>
-      <input type="text" value="CETis 116 Antonia Nava de Catalán" readonly>
+      <label>Institución / Cliente</label>
+      <input type="text" id="dic-cliente" value="CETis 116 Antonia Nava de Catalán" oninput="actualizarPreview()">
     </div>
 
     <div class="form-group">
       <label>Ubicación</label>
-      <input type="text" value="Acapulco de Juárez, Guerrero" readonly>
+      <input type="text" id="dic-ubicacion" value="Acapulco de Juárez, Guerrero" oninput="actualizarPreview()">
     </div>
 
     <div class="form-group">
-      <label>Estado Operativo de los Equipos Evaluados</label>
-      <input type="text" value="Operativo / Mantenimiento Preventivo y Correctivo Concluido" readonly>
+      <label>Estado Operativo General</label>
+      <input type="text" id="dic-estado" value="Operativo / Mantenimiento Correctivo y Preventivo Concluido" oninput="actualizarPreview()">
     </div>
 
     <div class="form-group">
-      <label>Evaluación y Diagnóstico Técnico</label>
-      <textarea rows="4" readonly>Se emite dictamen favorable tras la revisión integral, limpieza profunda, reparaciones de tuberías condensadoras y cargas de gas refrigerante en las instalaciones del plantel, garantizando el óptimo funcionamiento para las actividades académicas y administrativas.</textarea>
+      <label>Diagnóstico Técnico Detallado</label>
+      <textarea id="dic-diagnostico" rows="3" oninput="actualizarPreview()">Se emite dictamen favorable tras la revisión integral, limpieza profunda, reparaciones de tuberías condensadoras y cargas de gas refrigerante en las instalaciones del plantel, garantizando el óptimo funcionamiento para las actividades académicas.</textarea>
     </div>
   </div>
 
   <div class="card">
-    <h2>2. Responsable Técnico</h2>
-    <div class="form-group">
-      <label>Prestador de Servicios</label>
-      <input type="text" value="Clima Hogar Multi Servicios / JFAM Tecno-Energy" readonly>
-    </div>
-    <div class="form-group">
-      <label>Autorizado por</label>
-      <input type="text" value="José Francisco Abarca Marcelo (DGTIC / CETis 116)" readonly>
+    <h2>
+      2. Equipos Evaluados
+      <button type="button" class="btn btn-primary" style="padding: 6px 12px; font-size: 11px;" onclick="agregarEquipo()">+ Añadir</button>
+    </h2>
+    <div id="equipos-editor"></div>
+  </div>
+
+  <!-- VISTA PREVIA DIRECTA -->
+  <div class="card" id="preview-card" style="padding: 0; background: transparent; border: none; box-shadow: none;">
+    <div class="preview-box" id="preview-content">
+      <!-- Se genera en tiempo real -->
     </div>
   </div>
 
 </div>
+
+<script>
+  var equiposEvaluados = [
+    { cant: 1, desc: "Reparación de tubería condensadora - Sistema Principal" },
+    { cant: 1, desc: "Instalación de aire acondicionado - Ubicación: Aula 19" },
+    { cant: 4, desc: "Limpieza profunda de aires acondicionados - Ubicación: Biblioteca Escolar" },
+    { cant: 3, desc: "Limpieza de aires acondicionados - Ubicación: Áreas de Planeación, Titulación y Financieros" }
+  ];
+
+  function renderizarEditor() {
+    var container = document.getElementById('equipos-editor');
+    var html = '';
+    equiposEvaluados.forEach(function(item, index) {
+      html += '<div class="concept-edit-row">' +
+                '<input type="number" value="' + item.cant + '" onchange="actualizarItem(' + index + ', \'cant\', this.value)" placeholder="Cant">' +
+                '<input type="text" value="' + item.desc + '" onchange="actualizarItem(' + index + ', \'desc\', this.value)" placeholder="Descripción del equipo o servicio">' +
+                '<button type="button" class="btn btn-danger" style="padding: 8px; height: 100%;" onclick="eliminarItem(' + index + ')">✕</button>' +
+              '</div>';
+    });
+    container.innerHTML = html;
+    actualizarPreview();
+  }
+
+  window.agregarEquipo = function() {
+    equiposEvaluados.push({ cant: 1, desc: "Nuevo equipo o área evaluada" });
+    renderizarEditor();
+  };
+
+  window.eliminarItem = function(index) {
+    equiposEvaluados.splice(index, 1);
+    renderizarEditor();
+  };
+
+  window.actualizarItem = function(index, campo, valor) {
+    if (campo === 'cant') {
+      equiposEvaluados[index][campo] = parseFloat(valor) || 0;
+    } else {
+      equiposEvaluados[index][campo] = valor;
+    }
+    actualizarPreview();
+  };
+
+  window.actualizarPreview = function() {
+    var folio = document.getElementById('dic-folio').value;
+    var fecha = document.getElementById('dic-fecha').value;
+    var cliente = document.getElementById('dic-cliente').value;
+    var ubicacion = document.getElementById('dic-ubicacion').value;
+    var estado = document.getElementById('dic-estado').value;
+    var diagnostico = document.getElementById('dic-diagnostico').value;
+
+    var filasHtml = '';
+    equiposEvaluados.forEach(function(c, i) {
+      filasHtml += '<tr>' +
+                     '<td style="width: 10%; text-align: center;"><b>' + (i + 1) + '</b></td>' +
+                     '<td style="width: 15%; text-align: center;"><b>' + c.cant + '</b></td>' +
+                     '<td style="width: 75%;">' + c.desc + '</td>' +
+                   '</tr>';
+    });
+
+    var previewHtml = 
+      '<div class="preview-header">' +
+        '<div style="display: flex; align-items: center; gap: 14px;">' +
+          '<img src="logo-climahogar.png" alt="Logo Clima Hogar" class="preview-logo-img" onerror="this.style.display=\'none\'">' +
+          '<div>' +
+            '<div class="preview-title">Dictamen Técnico Operativo</div>' +
+            '<div style="font-size:12px; color:#475569; font-weight:600;">Clima Hogar Multi Servicios · JFAM Tecno-Energy</div>' +
+          '</div>' +
+        '</div>' +
+        '<div style="text-align:right; font-size:12px; line-height:1.4;">' +
+          '<b>Folio:</b> ' + folio + '<br>' +
+          '<b>Fecha:</b> ' + fecha +
+        '</div>' +
+      '</div>' +
+      '<div style="font-size:13px; margin-bottom:14px; line-height:1.5; color:#0f172a;">' +
+        '<b>Institución / Cliente:</b> ' + cliente + '<br>' +
+        '<b>Ubicación:</b> ' + ubicacion + '<br>' +
+        '<b>Estado Operativo:</b> ' + estado +
+      '</div>' +
+      '<div style="font-size:12px; margin-bottom:16px; background:#f8fafc; padding:12px; border-radius:6px; border-left:4px solid #0284c7; color:#334155; line-height:1.4;">' +
+        '<b>Diagnóstico Técnico:</b> ' + diagnostico +
+      '</div>' +
+      '<table class="preview-table">' +
+        '<thead>' +
+          '<tr>' +
+            '<th style="width: 10%; text-align: center;">N°</th>' +
+            '<th style="width: 15%; text-align: center;">Cant</th>' +
+            '<th style="width: 75%;">Descripción de Equipos y Áreas Evaluadas</th>' +
+          '</tr>' +
+        '</thead>' +
+        '<tbody>' + filasHtml + '</tbody>' +
+      '</table>' +
+      '<div class="preview-firma">' +
+        '<div class="firma-box">' +
+          '<b>Prestador de Servicios</b><br>Clima Hogar Multi Servicios<br>JFAM Tecno-Energy' +
+        '</div>' +
+        '<div class="firma-box">' +
+          '<b>Autorizado por</b><br>CETis 116 / DGTIC<br>Acapulco, Gro.' +
+        '</div>' +
+      '</div>';
+
+    document.getElementById('preview-content').innerHTML = previewHtml;
+  };
+
+  renderizarEditor();
+</script>
 
 </body>
 </html>
