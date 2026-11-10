@@ -88,13 +88,21 @@
     }
     input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); }
 
-    /* Estilos para la tabla editable de conceptos */
-    .concept-row { display: grid; grid-template-columns: 70px 1fr 40px; gap: 8px; margin-bottom: 10px; align-items: center; }
+    .concept-edit-row { display: grid; grid-template-columns: 60px 1fr 90px 40px; gap: 8px; margin-bottom: 10px; align-items: center; }
+    
+    /* Estilos del Preview en vivo tipo Documento */
+    .preview-box { background: #fff; color: #1e293b; border-radius: 12px; padding: 24px; margin-top: 20px; font-family: 'Plus Jakarta Sans', sans-serif; }
+    .preview-header { display: flex; justify-content: space-between; border-bottom: 2px solid #0284c7; padding-bottom: 12px; margin-bottom: 16px; }
+    .preview-title { font-family: 'Barlow Condensed', sans-serif; font-size: 20px; color: #0284c7; font-weight: 700; text-transform: uppercase; }
+    .preview-table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 12px; }
+    .preview-table th, .preview-table td { padding: 8px; border-bottom: 1px solid #e2e8f0; text-align: left; color: #1e293b; }
+    .preview-table th { background: #f1f5f9; color: #0f172a; font-weight: 700; text-transform: uppercase; }
+    .preview-totals { margin-top: 16px; text-align: right; font-size: 13px; line-height: 1.5; }
+
     @media print {
       body { background: #fff; color: #000; padding: 0; }
-      .card, .header-card { background: #fff; border: 1px solid #ccc; box-shadow: none; color: #000; }
-      input, select, textarea { background: #fff; color: #000; border: 1px solid #ccc; }
-      .actions-grid, button { display: none !important; }
+      .card:not(#preview-card), .header-card { display: none !important; }
+      .preview-box { box-shadow: none; padding: 0; }
     }
   </style>
 </head>
@@ -108,7 +116,7 @@
 
     <div class="actions-grid">
       <button class="btn btn-secondary" onclick="window.location.href='index.html'">Volver al Sistema</button>
-      <button class="btn btn-primary" onclick="window.print()">Descargar Factura PDF</button>
+      <button class="btn btn-primary" onclick="window.print()">Imprimir / Guardar PDF</button>
     </div>
   </div>
 
@@ -117,37 +125,36 @@
     
     <div class="form-group">
       <label>Folio</label>
-      <input type="text" id="fac-folio" value="CH-2026-089">
+      <input type="text" id="fac-folio" value="CH-2026-089" oninput="actualizarPreview()">
     </div>
 
     <div class="form-group">
       <label>Fecha</label>
-      <input type="text" id="fac-fecha" value="10/11/2026">
+      <input type="text" id="fac-fecha" value="10/11/2026" oninput="actualizarPreview()">
     </div>
 
     <div class="form-group">
       <label>Cliente</label>
-      <input type="text" id="fac-cliente" value="CETis 116 Antonia Nava de Catalán">
+      <input type="text" id="fac-cliente" value="CETis 116 Antonia Nava de Catalán" oninput="actualizarPreview()">
     </div>
 
     <div class="form-group">
       <label>Ubicación / Ciudad</label>
-      <input type="text" id="fac-ubicacion" value="Acapulco, Guerrero">
+      <input type="text" id="fac-ubicacion" value="Acapulco, Guerrero" oninput="actualizarPreview()">
     </div>
 
     <div class="form-group">
       <label>Método de Pago</label>
-      <select id="fac-metodo">
+      <select id="fac-metodo" onchange="actualizarPreview()">
         <option value="Transferencia / Efectivo" selected>Transferencia / Efectivo</option>
         <option value="Transferencia Bancaria">Transferencia Bancaria</option>
         <option value="Efectivo">Efectivo</option>
-        <option value="Cheque / Orden de Pago">Cheque / Orden de Pago</option>
       </select>
     </div>
 
     <div class="form-group">
       <label>Aplicar I.V.A. (16%)</label>
-      <select id="fac-iva">
+      <select id="fac-iva" onchange="actualizarPreview()">
         <option value="si" selected>Sí (16% IVA)</option>
         <option value="no">No (Sin IVA)</option>
       </select>
@@ -155,60 +162,136 @@
 
     <div class="form-group">
       <label>Resumen Técnico General</label>
-      <textarea id="fac-resumen" rows="3">Reparación de tubería condensadora, instalación, limpieza profunda biblioteca y áreas administrativas, y carga de gas refrigerante.</textarea>
+      <textarea id="fac-resumen" rows="3" oninput="actualizarPreview()">Reparación de tubería condensadora, instalación, limpieza profunda biblioteca y áreas administrativas, y carga de gas refrigerante.</textarea>
     </div>
   </div>
 
   <div class="card">
     <h2>
-      2. Conceptos
-      <button type="button" class="btn btn-primary" style="padding: 6px 12px; font-size: 11px;" onclick="agregarConcepto()">+ Añadir Concepto</button>
+      2. Conceptos y Costos
+      <button type="button" class="btn btn-primary" style="padding: 6px 12px; font-size: 11px;" onclick="agregarConcepto()">+ Añadir</button>
     </h2>
-    
-    <div id="conceptos-container">
-      <!-- Los conceptos se cargan dinámicamente aquí -->
+    <div id="conceptos-editor"></div>
+  </div>
+
+  <!-- VISTA PREVIA EN VIVO -->
+  <div class="card" id="preview-card">
+    <h2>3. Vista Previa del Documento</h2>
+    <div class="preview-box" id="preview-content">
+      <!-- Se genera en tiempo real -->
     </div>
   </div>
 
 </div>
 
 <script>
-  var conceptosIniciales = [
-    { cant: 1, desc: "Reparación de tubería condensadora" },
-    { cant: 1, desc: "Instalación de aire acondicionado - Ubicación: Aula 19" },
-    { cant: 4, desc: "Limpieza profunda de aires acondicionados - Ubicación: Biblioteca Escolar" },
-    { cant: 3, desc: "Limpieza de aires acondicionados - Ubicación: Áreas de Planeación, Titulación y Financieros" }
+  var conceptos = [
+    { cant: 1, desc: "Reparación de tubería condensadora", precio: 1500 },
+    { cant: 1, desc: "Instalación de aire acondicionado - Aula 19", precio: 2000 },
+    { cant: 4, desc: "Limpieza profunda - Biblioteca Escolar", precio: 6000 },
+    { cant: 3, desc: "Limpieza - Áreas de Planeación y Financieros", precio: 4500 }
   ];
 
-  function renderizarConceptos() {
-    var container = document.getElementById('conceptos-container');
+  function renderizarEditor() {
+    var container = document.getElementById('conceptos-editor');
     var html = '';
-    conceptosIniciales.forEach(function(item, index) {
-      html += '<div class="concept-row">' +
-                '<input type="number" value="' + item.cant + '" onchange="actualizarConcepto(' + index + ', \'cant\', this.value)" placeholder="Cant">' +
-                '<input type="text" value="' + item.desc + '" onchange="actualizarConcepto(' + index + ', \'desc\', this.value)" placeholder="Descripción">' +
-                '<button type="button" class="btn btn-danger" style="padding: 10px; height: 100%;" onclick="eliminarConcepto(' + index + ')">✕</button>' +
+    conceptos.forEach(function(item, index) {
+      html += '<div class="concept-edit-row">' +
+                '<input type="number" value="' + item.cant + '" onchange="actualizarItem(' + index + ', \'cant\', this.value)" placeholder="Cant">' +
+                '<input type="text" value="' + item.desc + '" onchange="actualizarItem(' + index + ', \'desc\', this.value)" placeholder="Descripción">' +
+                '<input type="number" value="' + item.precio + '" onchange="actualizarItem(' + index + ', \'precio\', this.value)" placeholder="Precio $">' +
+                '<button type="button" class="btn btn-danger" style="padding: 10px; height: 100%;" onclick="eliminarItem(' + index + ')">✕</button>' +
               '</div>';
     });
     container.innerHTML = html;
+    actualizarPreview();
   }
 
   window.agregarConcepto = function() {
-    conceptosIniciales.push({ cant: 1, desc: "Nuevo concepto de servicio" });
-    renderizarConceptos();
+    conceptos.push({ cant: 1, desc: "Nuevo concepto de servicio", precio: 1000 });
+    renderizarEditor();
   };
 
-  window.eliminarConcepto = function(index) {
-    conceptosIniciales.splice(index, 1);
-    renderizarConceptos();
+  window.eliminarItem = function(index) {
+    conceptos.splice(index, 1);
+    renderizarEditor();
   };
 
-  window.actualizarConcepto = function(index, campo, valor) {
-    conceptosIniciales[index][campo] = valor;
+  window.actualizarItem = function(index, campo, valor) {
+    if (campo === 'cant' || campo === 'precio') {
+      conceptos[index][campo] = parseFloat(valor) || 0;
+    } else {
+      conceptos[index][campo] = valor;
+    }
+    actualizarPreview();
   };
 
-  // Inicializar al cargar
-  renderizarConceptos();
+  window.actualizarPreview = function() {
+    var folio = document.getElementById('fac-folio').value;
+    var fecha = document.getElementById('fac-fecha').value;
+    var cliente = document.getElementById('fac-cliente').value;
+    var ubicacion = document.getElementById('fac-ubicacion').value;
+    var metodo = document.getElementById('fac-metodo').value;
+    var aplicaIva = document.getElementById('fac-iva').value === 'si';
+    var resumen = document.getElementById('fac-resumen').value;
+
+    var subtotal = 0;
+    var filasHtml = '';
+    conceptos.forEach(function(c) {
+      var totalFila = c.cant * c.precio;
+      subtotal += totalFila;
+      filasHtml += '<tr>' +
+                     '<td><b>' + c.cant + '</b></td>' +
+                     '<td>' + c.desc + '</td>' +
+                     '<td>$' + c.precio.toLocaleString('es-MX', {minimumFractionDigits: 2}) + '</td>' +
+                     '<td><b>$' + totalFila.toLocaleString('es-MX', {minimumFractionDigits: 2}) + '</b></td>' +
+                   '</tr>';
+    });
+
+    var iva = aplicaIva ? subtotal * 0.16 : 0;
+    var totalGeneral = subtotal + iva;
+
+    var previewHtml = 
+      '<div class="preview-header">' +
+        '<div>' +
+          '<div class="preview-title">Clima Hogar Multi Servicios</div>' +
+          '<div style="font-size:11px; color:#64748b;">JFAM Tecno-Energy · CETis 116</div>' +
+        '</div>' +
+        '<div style="text-align:right; font-size:12px;">' +
+          '<b>Folio:</b> ' + folio + '<br>' +
+          '<b>Fecha:</b> ' + fecha +
+        '</div>' +
+      '</div>' +
+      '<div style="font-size:12px; margin-bottom:12px; line-height:1.4;">' +
+        '<b>Cliente:</b> ' + cliente + '<br>' +
+        '<b>Ubicación:</b> ' + ubicacion + '<br>' +
+        '<b>Método de Pago:</b> ' + metodo +
+      '</div>' +
+      '<div style="font-size:12px; margin-bottom:12px; background:#f8fafc; padding:8px; border-radius:6px;">' +
+        '<b>Resumen Técnico:</b> ' + resumen +
+      '</div>' +
+      '<table class="preview-table">' +
+        '<thead>' +
+          '<tr>' +
+            '<th style="width:40px;">Cant</th>' +
+            '<th>Descripción</th>' +
+            '<th style="width:70px;">P. Unit</th>' +
+            '<th style="width:80px;">Importe</th>' +
+          '</tr>' +
+        '</thead>' +
+        '<tbody>' + filasHtml + '</tbody>' +
+      '</table>' +
+      '<div class="preview-totals">' +
+        'Subtotal: $' + subtotal.toLocaleString('es-MX', {minimumFractionDigits: 2}) + '<br>' +
+        (aplicaIva ? 'I.V.A. (16%): $' + iva.toLocaleString('es-MX', {minimumFractionDigits: 2}) + '<br>' : '') +
+        '<b style="font-size:15px; color:#0284c7;">Total: $' + totalGeneral.toLocaleString('es-MX', {minimumFractionDigits: 2}) + '</b>' +
+      '</div>';
+
+    document.getElementById('preview-content').innerHTML = previewHtml;
+  };
+
+  // Inicializar
+  renderizarEditor();
 </script>
 
 </body>
