@@ -90,21 +90,24 @@
 
     .concept-edit-row { display: grid; grid-template-columns: 55px 1fr 85px 40px; gap: 6px; margin-bottom: 10px; align-items: center; }
     
-    /* Estilos mejorados y totalmente responsivos para el Preview */
-    .preview-box { background: #fff; color: #1e293b; border-radius: 12px; padding: 16px; margin-top: 20px; font-family: 'Plus Jakarta Sans', sans-serif; overflow: hidden; box-sizing: border-box; }
-    .preview-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #0284c7; padding-bottom: 10px; margin-bottom: 12px; gap: 10px; flex-wrap: wrap; }
-    .preview-title { font-family: 'Barlow Condensed', sans-serif; font-size: 18px; color: #0284c7; font-weight: 700; text-transform: uppercase; }
+    /* Estilos formales del Documento Preview con Logotipo */
+    .preview-box { background: #fff; color: #000; border-radius: 8px; padding: 32px; margin-top: 20px; font-family: 'Plus Jakarta Sans', sans-serif; box-sizing: border-box; width: 100%; }
+    .preview-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 3px solid #0284c7; padding-bottom: 14px; margin-bottom: 16px; gap: 15px; }
+    .preview-logo { width: 55px; height: 55px; background: #0284c7; color: #fff; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 20px; flex-shrink: 0; }
+    .preview-title { font-family: 'Barlow Condensed', sans-serif; font-size: 22px; color: #0284c7; font-weight: 700; text-transform: uppercase; line-height: 1.1; }
     
-    .preview-table { width: 100%; table-layout: fixed; border-collapse: collapse; margin-top: 10px; font-size: 11px; }
-    .preview-table th, .preview-table td { padding: 6px 4px; border-bottom: 1px solid #e2e8f0; text-align: left; color: #1e293b; word-break: break-word; overflow: hidden; }
-    .preview-table th { background: #f1f5f9; color: #0f172a; font-weight: 700; text-transform: uppercase; font-size: 10px; }
+    .preview-table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: 12px; }
+    .preview-table th, .preview-table td { padding: 10px 8px; border-bottom: 1px solid #cbd5e1; text-align: left; color: #000; }
+    .preview-table th { background: #f1f5f9; color: #0f172a; font-weight: 700; text-transform: uppercase; font-size: 11px; border-top: 1px solid #cbd5e1; }
     
-    .preview-totals { margin-top: 14px; text-align: right; font-size: 12px; line-height: 1.4; }
+    .preview-totals { margin-top: 20px; text-align: right; font-size: 13px; line-height: 1.6; }
 
     @media print {
       body { background: #fff; color: #000; padding: 0; }
       .card:not(#preview-card), .header-card { display: none !important; }
-      .preview-box { box-shadow: none; padding: 0; }
+      .container { max-width: 100% !important; padding: 0 !important; margin: 0 !important; }
+      .card#preview-card { background: #fff !important; border: none !important; box-shadow: none !important; padding: 0 !important; margin: 0 !important; }
+      .preview-box { background: #fff !important; color: #000 !important; padding: 0 !important; margin: 0 !important; border-radius: 0 !important; box-shadow: none !important; }
     }
   </style>
 </head>
@@ -189,9 +192,9 @@
 <script>
   var conceptos = [
     { cant: 1, desc: "Reparación de tubería condensadora", precio: 1500 },
-    { cant: 1, desc: "Instalación de aire acondicionado - Aula 19", precio: 2000 },
-    { cant: 4, desc: "Limpieza profunda - Biblioteca Escolar", precio: 6000 },
-    { cant: 3, desc: "Limpieza - Áreas de Planeación y Financieros", precio: 4500 }
+    { cant: 1, desc: "Instalación de aire acondicionado - Ubicación: Aula 19", precio: 2000 },
+    { cant: 4, desc: "Limpieza profunda de aires acondicionados - Ubicación: Biblioteca Escolar", precio: 6000 },
+    { cant: 3, desc: "Limpieza de aires acondicionados - Ubicación: Áreas de Planeación, Titulación y Financieros", precio: 4500 }
   ];
 
   function renderizarEditor() {
@@ -243,8 +246,8 @@
       var totalFila = c.cant * c.precio;
       subtotal += totalFila;
       filasHtml += '<tr>' +
-                     '<td style="width: 12%; text-align: center;"><b>' + c.cant + '</b></td>' +
-                     '<td style="width: 48%;">' + c.desc + '</td>' +
+                     '<td style="width: 10%; text-align: center;"><b>' + c.cant + '</b></td>' +
+                     '<td style="width: 50%;">' + c.desc + '</td>' +
                      '<td style="width: 20%;">$' + c.precio.toLocaleString('es-MX', {minimumFractionDigits: 2}) + '</td>' +
                      '<td style="width: 20%;"><b>$' + totalFila.toLocaleString('es-MX', {minimumFractionDigits: 2}) + '</b></td>' +
                    '</tr>';
@@ -255,28 +258,31 @@
 
     var previewHtml = 
       '<div class="preview-header">' +
-        '<div>' +
-          '<div class="preview-title">Clima Hogar Multi Servicios</div>' +
-          '<div style="font-size:10px; color:#64748b;">JFAM Tecno-Energy · CETis 116</div>' +
+        '<div style="display: flex; align-items: center; gap: 12px;">' +
+          '<div class="preview-logo">CH</div>' +
+          '<div>' +
+            '<div class="preview-title">Clima Hogar Multi Servicios</div>' +
+            '<div style="font-size:11px; color:#475569;">JFAM Tecno-Energy · CETis 116 (Acapulco, Gro.)</div>' +
+          '</div>' +
         '</div>' +
-        '<div style="text-align:right; font-size:11px;">' +
+        '<div style="text-align:right; font-size:12px;">' +
           '<b>Folio:</b> ' + folio + '<br>' +
           '<b>Fecha:</b> ' + fecha +
         '</div>' +
       '</div>' +
-      '<div style="font-size:11px; margin-bottom:10px; line-height:1.4;">' +
+      '<div style="font-size:12px; margin-bottom:14px; line-height:1.5; color:#0f172a;">' +
         '<b>Cliente:</b> ' + cliente + '<br>' +
         '<b>Ubicación:</b> ' + ubicacion + '<br>' +
         '<b>Método de Pago:</b> ' + metodo +
       '</div>' +
-      '<div style="font-size:11px; margin-bottom:10px; background:#f8fafc; padding:8px; border-radius:6px; border-left:3px solid #0284c7;">' +
-        '<b>Resumen Técnico:</b> ' + resumen +
+      '<div style="font-size:12px; margin-bottom:14px; background:#f8fafc; padding:10px; border-radius:6px; border-left:4px solid #0284c7; color:#334155;">' +
+        '<b>Resumen Técnico General:</b> ' + resumen +
       '</div>' +
       '<table class="preview-table">' +
         '<thead>' +
           '<tr>' +
-            '<th style="width: 12%; text-align: center;">Cant</th>' +
-            '<th style="width: 48%;">Descripción</th>' +
+            '<th style="width: 10%; text-align: center;">Cant</th>' +
+            '<th style="width: 50%;">Descripción</th>' +
             '<th style="width: 20%;">P. Unit</th>' +
             '<th style="width: 20%;">Importe</th>' +
           '</tr>' +
@@ -286,7 +292,7 @@
       '<div class="preview-totals">' +
         'Subtotal: $' + subtotal.toLocaleString('es-MX', {minimumFractionDigits: 2}) + '<br>' +
         (aplicaIva ? 'I.V.A. (16%): $' + iva.toLocaleString('es-MX', {minimumFractionDigits: 2}) + '<br>' : '') +
-        '<b style="font-size:14px; color:#0284c7;">Total: $' + totalGeneral.toLocaleString('es-MX', {minimumFractionDigits: 2}) + '</b>' +
+        '<b style="font-size:16px; color:#0284c7;">Total: $' + totalGeneral.toLocaleString('es-MX', {minimumFractionDigits: 2}) + '</b>' +
       '</div>';
 
     document.getElementById('preview-content').innerHTML = previewHtml;
