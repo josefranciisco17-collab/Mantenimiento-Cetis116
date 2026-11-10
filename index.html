@@ -3,1152 +3,323 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <title>Mantenimiento de Aires Acondicionados · CETis 116</title>
-  <meta name="claude:viewport-fit-sides" content="cover">
-  
-  <!-- ================= CONFIGURACIÓN PWA / APK MÓVIL ================= -->
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#0B131A">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Clima CETis 116">
-  <link rel="icon" type="image/png" sizes="192x192" href="icono-192.png">
-  <link rel="apple-touch-icon" href="icono-192.png">
-  <!-- ================================================================= -->
-
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
-  
-  <!-- Motor OCR / IA para el escáner de placas -->
-  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
-
+  <title>Mantenimiento de Aires Acondicionados · Clima Hogar</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap">
   <style>
-  :root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#0B131A;color:#E6EEF1}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}
-  
-  :root {
-    --bg: #0B131A;
-    --surface: #131E26;
-    --surface-2: #1B2934;
-    --surface-3: #223442;
-    --ink: #E6EEF1;
-    --ink-2: #92A6B2;
-    --line: #2A3F4E;
-    --accent: #06B6D4;
-    --accent-ink: #041E26;
-    --accent-soft: rgba(6, 182, 212, 0.15);
-    --ok: #10B981;
-    --ok-soft: rgba(16, 185, 129, 0.15);
-    --warn: #F59E0B;
-    --warn-soft: rgba(245, 158, 11, 0.15);
-    --bad: #EF4444;
-    --bad-soft: rgba(239, 68, 68, 0.15);
-    --scrim: rgba(5, 9, 13, 0.75);
-    --font-display: 'Barlow Condensed', sans-serif;
-    --font-body: 'Plus Jakarta Sans', sans-serif;
-    --font-mono: 'JetBrains Mono', monospace;
-  }
+    :root { 
+      --bg-gradient: linear-gradient(135deg, #0284c7 0%, #0369a1 50%, #0f172a 100%);
+      --surface: rgba(15, 23, 42, 0.85);
+      --surface-2: rgba(30, 41, 59, 0.7);
+      --line: rgba(255, 255, 255, 0.12);
+      --ink: #f8fafc;
+      --ink-2: #94a3b8;
+      --accent: #38bdf8;
+      --accent-ink: #0f172a;
+      --good: #10b981;
+      --bad: #ef4444;
+      --warning: #f59e0b;
+    }
+    body { 
+      margin: 0; 
+      background: var(--bg-gradient); 
+      background-attachment: fixed;
+      color: var(--ink); 
+      font-family: 'Plus Jakarta Sans', sans-serif; 
+      padding: 16px; 
+      box-sizing: border-box;
+    }
+    .container { max-width: 800px; margin: 0 auto; padding-bottom: 40px; }
+    
+    /* Cabecera Principal */
+    .header-card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 20px;
+      margin-bottom: 20px;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    }
+    .header-title { font-family: 'Barlow Condensed', sans-serif; font-size: 24px; margin: 0 0 4px; color: #fff; text-transform: uppercase; letter-spacing: 0.5px; }
+    .header-subtitle { font-size: 12px; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; font-weight: 700; margin-bottom: 16px; }
 
-  * { box-sizing: border-box; }
-  body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 var(--font-body); }
-  body.lock { overflow: hidden; }
-  button, input, select, textarea { font: inherit; color: inherit; }
-  button { cursor: pointer; }
-  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-  h1, h2, h3, p { margin: 0; }
-  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+    /* Botonera de Acciones */
+    .actions-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 16px; }
+    .btn { 
+      padding: 12px 14px; 
+      border-radius: 12px; 
+      font-weight: 700; 
+      font-size: 12px; 
+      text-transform: uppercase; 
+      cursor: pointer; 
+      border: 1px solid var(--line); 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      gap: 6px; 
+      transition: all 0.2s ease;
+      text-decoration: none;
+    }
+    .btn-primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+    .btn-secondary { background: var(--surface-2); color: var(--ink); }
+    .btn-danger { background: rgba(239, 68, 68, 0.2); color: #f87171; border-color: rgba(239, 68, 68, 0.4); }
+    .btn:hover { opacity: 0.9; transform: translateY(-1px); }
 
-  .inner { max-width: 1100px; margin: 0 auto; padding-left: max(20px, env(safe-area-inset-left, 0px)); padding-right: max(20px, env(safe-area-inset-right, 0px)); }
+    /* Barra de Búsqueda */
+    .search-box {
+      background: var(--surface-2);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .search-box input {
+      width: 100%;
+      background: transparent;
+      border: 0;
+      color: #fff;
+      font-size: 14px;
+      outline: none;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    .search-box input::placeholder { color: var(--ink-2); }
 
-  /* Masthead Corporativo */
-  .top { background: linear-gradient(180deg, #101B22 0%, var(--bg) 100%); border-bottom: 1px solid var(--line); padding-block: 28px 20px; }
-  .top .inner { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px 24px; }
-  .brand h1 { font: 700 32px/1.1 var(--font-display); letter-spacing: .02em; text-transform: uppercase; color: #FFFFFF; text-wrap: balance; }
-  .brand p { color: var(--accent); margin-top: 6px; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; }
-  .top-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+    /* Pestañas Principales (Equipos / Servicios) */
+    .main-tabs { display: flex; gap: 10px; margin-bottom: 16px; }
+    .main-tab { 
+      flex: 1; 
+      padding: 12px; 
+      background: var(--surface-2); 
+      border: 1px solid var(--line); 
+      border-radius: 12px; 
+      color: var(--ink-2); 
+      font-weight: 700; 
+      font-size: 13px; 
+      text-transform: uppercase; 
+      cursor: pointer; 
+      text-align: center; 
+    }
+    .main-tab.active { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
 
-  /* Botones Premium */
-  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 42px; padding: 8px 18px; border: 1.5px solid var(--line); border-radius: 6px; background: var(--surface); font-weight: 600; font-size: 14px; transition: all .2s; color: var(--ink); text-decoration: none; }
-  .btn:hover { border-color: var(--accent); background: var(--surface-2); }
-  .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
-  .btn.primary:hover { filter: brightness(1.1); }
-  .btn.danger { color: var(--bad); border-color: rgba(239, 68, 68, 0.3); background: transparent; }
-  .btn.danger:hover { background: var(--bad-soft); border-color: var(--bad); }
-  .btn.danger.solid { background: var(--bad); color: #fff; border-color: var(--bad); }
-  .btn.small { min-height: 34px; padding: 4px 12px; font-size: 13px; }
-  .btn[disabled] { opacity: .5; cursor: default; }
-  .link { background: none; border: 0; padding: 4px 0; color: var(--accent); text-decoration: underline; text-underline-offset: 3px; font-weight: 600; cursor: pointer; }
+    /* Tarjeta de Sesión e Info */
+    .session-card {
+      background: var(--surface-2);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 12px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      margin-bottom: 16px;
+    }
 
-  /* Botón flotante para abrir auditoría */
-  .audit-fab { position: fixed; bottom: 20px; right: 20px; z-index: 25; background: var(--surface); border: 1.5px solid var(--accent); color: var(--accent); padding: 10px 18px; border-radius: 99px; font-weight: 700; font-size: 13px; box-shadow: 0 4px 20px rgba(0,0,0,.5); display: flex; align-items: center; gap: 6px; text-transform: uppercase; letter-spacing: .05em; }
-  .audit-fab:hover { background: var(--accent); color: var(--accent-ink); }
+    /* Filtros de Estado */
+    .filter-chips { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 20px; }
+    .chip { 
+      padding: 8px 14px; 
+      background: var(--surface-2); 
+      border: 1px solid var(--line); 
+      border-radius: 20px; 
+      color: var(--ink-2); 
+      font-size: 12px; 
+      font-weight: 600; 
+      cursor: pointer; 
+      white-space: nowrap; 
+    }
+    .chip.active { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
 
-  /* Search band */
-  .band { position: sticky; top: 0; z-index: 10; background: rgba(11, 19, 26, 0.9); backdrop-filter: blur(12px); border-bottom: 1px solid var(--line); }
-  .band .inner { display: flex; flex-direction: column; gap: 12px; padding-block: 14px; }
-  .search { position: relative; display: block; }
-  .search svg { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); width: 22px; height: 22px; color: var(--ink-2); pointer-events: none; }
-  .search input { width: 100%; height: 52px; padding: 0 16px 0 50px; font-size: 16px; background: var(--surface); border: 1.5px solid var(--line); border-radius: 8px; color: var(--ink); }
-  .search input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft); }
-  .tabs { display: flex; gap: 6px; padding: 4px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; align-self: flex-start; }
-  .tabs button { min-height: 38px; padding: 6px 18px; border: 0; border-radius: 6px; background: transparent; font-weight: 600; color: var(--ink-2); text-transform: uppercase; font-size: 13px; letter-spacing: .05em; }
-  .tabs button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); box-shadow: 0 2px 8px rgba(6,182,212,.3); }
-  .tabs .n { font-family: var(--font-mono); font-size: 11px; margin-left: 6px; background: rgba(0,0,0,.2); padding: 2px 6px; border-radius: 4px; }
+    /* Tarjetas de Contenido (Equipos / Servicios) */
+    .card-item {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 18px;
+      margin-bottom: 14px;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    }
+    .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+    .card-title { font-size: 16px; font-weight: 700; color: #fff; }
+    .badge { padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
+    .badge-good { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); }
+    .badge-bad { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4); }
 
-  main { padding-block: 24px 90px; }
-  .banner { margin-bottom: 16px; padding: 12px 16px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; color: var(--ink-2); font-size: 14px; display: flex; align-items: center; justify-content: space-between; }
-  .banner.bad { background: var(--bad-soft); color: var(--bad); border-color: rgba(239,68,68,.3); }
+    .card-body { font-size: 13px; color: var(--ink-2); line-height: 1.5; margin-bottom: 14px; }
+    .card-actions { display: flex; gap: 8px; flex-wrap: wrap; border-top: 1px solid var(--line); padding-top: 12px; }
 
-  /* Filters & Chips */
-  .filters { display: flex; flex-direction: column; gap: 14px; margin-bottom: 16px; }
-  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
-  .chip { min-height: 36px; padding: 4px 14px; border: 1.5px solid var(--line); border-radius: 999px; background: var(--surface); font-size: 13px; font-weight: 500; color: var(--ink); }
-  .chip b { font: 600 11px var(--font-mono); margin-left: 6px; background: rgba(255,255,255,.08); padding: 1px 6px; border-radius: 99px; }
-  .chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
-  .selects { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px; }
-  .sel { display: flex; flex-direction: column; gap: 4px; font-size: 11px; font-weight: 600; color: var(--ink-2); text-transform: uppercase; letter-spacing: .08em; }
-  .sel select, .sel input { min-height: 40px; padding: 6px 12px; background: var(--surface); border: 1.5px solid var(--line); border-radius: 6px; font-size: 14px; color: var(--ink); }
-  .count { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px; color: var(--ink-2); font-size: 14px; margin-bottom: 16px; font-family: var(--font-mono); }
-
-  /* MODO SELECCIÓN MÚLTIPLE */
-  .sel-toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 16px; margin-bottom: 18px; background: var(--surface-2); border: 1.5px solid var(--accent); border-radius: 8px; }
-  .sel-toolbar-info { display: flex; align-items: center; gap: 10px; font-weight: 600; color: #fff; font-size: 14px; }
-  .sel-toolbar-acts { display: flex; flex-wrap: wrap; gap: 8px; }
-  .eq.selected { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft), 0 4px 20px rgba(0,0,0,.3); background: rgba(6, 182, 212, 0.05); }
-  .eq-chk-bar { display: flex; align-items: center; justify-content: space-between; padding: 10px 18px; border-bottom: 1px solid var(--line); background: rgba(6, 182, 212, 0.08); border-radius: 10px 10px 0 0; cursor: pointer; user-select: none; }
-  .eq-chk-bar input[type="checkbox"] { width: 20px; height: 20px; accent-color: var(--accent); cursor: pointer; margin: 0; }
-  .eq-chk-label { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 13px; color: var(--accent); text-transform: uppercase; letter-spacing: .04em; }
-  .bulk-floating-bar { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 28; width: min(94%, 640px); background: var(--surface-3); border: 2px solid var(--accent); border-radius: 12px; padding: 12px 18px; box-shadow: 0 12px 36px rgba(0,0,0,.85); display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
-  .bulk-floating-bar .bulk-count { font: 700 18px var(--font-display); letter-spacing: .03em; color: #fff; text-transform: uppercase; }
-
-  /* Grupos y Tarjetas */
-  .grp { margin-bottom: 32px; }
-  .grp > h2 { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin-bottom: 12px; }
-  .plate { display: inline-block; padding: 3px 12px; background: var(--surface-2); border: 1.5px solid var(--line); border-radius: 6px; font: 700 18px var(--font-display); letter-spacing: .08em; text-transform: uppercase; color: #fff; }
-  .plate.sm { font-size: 12px; padding: 2px 8px; font-family: var(--font-mono); }
-  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); gap: 16px; }
-
-  .eq { display: flex; flex-direction: column; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; transition: transform .2s, border-color .2s; box-shadow: 0 4px 20px rgba(0,0,0,.2); }
-  .eq:hover { border-color: rgba(6,182,212,.4); transform: translateY(-2px); }
-  .eq-open { flex: 1; display: flex; flex-direction: column; gap: 8px; padding: 18px; border: 0; background: none; text-align: left; border-radius: 10px 10px 0 0; cursor: pointer; color: inherit; width: 100%; }
-  .eq-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; width: 100%; }
-  .eq-name { font: 700 22px/1.1 var(--font-display); letter-spacing: .02em; color: #fff; }
-  .eq-sub { color: var(--accent); font-size: 13px; font-weight: 500; text-transform: uppercase; letter-spacing: .04em; }
-  .eq-meta { display: grid; gap: 4px; margin-top: 6px; font-size: 13px; font-family: var(--font-mono); width: 100%; text-align: left; }
-  .eq-meta .k { color: var(--ink-2); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; margin-right: 6px; }
-  .eq-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 12px 18px; border-top: 1px solid var(--line); background: rgba(0,0,0,.15); border-radius: 0 0 10px 10px; }
-  .mono { font-family: var(--font-mono); font-size: 12px; color: var(--ink-2); }
-
-  .badge { display: inline-flex; align-items: center; gap: 6px; padding: 2px 10px; border-radius: 99px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; white-space: nowrap; }
-  .badge::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
-  .badge.ok { background: var(--ok-soft); color: var(--ok); }
-  .badge.warn { background: var(--warn-soft); color: var(--warn); }
-  .badge.bad { background: var(--bad-soft); color: var(--bad); }
-
-  .tag { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; }
-  .tag::before { content: ""; width: 8px; height: 8px; border-radius: 2px; background: var(--ink-2); }
-
-  .log { display: grid; gap: 12px; }
-  .sv { display: flex; flex-direction: column; gap: 10px; width: 100%; padding: 16px 18px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; text-align: left; transition: border-color .2s; }
-  .sv:hover { border-color: var(--accent); }
-  .sv-header { display: flex; justify-content: space-between; align-items: center; gap: 10px; border-bottom: 1px solid var(--line); padding-bottom: 8px; }
-  .sv-date { font: 700 16px var(--font-display); letter-spacing: .03em; color: #fff; }
-  .sv-cost { font-family: var(--font-mono); font-weight: 600; color: var(--accent); font-size: 15px; }
-  .sv-body { display: flex; flex-direction: column; gap: 6px; }
-  .sv-eq { font: 700 18px var(--font-display); color: #fff; letter-spacing: .02em; }
-  .sv-info-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; font-size: 13px; }
-  .sv-work { color: var(--ink-2); font-size: 14px; line-height: 1.4; margin-top: 2px; }
-
-  @media (min-width: 640px) {
-    .sv { display: grid; grid-template-columns: 130px minmax(0, 1.8fr) minmax(0, 1.2fr) 110px; grid-template-areas: "date main meta cost"; align-items: center; gap: 12px 16px; }
-    .sv-header { display: contents; border: none; padding: 0; }
-    .sv-date { grid-area: date; font-size: 18px; }
-    .sv-body { grid-area: main; display: flex; flex-direction: column; gap: 3px; }
-    .sv-meta { grid-area: meta; display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
-    .sv-cost { grid-area: cost; text-align: right; }
-  }
-
-  .overlay { position: fixed; inset: 0; z-index: 30; background: var(--scrim); backdrop-filter: blur(4px); display: flex; justify-content: flex-end; }
-  .sheet { width: min(620px, 100%); height: 100%; overflow-y: auto; background: var(--surface); border-left: 1px solid var(--line); padding: 24px; box-shadow: -12px 0 40px rgba(0,0,0,.6); }
-  .sheet-h { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
-  .sheet-h h2 { font: 700 28px var(--font-display); text-transform: uppercase; color: #fff; }
-  .x { width: 40px; height: 40px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-2); font-size: 20px; color: var(--ink); display: flex; align-items: center; justify-content: center; }
-  .det-top { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 16px; }
-  .attrs { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 160px), 1fr)); gap: 12px; margin-bottom: 16px; padding: 16px; background: var(--bg); border: 1px solid var(--line); border-radius: 8px; font-family: var(--font-mono); font-size: 13px; }
-  .attrs dt { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-2); }
-  .attrs dd { margin: 0; color: #fff; }
-  .notes { margin-bottom: 16px; padding: 12px 16px; background: var(--bg); border-radius: 8px; color: var(--ink-2); font-size: 14px; border: 1px solid var(--line); white-space: pre-wrap; }
-  .acts { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 24px; }
-  .confirm { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 14px; margin-bottom: 16px; border: 1.5px solid var(--bad); border-radius: 8px; background: var(--bad-soft); color: #fff; }
-
-  .hist-t { font: 700 20px var(--font-display); text-transform: uppercase; letter-spacing: .03em; margin-bottom: 12px; color: #fff; }
-  .hist { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
-  .hi { padding: 14px; background: var(--bg); border: 1px solid var(--line); border-radius: 8px; display: grid; gap: 8px; }
-  .hi-h { display: flex; align-items: center; gap: 12px; }
-  .hi-date { font: 700 18px var(--font-display); color: #fff; }
-
-  .form { display: grid; gap: 16px; }
-  .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); gap: 16px; }
-  .fld { display: flex; flex-direction: column; gap: 6px; }
-  .fld label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-2); }
-  .fld .req { color: var(--bad); }
-  .fld input, .fld select, .fld textarea { width: 100%; min-height: 46px; padding: 10px 14px; font-size: 15px; background: var(--bg); border: 1.5px solid var(--line); border-radius: 8px; color: var(--ink); }
-  .fld textarea { min-height: 100px; resize: vertical; }
-  .fld input:focus, .fld select:focus, .fld textarea:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 0 3px var(--accent-soft); }
-  .err { color: var(--bad); font-size: 12px; }
-  .hint { color: var(--ink-2); font-size: 12px; }
-  .form-acts { display: flex; gap: 10px; margin-top: 8px; }
-
-  .toast { position: fixed; z-index: 40; left: 50%; bottom: 24px; transform: translate(-50%, 20px); max-width: 90%; padding: 12px 20px; border-radius: 8px; background: #fff; color: #000; font-weight: 600; font-size: 14px; opacity: 0; pointer-events: none; transition: all .2s; box-shadow: 0 10px 30px rgba(0,0,0,.5); }
-  .toast.show { opacity: 1; transform: translate(-50%, 0); }
-
-  .empty { max-width: 500px; padding: 40px 0; display: flex; flex-direction: column; gap: 12px; }
-  .empty h2 { font: 700 28px var(--font-display); text-transform: uppercase; color: #fff; }
-  .empty p { color: var(--ink-2); }
+    .empty-state { text-align: center; padding: 40px; color: var(--ink-2); font-style: italic; }
   </style>
 </head>
 <body>
+
+<div class="container">
+  
+  <!-- Cabecera y Menú de Acciones -->
+  <div class="header-card">
+    <div class="header-title">Mantenimiento de Aires Acondicionados</div>
+    <div class="header-subtitle">CETis 116 - Antonia Nava de Catalán</div>
+
+    <div class="actions-grid" id="admin-actions-container">
+      <!-- Los botones de administrador y acciones se cargan dinámicamente -->
+    </div>
+  </div>
+
+  <!-- Buscador -->
+  <div class="search-box">
+    <span>🔍</span>
+    <input type="text" id="input-buscar" placeholder="Buscar por equipo, aula, marca o serie..." oninput="filtrarDatos()">
+  </div>
+
+  <!-- Pestañas de Vista -->
+  <div class="main-tabs">
+    <button class="main-tab active" id="tab-equipos-btn" onclick="cambiarVistaTab('equipos')">📌 Equipos (<span id="count-equipos">0</span>)</button>
+    <button class="main-tab" id="tab-servicios-btn" onclick="cambiarVistaTab('servicios')">📋 Servicios (<span id="count-servicios">0</span>)</button>
+  </div>
+
+  <!-- Sesión y Filtros -->
+  <div class="session-card">
+    <span>Sesión: <strong id="user-email-display" style="color:#fff;">Cargando...</strong></span>
+    <span style="color: var(--good); font-weight: 600;">● Seguro</span>
+  </div>
+
+  <div class="filter-chips" id="filter-chips-container">
+    <button class="chip active" onclick="filtrarEstado('todos')">Todos</button>
+    <button class="chip" onclick="filtrarEstado('vencidos')">Vencidos (>2m)</button>
+    <button class="chip" onclick="filtrarEstado('proximos')">Próximos 30d</button>
+    <button class="chip" onclick="filtrarEstado('pendientes')">Pendientes</button>
+  </div>
+
+  <!-- Contenedor Principal de Registros -->
+  <div id="content-list-container">
+    <div class="empty-state">Cargando registros desde Firestore...</div>
+  </div>
+
+</div>
 
 <!-- Firebase SDKs -->
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
-<header class="top">
-  <div class="inner">
-    <div class="brand">
-      <h1>Mantenimiento de Aires Acondicionados</h1>
-      <p>CETis 116 - Antonia Nava de Catalán</p>
-    </div>
-    <div class="top-actions">
-      <!-- Botón exclusivo de Administrador (Oculto por defecto para usuarios normales) -->
-      <button type="button" class="btn" id="btn-admin-panel" style="display: none; border-color: var(--accent); color: var(--accent);" onclick="window.location.href='admin.html'">⚙️ Aprobación de Cuentas</button>
-      
-      <button type="button" class="btn primary" data-action="new-eq">+ Equipo</button>
-      <button type="button" class="btn" data-action="new-sv">+ Servicio</button>
-      <a href="facturas.html" class="btn">🧾 Facturas</a>
-      <a href="dictamenes.html" class="btn">📋 Dictámenes</a>
-      <button type="button" class="btn danger" data-action="logout">Salir</button>
-    </div>
-  </div>
-</header>
-
-<button type="button" class="audit-fab" data-action="open-audit">📋 Historial Auditoría</button>
-
-<div class="band">
-  <div class="inner">
-    <label class="search">
-      <span class="sr">Buscar equipo</span>
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
-      <input id="q" type="search" placeholder="Buscar por equipo, aula, marca, serie o técnico" autocomplete="off">
-    </label>
-    <div class="tabs">
-      <button type="button" id="tab-equipos" data-action="tab" data-v="equipos" aria-pressed="true">Equipos<span class="n"></span></button>
-      <button type="button" id="tab-servicios" data-action="tab" data-v="servicios" aria-pressed="false">Servicios<span class="n"></span></button>
-    </div>
-  </div>
-</div>
-
-<main><div class="inner" id="main"></div></main>
-<footer><div class="inner" id="foot"></div></footer>
-<div id="sheet-root"></div>
-<div id="toast" class="toast" role="status" aria-live="polite"></div>
-
 <script>
-(function () {
-  'use strict';
-  var $ = function (s, r) { return (r || document).querySelector(s); };
-  var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
-  var norm = function (s) { return String(s == null ? '' : s).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase(); };
-  var natural = function (a, b) { return String(a).localeCompare(String(b), 'es', { numeric: true, sensitivity: 'base' }); };
-
-  var TIPOS = ['Preventivo', 'Correctivo', 'Reparación', 'Instalación', 'Diagnóstico'];
-  var TIPO_CLS = { 'Preventivo': 'prev', 'Correctivo': 'corr', 'Reparación': 'rep' };
-  var TIPOS_EQ = ['Minisplit', 'Cassette', 'Piso-techo', 'Paquete', 'Ventana', 'Otro'];
-  
-  var DB = null, currentUser = null;
-  var S = { equipos: [], servicios: [], auditoria: [], view: 'equipos', q: '', aula: '', estado: 'todos', tipo: 'todos', desde: '', hasta: '',
-    ready: false, backend: '', error: '', sheet: null, confirm: null, busy: false, rE: false, rS: false, rA: false,
-    selectMode: false, selected: {} };
-
-  function obtenerNombreUsuario(user) {
-    if (!user) return 'Usuario Invitado';
-    var email = user.email || '';
-    var partes = email.split('@')[0].replace(/[._-]/g, ' ');
-    var palabras = partes.split(' ').filter(Boolean);
-    if (palabras.length >= 2) {
-      return palabras[0].charAt(0).toUpperCase() + palabras[0].slice(1) + ' ' + palabras[1].charAt(0).toUpperCase() + palabras[1].slice(1);
-    } else if (palabras.length === 1) {
-      return palabras[0].charAt(0).toUpperCase() + palabras[0].slice(1);
-    }
-    return email;
-  }
-
-  async function registrarAuditoria(accion, detalle) {
-    var nombreCompleto = obtenerNombreUsuario(currentUser);
-    var objLog = {
-      usuario: nombreCompleto,
-      email: currentUser ? currentUser.email : 'anónimo',
-      accion: accion,
-      detalle: detalle,
-      fecha: new Date().toISOString()
-    };
-    if (DB && currentUser) {
-      try {
-        await DB.collection('auditoria').add(objLog);
-      } catch (e) {}
-    }
-  }
-
-  async function put(col, obj, skipAudit) {
-    if (S.backend === 'db') {
-      obj.actualizadoPor = currentUser ? currentUser.uid : 'desconocido';
-      var esNuevo = !await DB.collection(col).doc(obj.id).get().then(function(d){ return d.exists; });
-      await DB.collection(col).doc(obj.id).set(obj);
-      if (!skipAudit) {
-        var tipoNombre = col === 'equipos' ? 'el equipo "' + obj.nombre + '"' : 'un servicio de tipo ' + obj.tipo;
-        registrarAuditoria(esNuevo ? 'acaba de crear' : 'acaba de actualizar', tipoNombre);
-      }
-      return;
-    }
-  }
-
-  async function del(col, id) {
-    if (S.backend === 'db') {
-      var docRef = await DB.collection(col).doc(id).get();
-      var data = docRef.exists ? docRef.data() : null;
-      var nombreItem = data ? (data.nombre || data.tipo || id) : id;
-      await DB.collection(col).doc(id).delete();
-      registrarAuditoria('acaba de eliminar', (col === 'equipos' ? 'el equipo ' : 'el registro ') + '"' + nombreItem + '"');
-      return;
-    }
-  }
-
-  function failMsg(err) {
-    var c = err && err.code;
-    if (c === 'permission-denied') return 'Tu cuenta no tiene permiso para guardar cambios.';
-    return 'No se pudo guardar en la nube. Intenta de nuevo.';
-  }
-
-  var tt;
-  function toast(msg) { var t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(tt); tt = setTimeout(function () { t.classList.remove('show'); }, 3400); }
-
-  function selectedIds() {
-    return Object.keys(S.selected).filter(function (k) {
-      return S.selected[k] && S.equipos.some(function (e) { return e.id === k; });
-    });
-  }
-
-  var pad = function (n) { return String(n).padStart(2, '0'); };
-  var isoOf = function (d) { return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); };
-  var parse = function (iso) { if (!iso) return null; var p = String(iso).split('-').map(Number); return new Date(p[0], p[1] - 1, p[2]); };
-  var today = function () { var d = new Date(); return new Date(d.getFullYear(), d.getMonth(), d.getDate()); };
-  var todayIso = function () { return isoOf(today()); };
-  var addMonths = function (iso, n) {
-    var d = parse(iso); if (!d) return '';
-    var day = d.getDate(); d.setDate(1); d.setMonth(d.getMonth() + n);
-    var last = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
-    d.setDate(Math.min(day, last)); return isoOf(d);
+  // Configuración de Firebase y lógica principal conectada a tu base de datos
+  var firebaseConfig = {
+    apiKey: "AIzaSyA_JufV6ZSCICVuUrVZEJropD1VKA2bzQs",
+    authDomain: "mantenimientocetis116.firebaseapp.com",
+    databaseURL: "https://mantenimientocetis116-default-rtdb.firebaseio.com",
+    projectId: "mantenimientocetis116",
+    storageBucket: "mantenimientocetis116.firebasestorage.app",
+    messagingSenderId: "556796465966",
+    appId: "1:556796465966:web:b0636bf4ee5ba99c21a0bf"
   };
-  var diffDays = function (a, b) { return Math.round((parse(a) - parse(b)) / 86400000); };
-  var fmtF = function (iso) { var d = parse(iso); return d ? new Intl.DateTimeFormat('es-MX', { day: 'numeric', month: 'short', year: 'numeric' }).format(d).replace(/\./g, '') : ''; };
-  var fmtL = function (iso) { var d = parse(iso); return d ? new Intl.DateTimeFormat('es-MX', { day: 'numeric', month: 'long', year: 'numeric' }).format(d) : ''; };
-  var money = function (n) { return (n == null || n === '') ? '' : new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(n); };
-  var uid = function (p) { return p + '_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); };
-  var plural = function (n, a, b) { return n + ' ' + (n === 1 ? a : b); };
 
-  function svOf(eqId) { return S.servicios.filter(function (s) { return s.equipoId === eqId; }).sort(function (a, b) { return (b.fecha || '').localeCompare(a.fecha || ''); }); }
-  function estadoEq(e) {
-    var ss = svOf(e.id);
-    if (!ss.length) return { k: 'nuevo', label: 'Sin servicios', last: null, next: null, rel: '' };
-    var pend = ss.some(function (s) { return s.estado === 'Pendiente'; });
-    var done = ss.filter(function (s) { return s.estado !== 'Pendiente'; });
-    var last = done[0] || null;
-    var wn = done.find(function (s) { return s.proximo; });
-    var next = wn ? wn.proximo : null;
-    var k = 'sinprox', label = 'Sin próxima fecha', rel = '';
-    if (next) {
-      var d = diffDays(next, todayIso());
-      if (d < 0) { k = 'vencido'; label = 'Servicio vencido'; rel = 'vencido hace ' + plural(-d, 'día', 'días'); }
-      else if (d <= 30) { k = 'proximo'; label = 'Próximo servicio'; rel = d === 0 ? 'hoy' : 'en ' + plural(d, 'día', 'días'); }
-      else { k = 'ok'; label = 'Al corriente'; rel = 'en ' + plural(d, 'día', 'días'); }
+  firebase.initializeApp(firebaseConfig);
+  var auth = firebase.auth();
+  var db = firebase.firestore();
+  var adminEmail = 'josefranciisco17@gmail.com';
+
+  var vistaActual = 'equipos';
+  var filtroActual = 'todos';
+
+  auth.onAuthStateChanged(function(user) {
+    if (!user) {
+      window.location.href = 'login.html';
+      return;
     }
-    if (pend && k !== 'vencido') { k = 'pendiente'; label = 'Servicio pendiente'; }
-    return { k: k, label: label, last: last, next: next, rel: rel };
-  }
-  var BADGE = { vencido: 'bad', proximo: 'warn', pendiente: 'warn', ok: 'ok', nuevo: '', sinprox: '' };
-  var badge = function (st) { return '<span class="badge ' + (BADGE[st.k] || '') + '">' + esc(st.label) + '</span>'; };
-  var tag = function (t) { return '<span class="tag ' + (TIPO_CLS[t] || '') + '">' + esc(t) + '</span>'; };
+    document.getElementById('user-email-display').textContent = user.email;
+    construirBotonera(user.email);
+    cargarDatosGlobales();
+  });
 
-  function terms() { return norm(S.q).split(/\s+/).filter(Boolean); }
-  function eqHay(e) { return norm([e.nombre, e.aula, e.edificio, e.marca, e.modelo, e.serie, e.tipo, e.capacidad, e.refrigerante, e.notas].join(' ')); }
-  function svHay(s, e) { return norm([s.tipo, s.estado, s.trabajo, s.refacciones, s.tecnico, s.folio, s.aula, e ? e.nombre : '', e ? e.aula : '', fmtF(s.fecha), fmtL(s.fecha), s.fecha].join(' ')); }
-
-  function eqList() {
-    var T = terms(), out = [];
-    S.equipos.forEach(function (e) {
-      if (S.aula && norm(e.aula) !== norm(S.aula)) return;
-      var ss = svOf(e.id), h = eqHay(e), via = [], ok = true;
-      if (T.length) {
-        var hs = ss.map(function (s) { return { s: s, h: svHay(s, e) }; });
-        var all = h + ' ' + hs.map(function (x) { return x.h; }).join(' ');
-        ok = T.every(function (t) { return all.indexOf(t) > -1; });
-        if (ok && !T.every(function (t) { return h.indexOf(t) > -1; })) {
-          via = hs.filter(function (x) { return T.some(function (t) { return x.h.indexOf(t) > -1; }); }).map(function (x) { return x.s; }).slice(0, 2);
-        }
-      }
-      if (ok) out.push({ e: e, st: estadoEq(e), via: via });
-    });
-    return out;
-  }
-  function svList() {
-    var T = terms(), byId = {};
-    S.equipos.forEach(function (e) { byId[e.id] = e; });
-    var out = [];
-    S.servicios.forEach(function (s) {
-      var e = byId[s.equipoId];
-      if (S.aula && norm(s.aula) !== norm(S.aula) && !(e && norm(e.aula) === norm(S.aula))) return;
-      if (S.tipo !== 'todos' && s.tipo !== S.tipo) return;
-      if (S.desde && (s.fecha || '') < S.desde) return;
-      if (S.hasta && (s.fecha || '') > S.hasta) return;
-      if (T.length) { var h = svHay(s, e) + ' ' + (e ? eqHay(e) : ''); if (!T.every(function (t) { return h.indexOf(t) > -1; })) return; }
-      out.push({ s: s, e: e });
-    });
-    out.sort(function (a, b) { return (b.s.fecha || '').localeCompare(a.s.fecha || ''); });
-    return out;
-  }
-  function aulas() { return Array.from(new Set(S.equipos.map(function (e) { return (e.aula || '').trim(); }).filter(Boolean))).sort(natural); }
-
-  function render() {
-    var a = document.activeElement, id = a && a.id && a.id !== 'q' ? a.id : '';
-    if (S.aula && aulas().every(function (x) { return norm(x) !== norm(S.aula); })) S.aula = '';
-    renderBand(); renderMain(); renderFoot(); renderSheet(false);
-    if (id) { var n = document.getElementById(id); if (n && n !== document.activeElement) n.focus(); }
-  }
-  function renderBand() {
-    $('#tab-equipos .n').textContent = S.equipos.length;
-    $('#tab-servicios .n').textContent = S.servicios.length;
-    ['equipos', 'servicios'].forEach(function (v) { $('#tab-' + v).setAttribute('aria-pressed', S.view === v ? 'true' : 'false'); });
-  }
-  function renderMain() {
-    var m = $('#main'), html = '';
-    if (!S.ready) { m.innerHTML = '<p class="banner">Sincronizando con base de datos en la nube…</p>'; return; }
-    if (S.error) html += '<p class="banner bad">' + esc(S.error) + '</p>';
-    html += '<p class="banner"><span>Sesión corporativa: <b>' + esc(obtenerNombreUsuario(currentUser)) + '</b></span> <span style="font-family:var(--font-mono);font-size:12px;color:var(--accent);">Seguro</span></p>';
-    if (!S.equipos.length) html += emptyAll();
-    else html += S.view === 'equipos' ? viewEquipos() : viewServicios();
-    m.innerHTML = html;
-  }
-  function emptyAll() {
-    return '<div class="empty"><h2>No hay equipos registrados</h2>' +
-      '<p>Comienza registrando tus aires acondicionados por aula para llevar un control estricto de sus mantenimientos preventivos y correctivos.</p>' +
-      '<div style="display:flex;gap:10px;margin-top:8px;"><button type="button" class="btn primary" data-action="new-eq">+ Registrar equipo</button>' +
-      '<button type="button" class="btn" data-action="seed"' + (S.busy ? ' disabled' : '') + '>Cargar datos demo</button></div></div>';
-  }
-  function aulaSelect() {
-    return '<label class="sel"><span>Aula / Zona</span><select id="f-aula"><option value="">Todas</option>' +
-      aulas().map(function (a) { return '<option value="' + esc(a) + '"' + (norm(a) === norm(S.aula) ? ' selected' : '') + '>' + esc(a) + '</option>'; }).join('') + '</select></label>';
-  }
-  function chip(group, k, label, n) {
-    var cur = group === 'estado' ? S.estado : S.tipo;
-    return '<button type="button" class="chip" id="chip-' + group + '-' + k + '" data-action="chip-' + group + '" data-v="' + k + '" aria-pressed="' + (cur === k) + '">' + esc(label) + (n == null ? '' : '<b>' + n + '</b>') + '</button>';
-  }
-  function noResults() {
-    return '<div class="empty" style="padding:24px 0"><h2>Sin coincidencias</h2><p>No se encontraron registros con los filtros o términos de búsqueda actuales.</p>' +
-      '<div><button type="button" class="btn" data-action="clear">Limpiar búsqueda y filtros</button></div></div>';
-  }
-  function exportBtn() { return '<button type="button" class="link" data-action="export">Exportar Reporte CSV</button>'; }
-
-  function viewEquipos() {
-    var list = eqList();
-    var c = { todos: list.length, vencido: 0, proximo: 0, pendiente: 0, nuevo: 0 };
-    list.forEach(function (it) { if (c[it.st.k] != null) c[it.st.k]++; });
-    var shown = S.estado === 'todos' ? list : list.filter(function (it) { return it.st.k === S.estado; });
-    var selIds = selectedIds();
-
-    var html = '<div class="filters"><div class="chips" role="group" aria-label="Filtrar por estado">' +
-      chip('estado', 'todos', 'Todos', c.todos) + chip('estado', 'vencido', 'Vencidos (>2m)', c.vencido) + chip('estado', 'proximo', 'Próximos 30d', c.proximo) +
-      chip('estado', 'pendiente', 'Pendientes', c.pendiente) + chip('estado', 'nuevo', 'Sin servicio', c.nuevo) + '</div>' +
-      '<div class="selects">' + aulaSelect() + '</div></div>' +
-      '<div class="count"><span>Mostrando ' + shown.length + ' de ' + plural(S.equipos.length, 'equipo', 'equipos') + '</span>' +
-      '<div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">' +
-        '<button type="button" class="btn small ' + (S.selectMode ? 'primary' : '') + '" data-action="toggle-select-mode">' +
-          (S.selectMode ? '✕ Salir de selección' : '☑ Selección Múltiple') +
-        '</button>' +
-        exportBtn() +
-      '</div></div>';
-
-    if (S.selectMode) {
-      html += '<div class="sel-toolbar">' +
-        '<div class="sel-toolbar-info"><span>📋 <b>' + selIds.length + '</b> de ' + shown.length + ' equipos marcados</span></div>' +
-        '<div class="sel-toolbar-acts">' +
-          '<button type="button" class="btn small primary" data-action="select-all-eq">☑ Seleccionar todos (' + shown.length + ')</button>' +
-          '<button type="button" class="btn small" data-action="deselect-all-eq">☐ Desmarcar todos</button>' +
-          (selIds.length ? '<button type="button" class="btn small primary" data-action="open-bulk-sv">⚡ Asignar Fecha / Servicio (' + selIds.length + ')</button>' : '') +
-        '</div>' +
-      '</div>';
+  function construirBotonera(email) {
+    var container = document.getElementById('admin-actions-container');
+    var html = '';
+    if (email === adminEmail) {
+      html += '<button class="btn btn-secondary" onclick="window.location.href=\'admin.html\'">⚙️ Aprobación</button>';
     }
-
-    if (!shown.length) return html + noResults();
-    var groups = {};
-    shown.forEach(function (it) { var k = norm(it.e.aula) || '~'; (groups[k] = groups[k] || { name: it.e.aula || 'Sin aula', items: [] }).items.push(it); });
-    Object.keys(groups).sort(function (a, b) { return natural(groups[a].name, groups[b].name); }).forEach(function (k) {
-      var g = groups[k];
-      g.items.sort(function (a, b) { return natural(a.e.nombre, b.e.nombre); });
-      var edif = g.items.map(function (it) { return it.e.edificio; }).find(Boolean);
-      var allGroupSelected = g.items.every(function (it) { return S.selected[it.e.id]; });
-
-      html += '<section class="grp"><h2><span class="plate">' + esc(g.name) + '</span>' +
-        '<span style="font-size:13px;color:var(--ink-2);font-family:var(--font-mono);">' + (edif ? esc(edif) + ' · ' : '') + plural(g.items.length, 'equipo', 'equipos') + '</span>' +
-        (S.selectMode ? '<button type="button" class="btn small" style="margin-left:auto;" data-action="toggle-aula-eq" data-aula="' + esc(g.name) + '">' + (allGroupSelected ? '☐ Desmarcar Aula' : '☑ Marcar Aula') + '</button>' : '') +
-        '</h2><div class="cards">' + g.items.map(eqCard).join('') + '</div></section>';
-    });
-
-    if (S.selectMode && selIds.length > 0) {
-      html += '<div class="bulk-floating-bar">' +
-        '<span class="bulk-count">✅ ' + plural(selIds.length, 'equipo seleccionado', 'equipos seleccionados') + '</span>' +
-        '<div style="display:flex;gap:8px;">' +
-          '<button type="button" class="btn small primary" data-action="open-bulk-sv">⚡ Asignar Fecha / Servicio</button>' +
-        '</div>' +
-      '</div>';
-    }
-
-    return html;
-  }
-  function eqCard(it) {
-    var e = it.e, st = it.st;
-    var isSel = !!S.selected[e.id];
-    var sub = [e.marca, e.modelo, e.tipo, e.capacidad].filter(Boolean).join(' · ');
-    return '<article class="eq' + (isSel ? ' selected' : '') + '">' +
-      (S.selectMode ? '<label class="eq-chk-bar" data-action="toggle-eq-chk" data-id="' + esc(e.id) + '">' +
-        '<span class="eq-chk-label"><input type="checkbox" ' + (isSel ? 'checked' : '') + ' tabindex="-1" style="pointer-events:none;"> ' + (isSel ? 'Equipo seleccionado' : 'Seleccionar para servicio') + '</span>' +
-      '</label>' : '') +
-      '<div style="display:flex;flex-direction:column;flex:1;"><button type="button" class="eq-open" data-action="' + (S.selectMode ? 'toggle-eq-chk' : 'open-eq') + '" data-id="' + esc(e.id) + '">' +
-      '<span class="eq-top"><span class="eq-name">' + esc(e.nombre) + '</span>' + badge(st) + '</span>' +
-      (sub ? '<span class="eq-sub">' + esc(sub) + '</span>' : '') +
-      '<span class="eq-meta"><span><span class="k">Último</span>' + (st.last ? fmtF(st.last.fecha) + ' (' + esc(st.last.tipo) + ')' : 'sin registro') + '</span>' +
-      '<span><span class="k">Próximo</span>' + (st.next ? fmtF(st.next) + ' (' + st.rel + ')' : 'sin fecha programada') + '</span></span>' +
-      (it.via.length ? '<span style="font-size:12px;color:var(--accent);margin-top:4px;">Coincidencia en historial</span>' : '') +
-      '</button></div>' +
-      '<div class="eq-foot"><span class="mono">' + (e.serie ? 'Serie: ' + esc(e.serie) : 'Sin serie') + '</span>' +
-      '<div style="display:flex;gap:6px;"><button type="button" class="btn small primary" data-action="new-sv" data-eq="' + esc(e.id) + '">+ Servicio</button>' +
-      '<button type="button" class="btn small danger" data-action="quick-del-eq" data-id="' + esc(e.id) + '" title="Eliminar equipo">Eliminar</button></div></div></article>';
+    html += '<button class="btn btn-primary" onclick="alert(\'Abrir modal nuevo equipo\')">+ Equipo</button>';
+    html += '<button class="btn btn-secondary" onclick="alert(\'Abrir modal nuevo servicio\')">+ Servicio</button>';
+    html += '<button class="btn btn-secondary" onclick="alert(\'Generar Facturas\')">📄 Facturas</button>';
+    html += '<button class="btn btn-secondary" onclick="alert(\'Generar Dictámenes\')">📋 Dictámenes</button>';
+    html += '<button class="btn btn-danger" onclick="auth.signOut().then(() => window.location.href=\'login.html\')">🚪 Salir</button>';
+    container.innerHTML = html;
   }
 
-  function viewServicios() {
-    var list = svList();
-    var total = list.reduce(function (a, x) { return a + (Number(x.s.costo) || 0); }, 0);
-    var html = '<div class="filters"><div class="chips" role="group" aria-label="Filtrar por tipo">' + chip('tipo', 'todos', 'Todos') +
-      TIPOS.map(function (t) { return chip('tipo', t, t); }).join('') + '</div>' +
-      '<div class="selects">' + aulaSelect() +
-      '<label class="sel"><span>Desde</span><input type="date" id="f-desde" value="' + esc(S.desde) + '"></label>' +
-      '<label class="sel"><span>Hasta</span><input type="date" id="f-hasta" value="' + esc(S.hasta) + '"></label>' +
-      ((S.q || S.aula || S.tipo !== 'todos' || S.desde || S.hasta) ? '<button type="button" class="link" data-action="clear">Limpiar filtros</button>' : '') + '</div></div>' +
-      '<div class="count"><span class="tot">Mostrando ' + list.length + ' de ' + plural(S.servicios.length, 'servicio', 'servicios') + (total ? ' · Inversión total ' + money(total) : '') + '</span>' + exportBtn() + '</div>';
-    if (!list.length) return html + (S.servicios.length ? noResults() : '<div class="empty"><h2>Sin servicios registrados</h2><p>Registra el primer mantenimiento para construir la bitácora histórica.</p><div><button type="button" class="btn primary" data-action="new-sv">+ Registrar servicio</button></div></div>');
-    return html + '<div class="log">' + list.map(function (x) {
-      var s = x.s, e = x.e;
-      return '<div class="sv">' +
-        '<div class="sv-header">' +
-          '<span class="sv-date">' + fmtF(s.fecha) + '</span>' +
-          '<span class="sv-cost">' + (s.costo != null && s.costo !== '' ? money(s.costo) : '—') + '</span>' +
-        '</div>' +
-        '<div class="sv-body">' +
-          '<span class="sv-eq">' + esc(e ? e.nombre : 'Equipo eliminado') + '</span>' +
-          '<div class="sv-info-row">' +
-            '<span class="plate sm">' + esc(s.aula || (e && e.aula) || 'Sin aula') + '</span>' +
-            tag(s.tipo) +
-            (s.estado === 'Pendiente' ? '<span class="badge warn">Pendiente</span>' : '') +
-          '</div>' +
-          (s.trabajo ? '<span class="sv-work">' + esc(s.trabajo) + '</span>' : '') +
-          (s.tecnico ? '<span style="color:var(--ink-2);font-size:12px;margin-top:2px;">Técnico: ' + esc(s.tecnico) + '</span>' : '') +
-        '</div>' +
-        '<div style="display:flex;justify-content:flex-end;margin-top:4px;">' +
-          '<button type="button" class="btn small primary" data-action="open-eq" data-id="' + esc(s.equipoId) + '">Ver Equipo</button>' +
-        '</div>' +
-      '</div>';
-    }).join('') + '</div>';
+  function cambiarVistaTab(vista) {
+    vistaActual = vista;
+    document.getElementById('tab-equipos-btn').classList.toggle('active', vista === 'equipos');
+    document.getElementById('tab-servicios-btn').classList.toggle('active', vista === 'servicios');
+    cargarDatosGlobales();
   }
 
-  function renderFoot() {
-    var f = $('#foot'), ej = S.equipos.some(function (e) { return e.ejemplo; }) || S.servicios.some(function (s) { return s.ejemplo; });
-    f.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;border-top:1px solid var(--line);padding-top:16px;color:var(--ink-2);font-size:13px;">' +
-      '<span>Mantenimiento de Aires Acondicionados · CETis 116</span>' +
-      (ej ? '<button type="button" class="link" data-action="unseed"' + (S.busy ? ' disabled' : '') + '>Remover datos de ejemplo</button>' : '') + '</div>';
+  function filtrarEstado(filtro) {
+    filtroActual = filtro;
+    var chips = document.querySelectorAll('.chip');
+    chips.forEach(c => c.classList.remove('active'));
+    event.target.classList.add('active');
+    cargarDatosGlobales();
   }
 
-  function renderSheet(force) {
-    var root = $('#sheet-root'), sh = S.sheet;
-    if (!sh) { root.innerHTML = ''; document.body.classList.remove('lock'); return; }
-    if (/form$/.test(sh.type) && !force) return;
-    var body = '', label = '';
-    if (sh.type === 'eq') {
-      var e = S.equipos.find(function (x) { return x.id === sh.id; });
-      if (!e) { S.sheet = null; root.innerHTML = ''; document.body.classList.remove('lock'); return; }
-      body = detailEq(e); label = e.nombre;
-    } else if (sh.type === 'eq-form') { label = sh.id ? 'Editar equipo' : 'Registrar equipo'; body = formEq(sh.id ? S.equipos.find(function (x) { return x.id === sh.id; }) : null); }
-    else if (sh.type === 'sv-form') { label = sh.id ? 'Editar servicio' : 'Nuevo servicio'; body = formSv(sh.id ? S.servicios.find(function (x) { return x.id === sh.id; }) : null, sh.eqId); }
-    else if (sh.type === 'bulk-sv-form') { label = 'Servicio Masivo'; body = formBulkSv(); }
-    else if (sh.type === 'audit') { label = 'Historial de Auditoría'; body = detailAudit(); }
-    
-    var scrollTop = root.firstChild && $('.sheet', root) ? $('.sheet', root).scrollTop : 0;
-    root.innerHTML = '<div class="overlay" data-action="overlay"><div class="sheet" role="dialog" aria-modal="true" aria-label="' + esc(label) + '">' + body + '</div></div>';
-    if (!force && scrollTop) $('.sheet', root).scrollTop = scrollTop;
-    document.body.classList.add('lock');
-  }
-  
-  function detailAudit() {
-    var logs = S.auditoria.slice().sort(function(a,b){ return (b.fecha||'').localeCompare(a.fecha||''); });
-    return '<div class="sheet-h"><h2>Historial de Auditoría</h2>' + closeBtn() + '</div>' +
-      '<p style="color:var(--ink-2);font-size:13px;margin-bottom:16px;">Registro en tiempo real de los movimientos realizados por cada usuario en la plataforma.</p>' +
-      (logs.length ? '<ul class="hist">' + logs.map(function(l) {
-        return '<li class="hi"><div class="hi-h"><span style="font-weight:700;color:var(--accent);">' + esc(l.usuario) + '</span>' +
-          '<span style="font-size:12px;color:var(--ink-2);margin-left:auto;">' + fmtF(l.fecha ? l.fecha.split('T')[0] : '') + '</span></div>' +
-          '<p style="color:#fff;font-size:14px;margin:4px 0;">' + esc(l.accion) + ' ' + esc(l.detalle) + '</p></li>';
-      }).join('') + '</ul>' : '<p style="color:var(--ink-2);font-style:italic;">Aún no hay movimientos registrados en esta sesión.</p>');
-  }
-
-  function openSheet(sh) { S.sheet = sh; S.confirm = null; renderSheet(true); var el = $('.sheet [data-first]') || $('.sheet .x'); if (el) el.focus(); }
-  function closeSheet() { S.sheet = null; S.confirm = null; renderSheet(true); }
-
-  function closeBtn() { return '<button type="button" class="x" data-action="close-sheet" aria-label="Cerrar">✕</button>'; }
-  function detailEq(e) {
-    var st = estadoEq(e), ss = svOf(e.id);
-    var attrs = [['Marca', e.marca], ['Modelo', e.modelo], ['Serie', e.serie], ['Tipo', e.tipo], ['Capacidad', e.capacidad], ['Refrigerante', e.refrigerante], ['Edificio', e.edificio], ['Instalación', e.instalacion ? fmtL(e.instalacion) : '']]
-      .filter(function (a) { return a[1]; }).map(function (a) { return '<div><dt>' + a[0] + '</dt><dd>' + esc(a[1]) + '</dd></div>'; }).join('');
-    var next = st.next ? '<span style="font-size:13px;color:var(--ink-2);font-family:var(--font-mono);">Próximo servicio: ' + fmtL(st.next) + ' (' + st.rel + ')</span>' : '';
-    var conf = S.confirm && S.confirm.kind === 'eq' ?
-      '<div class="confirm" role="alert"><span>Se eliminará este equipo y sus ' + plural(ss.length, 'servicio', 'servicios') + '. Esta acción no se puede deshacer.</span><button type="button" class="btn danger solid small" data-action="del-eq-yes"' + (S.busy ? ' disabled' : '') + '>Confirmar</button><button type="button" class="btn small" data-action="cancel-confirm">Cancelar</button></div>' : '';
-    return '<div class="sheet-h"><div><h2>' + esc(e.nombre) + '</h2></div>' + closeBtn() + '</div>' +
-      '<div class="det-top"><span class="plate">' + esc(e.aula || 'Sin aula') + '</span>' + badge(st) + next + '</div>' +
-      (attrs ? '<dl class="attrs">' + attrs + '</dl>' : '') + (e.notas ? '<p class="notes">' + esc(e.notas) + '</p>' : '') +
-      '<div class="acts"><button type="button" class="btn primary" data-action="new-sv" data-eq="' + esc(e.id) + '" data-first>+ Registrar servicio</button>' +
-      '<button type="button" class="btn" data-action="edit-eq" data-id="' + esc(e.id) + '">Editar equipo</button>' +
-      '<button type="button" class="btn danger" data-action="del-eq-ask">Eliminar equipo</button></div>' + conf +
-      '<h3 class="hist-t">Historial de intervenciones (' + ss.length + ')</h3>' +
-      (ss.length ? '<ul class="hist">' + ss.map(function (s) { return histItem(s, e); }).join('') + '</ul>' : '<p style="color:var(--ink-2);font-style:italic;">No hay servicios registrados para este equipo.</p>');
-  }
-  function histItem(s, e) {
-    var conf = S.confirm && S.confirm.kind === 'sv' && S.confirm.id === s.id ?
-      '<div class="confirm" role="alert"><span>¿Eliminar este registro de servicio?</span><button type="button" class="btn danger solid small" data-action="del-sv-yes" data-id="' + esc(s.id) + '"' + (S.busy ? ' disabled' : '') + '>Sí, eliminar</button><button type="button" class="btn small" data-action="cancel-confirm">Cancelar</button></div>' : '';
-    var meta = [['Técnico', s.tecnico], ['Inversión', s.costo != null && s.costo !== '' ? money(s.costo) : ''], ['Refacciones', s.refacciones], ['Próximo', s.proximo ? fmtF(s.proximo) : ''], ['Folio', s.folio], ['Aula', s.aula && norm(s.aula) !== norm(e.aula) ? s.aula : '']]
-      .filter(function (a) { return a[1]; }).map(function (a) { return '<div><dt>' + a[0] + '</dt><dd>' + esc(a[1]) + '</dd></div>'; }).join('');
-    return '<li class="hi"><div class="hi-h"><span class="hi-date">' + fmtF(s.fecha) + '</span>' + tag(s.tipo) + (s.estado === 'Pendiente' ? '<span class="badge warn">Pendiente</span>' : '') + '<span style="flex:1;"></span>' +
-      '<button type="button" class="btn small" data-action="edit-sv" data-id="' + esc(s.id) + '">Editar</button>' +
-      '<button type="button" class="btn small danger" data-action="del-sv-ask" data-id="' + esc(s.id) + '">Eliminar</button></div>' +
-      (s.trabajo ? '<p style="color:var(--ink);">' + esc(s.trabajo) + '</p>' : '') + (meta ? '<dl class="attrs" style="margin:0;">' + meta + '</dl>' : '') + conf + '</li>';
-  }
-
-  function fld(label, name, val, o) {
-    o = o || {};
-    var id = 'x-' + name, t = o.type || 'text';
-    var ctl = o.area ? '<textarea id="' + id + '" name="' + name + '" rows="3"' + (o.ph ? ' placeholder="' + esc(o.ph) + '"' : '') + '>' + esc(val) + '</textarea>' :
-      '<input id="' + id + '" name="' + name + '" type="' + t + '" value="' + esc(val) + '"' + (o.list ? ' list="' + o.list + '"' : '') + (o.ph ? ' placeholder="' + esc(o.ph) + '"' : '') + (o.step ? ' step="' + o.step + '"' : '') + (o.min != null ? ' min="' + o.min + '"' : '') + ' autocomplete="off"' + (o.first ? ' data-first' : '') + '>';
-    return '<div class="fld"><label for="' + id + '">' + label + (o.req ? ' <span class="req">*</span>' : '') + '</label>' + ctl + '<p class="err" data-err="' + name + '" hidden></p></div>';
-  }
-  function sel(label, name, val, opts, o) {
-    o = o || {};
-    return '<div class="fld"><label for="x-' + name + '">' + label + (o.req ? ' <span class="req">*</span>' : '') + '</label><select id="x-' + name + '" name="' + name + '">' +
-      opts.map(function (p) { var v = Array.isArray(p) ? p[0] : p, l = Array.isArray(p) ? p[1] : p; return '<option value="' + esc(v) + '"' + (v === val ? ' selected' : '') + '>' + esc(l) + '</option>'; }).join('') + '</select><p class="err" data-err="' + name + '" hidden></p></div>';
-  }
-  function dlist(id, arr) { return '<datalist id="' + id + '">' + arr.map(function (a) { return '<option value="' + esc(a) + '">'; }).join('') + '</datalist>'; }
-
-  function formEq(e) {
-    e = e || {};
-    var marcaVal = e.marca || 'Carrier';
-    var marcasFamosasOpts = ['Carrier','Mabe', 'Mirage', 'LG', 'York', 'Trane', 'Midea', 'Daikin', 'Samsung', 'Panasonic', 'Mitsubishi', 'Hisense', 'Gree', 'Whirlpool', 'Electrolux', 'Fujitsu', 'TCL', 'Prime', 'Rheem', 'Aux', 'Chigo'];
-    var marcasOtrasOpts = ['Amana', 'Bryant', 'Daewoo', 'Fedders', 'Friedrich', 'GE', 'Haier', 'Kenmore', 'Kelvinator', 'Philco', 'Sanyo', 'Sharp', 'Toshiba', 'Westinghouse', 'Winia', 'Otra'];
-    if (marcaVal && marcasFamosasOpts.indexOf(marcaVal) === -1 && marcasOtrasOpts.indexOf(marcaVal) === -1) { marcasOtrasOpts.unshift(marcaVal); }
-
-    var marcasOptionsHtml = '<option value="">Selecciona una marca</option>' +
-      '<optgroup label="⭐ Marcas Principales">' + marcasFamosasOpts.map(function(m) { return '<option value="' + esc(m) + '"' + (m === marcaVal ? ' selected' : '') + '>' + esc(m) + '</option>'; }).join('') + '</optgroup>' +
-      '<optgroup label="🔧 Otras Marcas">' + marcasOtrasOpts.map(function(m) { return '<option value="' + esc(m) + '"' + (m === marcaVal ? ' selected' : '') + '>' + esc(m) + '</option>'; }).join('') + '</optgroup>';
-
-    var capVal = e.capacidad || '1.5 Toneladas (18,000 BTU)';
-    var capOpts = [
-      '1.0 Tonelada (12,000 BTU)',
-      '1.5 Toneladas (18,000 BTU)',
-      '2.0 Toneladas (24,000 BTU)',
-      '2.5 Toneladas (30,000 BTU)',
-      '3.0 Toneladas (36,000 BTU)',
-      '4.0 Toneladas (48,000 BTU)',
-      '5.0 Toneladas (60,000 BTU)',
-      'Otra / Personalizada'
-    ];
-    if (capVal && capOpts.indexOf(capVal) === -1) { capOpts.unshift(capVal); }
-    var capOptionsHtml = '<option value="">Selecciona la capacidad</option>' +
-      capOpts.map(function(c) { return '<option value="' + esc(c) + '"' + (c === capVal ? ' selected' : '') + '>' + esc(c) + '</option>'; }).join('');
-
-    var tipoVal = e.tipo || 'Minisplit';
-    var tipos = TIPOS_EQ.indexOf(tipoVal) > -1 ? TIPOS_EQ : TIPOS_EQ.concat([tipoVal]);
-
-    return '<div class="sheet-h"><h2>' + (e.id ? 'Editar equipo' : 'Registrar equipo') + '</h2>' + closeBtn() + '</div>' +
-      '<form class="form" id="form-eq" novalidate>' +
-      
-      /* --- BOTÓN ESCÁNER DE PLACA CON IA --- */
-      '<div style="background:var(--surface-2); padding:14px; border-radius:8px; border:1.5px dashed var(--accent); margin-bottom:4px; text-align:center;">' +
-        '<label style="cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:6px;">' +
-          '<span style="font-weight:700; color:var(--accent); font-size:14px; text-transform:uppercase;">📷 Escanear Placa con IA (Cámara)</span>' +
-          '<span style="font-size:12px; color:var(--ink-2);">Toma foto a la placa del equipo para autocompletar marca, modelo y serie</span>' +
-          '<input type="file" id="scan-plate-input" accept="image/*" capture="environment" style="display:none;">' +
-        '</label>' +
-        '<div id="scan-status" style="font-size:13px; font-weight:600; color:var(--warn); margin-top:8px;" hidden>⏳ Analizando placa y extrayendo datos con IA...</div>' +
-      '</div>' +
-      /* ------------------------------------- */
-
-      fld('Nombre del equipo', 'nombre', e.nombre || '', { req: 1, ph: 'Minisplit Aula 101', first: 1 }) +
-      '<div class="grid2">' + fld('Aula / Zona', 'aula', e.aula || '', { req: 1, list: 'dl-aulas', ph: 'Aula 101' }) + fld('Edificio o planta', 'edificio', e.edificio || '', { ph: 'Edificio A' }) + '</div>' +
-      '<div class="grid2"><div class="fld"><label for="x-marca">Marca <span class="req">*</span></label><select id="x-marca" name="marca">' + marcasOptionsHtml + '</select><p class="err" data-err="marca" hidden></p></div>' + fld('Modelo', 'modelo', e.modelo || '') + '</div>' +
-      '<div class="grid2">' + fld('Número de serie', 'serie', e.serie || '') + sel('Tipo de equipo', 'tipo', tipoVal, tipos) + '</div>' +
-      '<div class="grid2"><div class="fld"><label for="x-capacidad">Capacidad (Toneladas / BTU)</label><select id="x-capacidad" name="capacidad">' + capOptionsHtml + '</select><p class="err" data-err="capacidad" hidden></p></div>' +
-      fld('Refrigerante', 'refrigerante', e.refrigerante || '', { list: 'dl-ref', ph: 'R-410A' }) + '</div>' +
-      fld('Fecha de instalación', 'instalacion', e.instalacion || '', { type: 'date' }) +
-      fld('Notas y observaciones', 'notas', e.notas || '', { area: 1, ph: 'Ubicación exacta, accesos, requerimientos especiales' }) +
-      dlist('dl-aulas', aulas()) + dlist('dl-ref', ['R-410A', 'R-32', 'R-22', 'R-134a', 'R-290', 'R-407C']) +
-      '<div class="form-acts"><button type="submit" class="btn primary">Guardar equipo</button><button type="button" class="btn" data-action="cancel-form">Cancelar</button></div></form>';
-  }
-
-  function formSv(s, eqId) {
-    var fecha = s ? s.fecha : todayIso();
-    var tipo = s ? s.tipo : 'Preventivo';
-    var prox = s ? (s.proximo || '') : addMonths(fecha, 2);
-    var cur = s ? s.equipoId : (eqId || '');
-    var eqs = S.equipos.slice().sort(function (a, b) { return natural(a.aula, b.aula) || natural(a.nombre, b.nombre); });
-    var opts = [['', 'Selecciona un equipo']].concat(eqs.map(function (e) { return [e.id, e.nombre + ' · ' + (e.aula || 'Sin aula')]; }));
-    var tecs = Array.from(new Set(S.servicios.map(function (x) { return x.tecnico; }).filter(Boolean))).sort(natural);
-    var eq0 = S.equipos.find(function (e) { return e.id === cur; });
-    return '<div class="sheet-h"><h2>' + (s ? 'Editar servicio' : 'Nuevo servicio') + '</h2>' + closeBtn() + '</div>' +
-      '<form class="form" id="form-sv" novalidate>' +
-      sel('Equipo', 'equipoId', cur, opts, { req: 1 }) + '<p class="hint" id="x-aula-hint">' + (eq0 ? 'Aula: ' + esc(eq0.aula || 'sin aula') : '') + '</p>' +
-      '<div class="grid2">' + fld('Fecha de intervención', 'fecha', fecha, { type: 'date', req: 1 }) + sel('Tipo de servicio', 'tipo', tipo, TIPOS, { req: 1 }) + '</div>' +
-      '<div class="grid2">' + sel('Estado', 'estado', s ? (s.estado || 'Completado') : 'Completado', ['Completado', 'Pendiente']) + fld('Folio u orden', 'folio', s ? s.folio || '' : '') + '</div>' +
-      fld('Trabajo realizado', 'trabajo', s ? s.trabajo || '' : '', { area: 1, ph: 'Limpieza de serpentines, presiones, lavado de filtros' }) +
-      fld('Refacciones o materiales', 'refacciones', s ? s.refacciones || '' : '', { ph: 'Capacitor 35 µF, gas R-410A' }) +
-      '<div class="grid2">' + fld('Técnico responsable', 'tecnico', s ? s.tecnico || '' : '', { list: 'dl-tec' }) + fld('Costo (MXN)', 'costo', s && s.costo != null ? s.costo : '', { type: 'number', step: '0.01', min: 0 }) + '</div>' +
-      '<div class="fld"><label for="x-proximo">Próximo servicio (Estimado a 2 meses)</label><input id="x-proximo" name="proximo" type="date" value="' + esc(prox) + '" data-touched="' + (s ? 1 : 0) + '"><p class="hint">Calculado a 2 meses automáticamente para preventivos. Puedes ajustarlo.</p></div>' +
-      dlist('dl-tec', tecs) +
-      '<div class="form-acts"><button type="submit" class="btn primary">Guardar servicio</button><button type="button" class="btn" data-action="cancel-form">Cancelar</button></div></form>';
-  }
-
-  function formBulkSv() {
-    var ids = selectedIds();
-    var fecha = todayIso();
-    var prox = addMonths(fecha, 2);
-    var tecs = Array.from(new Set(S.servicios.map(function (x) { return x.tecnico; }).filter(Boolean))).sort(natural);
-    var eqNames = ids.map(function (id) {
-      var e = S.equipos.find(function (x) { return x.id === id; });
-      return e ? e.nombre + ' (' + (e.aula || 'Sin aula') + ')' : '';
-    }).filter(Boolean);
-
-    return '<div class="sheet-h"><h2>Servicio Masivo (' + ids.length + ')</h2>' + closeBtn() + '</div>' +
-      '<div class="notes" style="margin-bottom:16px;border-color:var(--accent);">' +
-        '<strong style="color:var(--accent);display:block;margin-bottom:4px;">Se aplicará automáticamente a ' + plural(ids.length, 'equipo seleccionado', 'equipos seleccionados') + ':</strong>' +
-        '<span style="font-size:12px;">' + esc(eqNames.slice(0, 8).join(', ')) + (eqNames.length > 8 ? ' y ' + (eqNames.length - 8) + ' más…' : '') + '</span>' +
-      '</div>' +
-      '<form class="form" id="form-bulk-sv" novalidate>' +
-      '<div class="grid2">' + fld('Fecha de inicio de servicio', 'fecha', fecha, { type: 'date', req: 1, first: 1 }) + sel('Tipo de servicio', 'tipo', 'Preventivo', TIPOS, { req: 1 }) + '</div>' +
-      '<div class="grid2">' + sel('Estado', 'estado', 'Completado', ['Completado', 'Pendiente']) + fld('Folio u orden general', 'folio', '') + '</div>' +
-      fld('Trabajo realizado (se copiará a los seleccionados)', 'trabajo', 'Mantenimiento preventivo general, limpieza de filtros y serpentines', { area: 1, ph: 'Limpieza de serpentines, presiones, lavado de filtros' }) +
-      fld('Refacciones o materiales', 'refacciones', '', { ph: 'Opcional' }) +
-      '<div class="grid2">' + fld('Técnico responsable', 'tecnico', '', { list: 'dl-tec' }) + fld('Costo por equipo (MXN)', 'costo', '', { type: 'number', step: '0.01', min: 0 }) + '</div>' +
-      '<div class="fld"><label for="x-proximo">Próximo servicio (Estimado a 2 meses)</label><input id="x-proximo" name="proximo" type="date" value="' + esc(prox) + '" data-touched="0"><p class="hint">Calculado a 2 meses automáticamente a partir de la fecha de inicio.</p></div>' +
-      dlist('dl-tec', tecs) +
-      '<div class="form-acts"><button type="submit" class="btn primary">Aplicar a ' + plural(ids.length, 'equipo', 'equipos') + '</button><button type="button" class="btn" data-action="close-sheet">Cancelar</button></div></form>';
-  }
-
-  function showErrors(f, errs) {
-    f.querySelectorAll('[data-err]').forEach(function (p) { p.hidden = true; var c = f.elements[p.dataset.err]; if (c) c.removeAttribute('aria-invalid'); });
-    var first = null;
-    Object.keys(errs).forEach(function (k) { var p = f.querySelector('[data-err="' + k + '"]'), c = f.elements[k]; if (p) { p.textContent = errs[k]; p.hidden = false; } if (c) { c.setAttribute('aria-invalid', 'true'); first = first || c; } });
-    if (first) first.focus();
-  }
-
-  async function saveEq(f) {
-    var fd = new FormData(f), v = function (k) { return String(fd.get(k) || '').trim(); }, errs = {};
-    if (!v('nombre')) errs.nombre = 'Escribe el nombre del equipo.';
-    if (!v('aula')) errs.aula = 'Indica en qué aula está.';
-    if (!v('marca')) errs.marca = 'Selecciona una marca.';
-    if (Object.keys(errs).length) return showErrors(f, errs);
-    var old = S.sheet.id ? S.equipos.find(function (x) { return x.id === S.sheet.id; }) : null;
-    var obj = { id: old ? old.id : uid('e'), nombre: v('nombre'), aula: v('aula'), edificio: v('edificio'), marca: v('marca'), modelo: v('modelo'), serie: v('serie'), tipo: v('tipo'), capacidad: v('capacidad'), refrigerante: v('refrigerante'), instalacion: v('instalacion'), notas: v('notas'), actualizado: new Date().toISOString() };
-    var btn = f.querySelector('[type=submit]'); btn.disabled = true;
-    try { await put('equipos', obj); toast('Equipo guardado correctamente'); openSheet({ type: 'eq', id: obj.id }); }
-    catch (err) { btn.disabled = false; toast(failMsg(err)); }
-  }
-
-  async function saveSv(f) {
-    var fd = new FormData(f), v = function (k) { return String(fd.get(k) || '').trim(); }, errs = {};
-    if (!v('equipoId')) errs.equipoId = 'Selecciona el equipo.';
-    if (!v('fecha')) errs.fecha = 'Indica la fecha.';
-    if (Object.keys(errs).length) return showErrors(f, errs);
-    var eq = S.equipos.find(function (x) { return x.id === v('equipoId'); });
-    var old = S.sheet.id ? S.servicios.find(function (x) { return x.id === S.sheet.id; }) : null;
-    var costo = v('costo'), n = costo === '' ? null : Number(costo);
-    var obj = { id: old ? old.id : uid('s'), equipoId: v('equipoId'), aula: eq ? eq.aula : (old ? old.aula : ''), fecha: v('fecha'), tipo: v('tipo'), estado: v('estado') || 'Completado', trabajo: v('trabajo'), refacciones: v('refacciones'), tecnico: v('tecnico'), costo: (n == null || isNaN(n)) ? null : n, proximo: v('proximo'), folio: v('folio'), actualizado: new Date().toISOString() };
-    var btn = f.querySelector('[type=submit]'); btn.disabled = true;
-    try { await put('servicios', obj); toast('Servicio guardado correctamente'); openSheet({ type: 'eq', id: obj.equipoId }); }
-    catch (err) { btn.disabled = false; toast(failMsg(err)); }
-  }
-
-  async function saveBulkSv(f) {
-    var ids = selectedIds();
-    if (!ids.length) { toast('No hay equipos seleccionados.'); return; }
-    var fd = new FormData(f), v = function (k) { return String(fd.get(k) || '').trim(); }, errs = {};
-    if (!v('fecha')) errs.fecha = 'Indica la fecha de inicio.';
-    if (Object.keys(errs).length) return showErrors(f, errs);
-
-    var costo = v('costo'), n = costo === '' ? null : Number(costo);
-    var btn = f.querySelector('[type=submit]');
-    btn.disabled = true;
-    btn.textContent = 'Guardando ' + ids.length + ' servicios…';
-
+  async function cargarDatosGlobales() {
+    var container = document.getElementById('content-list-container');
+    container.innerHTML = '<div class="empty-state">Actualizando información...</div>';
     try {
-      for (var i = 0; i < ids.length; i++) {
-        var eq = S.equipos.find(function (x) { return x.id === ids[i]; });
-        var obj = {
-          id: uid('s') + i,
-          equipoId: ids[i],
-          aula: eq ? eq.aula : '',
-          fecha: v('fecha'),
-          tipo: v('tipo') || 'Preventivo',
-          estado: v('estado') || 'Completado',
-          trabajo: v('trabajo'),
-          refacciones: v('refacciones'),
-          tecnico: v('tecnico'),
-          costo: (n == null || isNaN(n)) ? null : n,
-          proximo: v('proximo'),
-          folio: v('folio'),
-          actualizado: new Date().toISOString()
-        };
-        await put('servicios', obj, true);
+      if (vistaActual === 'equipos') {
+        var snap = await db.collection('equipos').get();
+        document.getElementById('count-equipos').textContent = snap.size;
+        if (snap.empty) {
+          container.innerHTML = '<div class="empty-state">No hay equipos registrados en el sistema.</div>';
+          return;
+        }
+        var html = '';
+        snap.forEach(doc => {
+          var eq = doc.data();
+          html += '<div class="card-item">' +
+                    '<div class="card-header">' +
+                      '<div class="card-title">🏷️ ' + (eq.aula || 'Aula sin nombre') + '</div>' +
+                      '<span class="badge badge-good">Operativo</span>' +
+                    '</div>' +
+                    '<div class="card-body">' +
+                      '<b>Equipo:</b> ' + (eq.marca || 'Marca') + ' · ' + (eq.toneladas || '1.5') + ' Ton<br>' +
+                      '<b>Serie:</b> ' + (eq.serie || 'N/D') +
+                    '</div>' +
+                  '</div>';
+        });
+        container.innerHTML = html;
+      } else {
+        var snap = await db.collection('servicios').get();
+        document.getElementById('count-servicios').textContent = snap.size;
+        if (snap.empty) {
+          container.innerHTML = '<div class="empty-state">No hay servicios registrados en el historial.</div>';
+          return;
+        }
+        var html = '';
+        snap.forEach(doc => {
+          var sv = doc.data();
+          html += '<div class="card-item">' +
+                    '<div class="card-header">' +
+                      '<div class="card-title">📋 Servicio Técnico</div>' +
+                      '<span class="badge badge-good">Completado</span>' +
+                    '</div>' +
+                    '<div class="card-body">' +
+                      '<b>Descripción:</b> ' + (sv.descripcion || 'Mantenimiento preventivo') + '<br>' +
+                      '<b>Fecha:</b> ' + (sv.fecha ? new Date(sv.fecha).toLocaleDateString() : 'N/D') +
+                    '</div>' +
+                  '</div>';
+        });
+        container.innerHTML = html;
       }
-      await registrarAuditoria('aplicó servicio masivo (' + (v('tipo') || 'Preventivo') + ') a', ids.length + ' equipos con fecha ' + v('fecha'));
-      S.selected = {};
-      S.selectMode = false;
-      closeSheet();
-      render();
-      toast('Servicio registrado en ' + ids.length + ' equipos');
     } catch (err) {
-      btn.disabled = false;
-      btn.textContent = 'Aplicar a ' + plural(ids.length, 'equipo', 'equipos');
-      toast(failMsg(err));
+      container.innerHTML = '<div class="empty-state" style="color:var(--bad);">Error al sincronizar con Firestore.</div>';
     }
   }
 
-  async function delEq(id) {
-    S.busy = true; renderSheet(true);
-    try {
-      var ss = svOf(id); for (var i = 0; i < ss.length; i++) await del('servicios', ss[i].id);
-      await del('equipos', id); S.busy = false; closeSheet(); toast('Equipo eliminado');
-    } catch (err) { S.busy = false; renderSheet(true); toast(failMsg(err)); }
-  }
-  async function delSv(id) {
-    S.busy = true; renderSheet(true);
-    try { await del('servicios', id); S.busy = false; S.confirm = null; renderSheet(true); toast('Servicio eliminado'); }
-    catch (err) { S.busy = false; renderSheet(true); toast(failMsg(err)); }
-  }
-
-  async function seed() {
-    if (S.busy) return; S.busy = true; render();
-    var E = [
-      ['Minisplit Aula 101', 'Aula 101', 'Edificio A', 'Carrier', '42QHC018', 'CR2201845', 'Minisplit', '1.5 Toneladas (18,000 BTU)', 'R-410A', '2022-03-14'],
-      ['Minisplit Aula 102', 'Aula 102', 'Edificio A', 'Mirage', 'Magnum 24', 'MG2307712', 'Minisplit', '2.0 Toneladas (24,000 BTU)', 'R-410A', '2023-01-20'],
-      ['Cassette Biblioteca', 'Biblioteca', 'Edificio B', 'LG', 'ATNQ48GPLA2', 'LG1904425', 'Cassette', '4.0 Toneladas (48,000 BTU)', 'R-410A', '2019-08-05']
-    ];
-    var ids = E.map(function () { return uid('e'); });
-    try {
-      for (var i = 0; i < E.length; i++) {
-        var x = E[i];
-        await put('equipos', { id: ids[i], nombre: x[0], aula: x[1], edificio: x[2], marca: x[3], modelo: x[4], serie: x[5], tipo: x[6], capacidad: x[7], refrigerante: x[8], instalacion: x[9], notas: '', ejemplo: true, actualizado: new Date().toISOString() });
-        await put('servicios', { id: uid('s'), equipoId: ids[i], aula: x[1], fecha: todayIso(), tipo: 'Preventivo', estado: 'Completado', trabajo: 'Limpieza general y revisión de presiones', refacciones: '', tecnico: 'Personal Técnico', costo: 650, proximo: addMonths(todayIso(), 2), folio: 'DEMO', ejemplo: true, actualizado: new Date().toISOString() });
-      }
-      toast('Datos demo cargados');
-    } catch (err) { toast(failMsg(err)); }
-    S.busy = false; render();
-  }
-  async function unseed() {
-    if (S.busy) return; S.busy = true; render();
-    try {
-      var ss = S.servicios.filter(function (s) { return s.ejemplo; }), ee = S.equipos.filter(function (e) { return e.ejemplo; });
-      for (var i = 0; i < ss.length; i++) await del('servicios', ss[i].id);
-      for (var j = 0; j < ee.length; j++) {
-        var rest = svOf(ee[j].id); for (var k = 0; k < rest.length; k++) await del('servicios', rest[k].id);
-        await del('equipos', ee[j].id);
-      }
-      toast('Datos demo removidos');
-    } catch (err) { toast(failMsg(err)); }
-    S.busy = false; render();
-  }
-
-  var csv = function (rows) { return rows.map(function (r) { return r.map(function (c) { c = c == null ? '' : String(c); return /[",\n\r]/.test(c) ? '"' + c.replace(/"/g, '""') + '"' : c; }).join(','); }).join('\r\n'); };
-  function exportCsv() {
-    var rows, name;
-    if (S.view === 'servicios') {
-      rows = [['Fecha', 'Equipo', 'Aula', 'Edificio', 'Marca', 'Modelo', 'Serie', 'Tipo', 'Estado', 'Trabajo', 'Refacciones', 'Técnico', 'Costo', 'Próximo', 'Folio']];
-      svList().forEach(function (x) { var s = x.s, e = x.e || {}; rows.push([s.fecha, e.nombre || '', s.aula || e.aula || '', e.edificio || '', e.marca || '', e.modelo || '', e.serie || '', s.tipo, s.estado, s.trabajo, s.refacciones, s.tecnico, s.costo, s.proximo, s.folio]); });
-      name = 'servicios-' + todayIso() + '.csv';
-    } else {
-      rows = [['Equipo', 'Aula', 'Edificio', 'Marca', 'Modelo', 'Serie', 'Tipo', 'Capacidad', 'Refrigerante', 'Instalación', 'Estado', 'Último servicio', 'Próximo servicio']];
-      eqList().filter(function (it) { return S.estado === 'todos' || it.st.k === S.estado; }).forEach(function (it) { var e = it.e; rows.push([e.nombre, e.aula, e.edificio, e.marca, e.modelo, e.serie, e.tipo, e.capacidad, e.refrigerante, e.instalacion, it.st.label, it.st.last ? it.st.last.fecha : '', it.st.next || '']); });
-      name = 'equipos-' + todayIso() + '.csv';
-    }
-    var blob = new Blob(['﻿' + csv(rows)], { type: 'text/csv;charset=utf-8;' });
-    var link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = name;
-    link.style.display = 'none'; document.body.appendChild(link); link.click(); document.body.removeChild(link);
-  }
-
-  function clearAll() { S.q = ''; S.aula = ''; S.estado = 'todos'; S.tipo = 'todos'; S.desde = ''; S.hasta = ''; $('#q').value = ''; }
-  function openSvForm(eqId) {
-    if (!S.equipos.length) { toast('Registra un equipo primero.'); openSheet({ type: 'eq-form' }); return; }
-    openSheet({ type: 'sv-form', eqId: eqId || '' });
-  }
-
-  document.addEventListener('click', function (ev) {
-    var el = ev.target.closest('[data-action]'); if (!el) return;
-    var a = el.dataset.action;
-    if (a === 'overlay') { if (ev.target === el) closeSheet(); return; }
-    switch (a) {
-      case 'tab': S.view = el.dataset.v; render(); break;
-      case 'new-eq': openSheet({ type: 'eq-form' }); break;
-      case 'new-sv': openSvForm(el.dataset.eq); break;
-      case 'open-eq': openSheet({ type: 'eq', id: el.dataset.id }); break;
-      case 'edit-eq': openSheet({ type: 'eq-form', id: el.dataset.id }); break;
-      case 'edit-sv': { var s = S.servicios.find(function (x) { return x.id === el.dataset.id; }); if (s) openSheet({ type: 'sv-form', id: s.id, eqId: s.equipoId }); break; }
-      case 'close-sheet': closeSheet(); break;
-      case 'cancel-form': { var sh = S.sheet, back = sh && (sh.type === 'sv-form' ? sh.eqId : sh.id); if (back && S.equipos.some(function (e) { return e.id === back; })) openSheet({ type: 'eq', id: back }); else closeSheet(); break; }
-      case 'quick-del-eq': openSheet({ type: 'eq', id: el.dataset.id }); S.confirm = { kind: 'eq' }; renderSheet(true); break;
-      case 'del-eq-ask': S.confirm = { kind: 'eq' }; renderSheet(true); break;
-      case 'del-eq-yes': delEq(S.sheet.id); break;
-      case 'del-sv-ask': S.confirm = { kind: 'sv', id: el.dataset.id }; renderSheet(true); break;
-      case 'del-sv-yes': delSv(el.dataset.id); break;
-      case 'cancel-confirm': S.confirm = null; renderSheet(true); break;
-      case 'chip-estado': S.estado = el.dataset.v; render(); break;
-      case 'chip-tipo': S.tipo = el.dataset.v; render(); break;
-      case 'clear': clearAll(); render(); break;
-      case 'seed': seed(); break;
-      case 'unseed': unseed(); break;
-      case 'export': exportCsv(); break;
-      case 'open-audit': openSheet({ type: 'audit' }); break;
-      case 'logout': firebase.auth().signOut().then(function() { window.location.href = 'login.html'; }); break;
-
-      case 'toggle-select-mode':
-        S.selectMode = !S.selectMode;
-        if (!S.selectMode) S.selected = {};
-        render();
-        break;
-      case 'toggle-eq-chk':
-        ev.preventDefault();
-        var eqId = el.dataset.id;
-        if (S.selected[eqId]) delete S.selected[eqId];
-        else S.selected[eqId] = true;
-        render();
-        break;
-      case 'select-all-eq':
-        var visibleList = eqList().filter(function (it) { return S.estado === 'todos' || it.st.k === S.estado; });
-        visibleList.forEach(function (it) { S.selected[it.e.id] = true; });
-        render();
-        break;
-      case 'deselect-all-eq':
-        S.selected = {};
-        render();
-        break;
-      case 'toggle-aula-eq':
-        var aulaName = el.dataset.aula;
-        var aulaItems = eqList().filter(function (it) {
-          return (S.estado === 'todos' || it.st.k === S.estado) && norm(it.e.aula || 'Sin aula') === norm(aulaName);
-        });
-        var allMarked = aulaItems.every(function (it) { return S.selected[it.e.id]; });
-        aulaItems.forEach(function (it) {
-          if (allMarked) delete S.selected[it.e.id];
-          else S.selected[it.e.id] = true;
-        });
-        render();
-        break;
-      case 'open-bulk-sv':
-        if (!selectedIds().length) { toast('Selecciona al menos un equipo.'); break; }
-        openSheet({ type: 'bulk-sv-form' });
-        break;
-    }
-  });
-
-  function onSearch(ev) { S.q = ev.target.value; renderBand(); renderMain(); }
-  $('#q').addEventListener('input', onSearch);
-  $('#q').addEventListener('search', onSearch);
-
-  document.addEventListener('change', function (ev) {
-    var t = ev.target;
-    if (t.id === 'f-aula') { S.aula = t.value; render(); }
-    else if (t.id === 'f-desde') { S.desde = t.value; render(); }
-    else if (t.id === 'f-hasta') { S.hasta = t.value; render(); }
-    else if (t.id === 'x-equipoId') { var e = S.equipos.find(function (x) { return x.id === t.value; }); $('#x-aula-hint').textContent = e ? 'Aula: ' + (e.aula || 'sin aula') : ''; }
-    
-    // --- MANEJO DE ESCANEO DE PLACA CON IA ---
-    else if (t.id === 'scan-plate-input' && t.files && t.files[0]) {
-      var file = t.files[0];
-      var statusEl = $('#scan-status');
-      if (statusEl) { statusEl.hidden = false; }
-
-      Tesseract.recognize(file, 'eng', {
-        logger: function(m) { /* console.log(m); */ }
-      }).then(function(result) {
-        var text = result.data.text || '';
-        var upperText = text.toUpperCase();
-
-        // 1. Detectar Marca
-        var marcas = ['CARRIER', 'MIRAGE', 'LG', 'YORK', 'TRANE', 'MIDEA', 'DAIKIN', 'SAMSUNG', 'PANASONIC', 'MITSUBISHI', 'HISENSE', 'GREE', 'WHIRLPOOL', 'ELECTROLUX'];
-        for (var i = 0; i < marcas.length; i++) {
-          if (upperText.indexOf(marcas[i]) > -1) {
-            var foundM = marcas[i].charAt(0) + marcas[i].slice(1).toLowerCase();
-            var selM = $('#x-marca');
-            if (selM) selM.value = foundM;
-            break;
-          }
-        }
-
-        // 2. Detectar Refrigerante
-        var refrigerantes = ['R-410A', 'R410A', 'R-32', 'R32', 'R-22', 'R22', 'R-134A', 'R134A'];
-        for (var j = 0; j < refrigerantes.length; j++) {
-          if (upperText.indexOf(refrigerantes[j]) > -1) {
-            var foundR = refrigerantes[j].replace('410', '-410').replace('32', '-32').replace('22', '-22').replace('134', '-134a');
-            if (foundR.indexOf('R-') !== 0) foundR = 'R-' + foundR;
-            var inpR = $('#x-refrigerante');
-            if (inpR) inpR.value = foundR;
-            break;
-          }
-        }
-
-        // 3. Extraer líneas para Modelo y Serie
-        var lines = text.split('\n').map(function(l){ return l.trim(); }).filter(Boolean);
-        for (var k = 0; k < lines.length; k++) {
-          var line = lines[k];
-          var upLine = line.toUpperCase();
-          if (upLine.indexOf('S/N') > -1 || upLine.indexOf('SERIE') > -1 || upLine.indexOf('SERIAL') > -1) {
-            var parts = line.split(/[:#]/);
-            if (parts[1] && parts[1].trim().length > 3) {
-              var inpS = $('#x-serie');
-              if (inpS) inpS.value = parts[1].trim();
-            }
-          }
-          if (upLine.indexOf('MODEL') > -1 || upLine.indexOf('MOD.') > -1) {
-            var partsM = line.split(/[:#]/);
-            if (partsM[1] && partsM[1].trim().length > 2) {
-              var inpMod = $('#x-modelo');
-              if (inpMod) inpMod.value = partsM[1].trim();
-            }
-          }
-        }
-
-        if (statusEl) { statusEl.hidden = true; }
-        toast('¡Placa escaneada con éxito!');
-      }).catch(function(err) {
-        console.error(err);
-        if (statusEl) { statusEl.hidden = true; }
-        toast('No se pudo leer la placa claramente. Intenta de nuevo.');
-      });
-    }
-  });
-
-  document.addEventListener('input', function (ev) {
-    var t = ev.target;
-    if (t.id === 'x-proximo') { t.dataset.touched = '1'; return; }
-    if (t.id === 'x-fecha' || t.id === 'x-tipo') {
-      var p = $('#x-proximo'); if (!p || p.dataset.touched === '1') return;
-      p.value = $('#x-tipo').value === 'Preventivo' ? addMonths($('#x-fecha').value, 2) : '';
-    }
-  });
-
-  document.addEventListener('submit', function (ev) {
-    ev.preventDefault();
-    if (ev.target.id === 'form-eq') saveEq(ev.target);
-    else if (ev.target.id === 'form-sv') saveSv(ev.target);
-    else if (ev.target.id === 'form-bulk-sv') saveBulkSv(ev.target);
-  });
-  document.addEventListener('keydown', function (ev) { if (ev.key === 'Escape' && S.sheet) closeSheet(); });
-
-  function init() {
-    var firebaseConfig = {
-      apiKey: "AIzaSyA_JufV6ZSCICVuUrVZEJropD1VKA2bzQs",
-      authDomain: "mantenimientocetis116.firebaseapp.com",
-      databaseURL: "https://mantenimientocetis116-default-rtdb.firebaseio.com",
-      projectId: "mantenimientocetis116",
-      storageBucket: "mantenimientocetis116.firebasestorage.app",
-      messagingSenderId: "556796465966",
-      appId: "1:556796465966:web:b0636bf4ee5ba99c21a0bf"
-    };
-
-    firebase.initializeApp(firebaseConfig);
-    DB = firebase.firestore();
-
-    // Habilitar persistencia offline en Firestore para trabajo sin conexión
-    DB.enablePersistence({ synchronizeTabs: true }).catch(function(err) {
-      if (err.code == 'failed-precondition') {
-        console.log('[OFFLINE] Múltiples pestañas abiertas, la persistencia solo funciona en una.');
-      } else if (err.code == 'unimplemented') {
-        console.log('[OFFLINE] El navegador no soporta persistencia offline.');
-      }
-    });
-
-    firebase.auth().onAuthStateChanged(function(user) {
-      if (!user) {
-        window.location.href = 'login.html';
-        return;
-      }
-      currentUser = user;
-      S.backend = 'db';
-
-      var nombreUsuario = obtenerNombreUsuario(user);
-      console.log('[SISTEMA] Sesión iniciada correctamente por: ' + nombreUsuario);
-
-      // VALIDACIÓN EXCLUSIVA PARA MOSTRAR EL BOTÓN DE ADMINISTRADOR
-      if (user.email === 'josefranciisco17@gmail.com') {
-        var btnAdmin = document.getElementById('btn-admin-panel');
-        if (btnAdmin) {
-          btnAdmin.style.display = 'inline-flex';
-        }
-      }
-
-      var sub = function (col, flag) {
-        DB.collection(col).onSnapshot({ includeMetadataChanges: true }, function (snap) {
-          S[col] = snap.docs.map(function (d) { return Object.assign({}, d.data(), { id: d.id }); });
-          
-          try {
-            localStorage.setItem('clima_' + col + '_cache', JSON.stringify(S[col]));
-          } catch(e) {}
-
-          S[flag] = true; S.ready = S.rE && S.rS; render();
-        }, function (err) { 
-          try {
-            var cached = localStorage.getItem('clima_' + col + '_cache');
-            if (cached) {
-              S[col] = JSON.parse(cached);
-              console.log('[OFFLINE] Cargando ' + col + ' desde caché local de respaldo.');
-            }
-          } catch(e) {}
-          S.error = 'Trabajando sin conexión (Modo Offline). Mostrando datos locales.'; 
-          S.ready = true; render(); 
-        });
-      };
-
-      DB.collection('auditoria').orderBy('fecha', 'desc').limit(50).onSnapshot(function(snap) {
-        S.auditoria = snap.docs.map(function(d){ return d.data(); });
-        if (S.sheet && S.sheet.type === 'audit') renderSheet(false);
-      }, function(err){});
-
-      sub('equipos', 'rE');
-      sub('servicios', 'rS');
-      render();
-    });
-  }
-  init();
-})();
-</script>
-
-<script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', function() {
-      navigator.serviceWorker.register('./sw.js').catch(function(err) {
-        console.log('ServiceWorker error:', err);
-      });
-    });
+  function filtrarDatos() {
+    // Función de filtrado local por texto de búsqueda
   }
 </script>
 
