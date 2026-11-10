@@ -59,6 +59,7 @@
     }
     .btn-primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
     .btn-secondary { background: var(--surface-2); color: var(--ink); }
+    .btn-danger { background: rgba(239, 68, 68, 0.2); color: #f87171; border-color: rgba(239, 68, 68, 0.4); }
     .btn:hover { opacity: 0.9; transform: translateY(-1px); }
 
     .card {
@@ -70,7 +71,7 @@
       backdrop-filter: blur(10px);
       box-shadow: 0 4px 16px rgba(0,0,0,0.2);
     }
-    .card h2 { font-family: 'Barlow Condensed', sans-serif; font-size: 20px; color: #fff; margin-top: 0; margin-bottom: 16px; text-transform: uppercase; border-bottom: 1px solid var(--line); padding-bottom: 8px; }
+    .card h2 { font-family: 'Barlow Condensed', sans-serif; font-size: 20px; color: #fff; margin-top: 0; margin-bottom: 16px; text-transform: uppercase; border-bottom: 1px solid var(--line); padding-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
 
     .form-group { margin-bottom: 14px; }
     label { display: block; font-size: 11px; font-weight: 700; color: var(--ink-2); text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.5px; }
@@ -87,10 +88,14 @@
     }
     input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); }
 
-    .table-container { width: 100%; overflow-x: auto; margin-top: 10px; }
-    table { width: 100%; border-collapse: collapse; font-size: 13px; }
-    th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--line); }
-    th { color: var(--accent); font-weight: 700; text-transform: uppercase; font-size: 11px; }
+    /* Estilos para la tabla editable de conceptos */
+    .concept-row { display: grid; grid-template-columns: 70px 1fr 40px; gap: 8px; margin-bottom: 10px; align-items: center; }
+    @media print {
+      body { background: #fff; color: #000; padding: 0; }
+      .card, .header-card { background: #fff; border: 1px solid #ccc; box-shadow: none; color: #000; }
+      input, select, textarea { background: #fff; color: #000; border: 1px solid #ccc; }
+      .actions-grid, button { display: none !important; }
+    }
   </style>
 </head>
 <body>
@@ -112,73 +117,99 @@
     
     <div class="form-group">
       <label>Folio</label>
-      <input type="text" value="CH-2026-089" readonly>
+      <input type="text" id="fac-folio" value="CH-2026-089">
     </div>
 
     <div class="form-group">
       <label>Fecha</label>
-      <input type="text" value="10/11/2026" readonly>
+      <input type="text" id="fac-fecha" value="10/11/2026">
     </div>
 
     <div class="form-group">
       <label>Cliente</label>
-      <input type="text" value="CETis 116 Antonia Nava de Catalán" readonly>
+      <input type="text" id="fac-cliente" value="CETis 116 Antonia Nava de Catalán">
     </div>
 
     <div class="form-group">
       <label>Ubicación / Ciudad</label>
-      <input type="text" value="Acapulco, Guerrero" readonly>
+      <input type="text" id="fac-ubicacion" value="Acapulco, Guerrero">
     </div>
 
     <div class="form-group">
       <label>Método de Pago</label>
-      <input type="text" value="Transferencia / Efectivo" readonly>
+      <select id="fac-metodo">
+        <option value="Transferencia / Efectivo" selected>Transferencia / Efectivo</option>
+        <option value="Transferencia Bancaria">Transferencia Bancaria</option>
+        <option value="Efectivo">Efectivo</option>
+        <option value="Cheque / Orden de Pago">Cheque / Orden de Pago</option>
+      </select>
     </div>
 
     <div class="form-group">
       <label>Aplicar I.V.A. (16%)</label>
-      <input type="text" value="Sí (16% IVA)" readonly>
+      <select id="fac-iva">
+        <option value="si" selected>Sí (16% IVA)</option>
+        <option value="no">No (Sin IVA)</option>
+      </select>
     </div>
 
     <div class="form-group">
       <label>Resumen Técnico General</label>
-      <textarea rows="3" readonly>Reparación de tubería condensadora, instalación, limpieza profunda biblioteca y áreas administrativas, y carga de gas refrigerante.</textarea>
+      <textarea id="fac-resumen" rows="3">Reparación de tubería condensadora, instalación, limpieza profunda biblioteca y áreas administrativas, y carga de gas refrigerante.</textarea>
     </div>
   </div>
 
   <div class="card">
-    <h2>2. Conceptos</h2>
-    <div class="table-container">
-      <table>
-        <thead>
-          <tr>
-            <th style="width: 50px;">Cant</th>
-            <th>Descripción</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>1</td>
-            <td>Reparación de tubería condensadora</td>
-          </tr>
-          <tr>
-            <td>1</td>
-            <td>Instalación de aire acondicionado - Ubicación: Aula 19</td>
-          </tr>
-          <tr>
-            <td>4</td>
-            <td>Limpieza profunda de aires acondicionados - Ubicación: Biblioteca Escolar</td>
-          </tr>
-          <tr>
-            <td>3</td>
-            <td>Limpieza de aires acondicionados - Ubicación: Áreas de Planeación, Titulación y Financieros</td>
-          </tr>
-        </tbody>
-      </table>
+    <h2>
+      2. Conceptos
+      <button type="button" class="btn btn-primary" style="padding: 6px 12px; font-size: 11px;" onclick="agregarConcepto()">+ Añadir Concepto</button>
+    </h2>
+    
+    <div id="conceptos-container">
+      <!-- Los conceptos se cargan dinámicamente aquí -->
     </div>
   </div>
 
 </div>
+
+<script>
+  var conceptosIniciales = [
+    { cant: 1, desc: "Reparación de tubería condensadora" },
+    { cant: 1, desc: "Instalación de aire acondicionado - Ubicación: Aula 19" },
+    { cant: 4, desc: "Limpieza profunda de aires acondicionados - Ubicación: Biblioteca Escolar" },
+    { cant: 3, desc: "Limpieza de aires acondicionados - Ubicación: Áreas de Planeación, Titulación y Financieros" }
+  ];
+
+  function renderizarConceptos() {
+    var container = document.getElementById('conceptos-container');
+    var html = '';
+    conceptosIniciales.forEach(function(item, index) {
+      html += '<div class="concept-row">' +
+                '<input type="number" value="' + item.cant + '" onchange="actualizarConcepto(' + index + ', \'cant\', this.value)" placeholder="Cant">' +
+                '<input type="text" value="' + item.desc + '" onchange="actualizarConcepto(' + index + ', \'desc\', this.value)" placeholder="Descripción">' +
+                '<button type="button" class="btn btn-danger" style="padding: 10px; height: 100%;" onclick="eliminarConcepto(' + index + ')">✕</button>' +
+              '</div>';
+    });
+    container.innerHTML = html;
+  }
+
+  window.agregarConcepto = function() {
+    conceptosIniciales.push({ cant: 1, desc: "Nuevo concepto de servicio" });
+    renderizarConceptos();
+  };
+
+  window.eliminarConcepto = function(index) {
+    conceptosIniciales.splice(index, 1);
+    renderizarConceptos();
+  };
+
+  window.actualizarConcepto = function(index, campo, valor) {
+    conceptosIniciales[index][campo] = valor;
+  };
+
+  // Inicializar al cargar
+  renderizarConceptos();
+</script>
 
 </body>
 </html>
