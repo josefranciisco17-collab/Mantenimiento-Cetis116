@@ -6,58 +6,174 @@
   <title>Acceso · Clima Hogar</title>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap">
   <style>
-    :root { --bg: #030712; --surface: #0f172a; --surface-2: #1e293b; --ink: #f8fafc; --ink-2: #94a3b8; --line: #334155; --accent: #06b6d4; --accent-ink: #082f49; --bad: #ef4444; --good: #10b981; }
-    body { margin: 0; background: var(--bg); color: var(--ink); font-family: 'Plus Jakarta Sans', sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 16px; box-sizing: border-box; }
-    .card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 24px; width: 100%; max-width: 400px; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
-    h1 { font-family: 'Barlow Condensed', sans-serif; font-size: 28px; text-align: center; margin: 0 0 4px; color: #fff; text-transform: uppercase; }
-    .subtitle { text-align: center; font-size: 12px; color: var(--ink-2); text-transform: uppercase; margin-bottom: 20px; letter-spacing: 0.5px; }
+    :root { 
+      --bg-gradient: linear-gradient(135deg, #0284c7 0%, #0369a1 50%, #0f172a 100%); 
+      --surface: rgba(15, 23, 42, 0.75); 
+      --surface-input: rgba(30, 41, 59, 0.6);
+      --ink: #f8fafc; 
+      --ink-2: #94a3b8; 
+      --line: rgba(255, 255, 255, 0.15); 
+      --accent: #38bdf8; 
+      --accent-ink: #0f172a; 
+      --bad: #ef4444; 
+      --good: #10b981; 
+    }
+    body { 
+      margin: 0; 
+      background: var(--bg-gradient); 
+      background-attachment: fixed;
+      color: var(--ink); 
+      font-family: 'Plus Jakarta Sans', sans-serif; 
+      display: flex; 
+      justify-content: center; 
+      align-items: center; 
+      min-height: 100vh; 
+      padding: 20px; 
+      box-sizing: border-box; 
+    }
+    .container { 
+      width: 100%; 
+      max-width: 420px; 
+    }
     
-    .tabs { display: flex; background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 4px; margin-bottom: 20px; }
-    .tab { flex: 1; padding: 10px; background: transparent; border: 0; color: var(--ink-2); font-weight: 600; font-size: 13px; text-transform: uppercase; cursor: pointer; border-radius: 6px; text-align: center; }
-    .tab.active { background: var(--accent); color: var(--accent-ink); }
+    /* Indicador de pasos superior */
+    .steps-bar { display: flex; gap: 8px; margin-bottom: 24px; }
+    .step { flex: 1; height: 4px; background: rgba(255,255,255,0.2); border-radius: 2px; }
+    .step.active { background: #fff; }
 
-    .form-group { margin-bottom: 14px; }
-    label { display: block; font-size: 12px; font-weight: 600; color: var(--ink-2); text-transform: uppercase; margin-bottom: 6px; }
-    input { width: 100%; padding: 12px; background: var(--bg); border: 1px solid var(--line); border-radius: 8px; color: #fff; font-size: 15px; box-sizing: border-box; }
-    input:focus { outline: none; border-color: var(--accent); }
+    h1 { 
+      font-family: 'Barlow Condensed', sans-serif; 
+      font-size: 32px; 
+      margin: 0 0 8px; 
+      color: #fff; 
+      text-transform: uppercase; 
+      letter-spacing: 0.5px;
+    }
+    .subtitle { 
+      font-size: 14px; 
+      color: var(--ink-2); 
+      margin-bottom: 24px; 
+      line-height: 1.4;
+    }
     
-    .btn-submit { width: 100%; padding: 12px; background: var(--accent); color: var(--accent-ink); border: 0; border-radius: 8px; font-weight: 700; font-size: 14px; text-transform: uppercase; cursor: pointer; margin-top: 10px; }
+    /* Pestañas de modo */
+    .mode-switch { display: flex; gap: 10px; margin-bottom: 20px; }
+    .mode-btn { flex: 1; padding: 10px; background: var(--surface-input); border: 1px solid var(--line); border-radius: 12px; color: var(--ink-2); font-weight: 600; font-size: 13px; cursor: pointer; text-align: center; }
+    .mode-btn.active { background: #fff; color: var(--accent-ink); border-color: #fff; }
+
+    .form-group { margin-bottom: 16px; }
+    .input-box { 
+      background: var(--surface-input); 
+      border: 1px solid var(--line); 
+      border-radius: 14px; 
+      padding: 12px 16px; 
+      box-sizing: border-box; 
+      transition: border-color 0.2s;
+    }
+    .input-box:focus-within { border-color: var(--accent); }
+    
+    label { display: block; font-size: 11px; font-weight: 700; color: var(--ink-2); text-transform: uppercase; margin-bottom: 4px; letter-spacing: 0.5px; }
+    input { width: 100%; background: transparent; border: 0; color: #fff; font-size: 15px; outline: none; font-family: 'Plus Jakarta Sans', sans-serif; }
+    input::placeholder { color: rgba(255,255,255,0.3); }
+
+    .helper-text { font-size: 12px; color: var(--ink-2); margin-top: 6px; padding-left: 4px; }
+    
+    .btn-submit { 
+      width: 100%; 
+      padding: 16px; 
+      background: #fff; 
+      color: var(--accent-ink); 
+      border: 0; 
+      border-radius: 14px; 
+      font-weight: 700; 
+      font-size: 15px; 
+      cursor: pointer; 
+      margin-top: 20px; 
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      transition: opacity 0.2s;
+    }
+    .btn-submit:hover { opacity: 0.95; }
+    
+    .divider { text-align: center; margin: 20px 0; position: relative; color: var(--ink-2); font-size: 12px; text-transform: uppercase; }
+    .divider::before, .divider::after { content: ""; position: absolute; top: 50%; width: 38%; height: 1px; background: var(--line); }
+    .divider::before { left: 0; }
+    .divider::after { right: 0; }
+
+    .btn-google { 
+      width: 100%; 
+      padding: 14px; 
+      background: transparent; 
+      border: 1px solid var(--line); 
+      border-radius: 14px; 
+      color: #fff; 
+      font-weight: 600; 
+      font-size: 14px; 
+      cursor: pointer; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      gap: 10px; 
+    }
+
+    .footer-link { text-align: center; margin-top: 24px; font-size: 13px; color: var(--ink-2); }
+    .footer-link span { color: #fff; font-weight: 600; cursor: pointer; text-decoration: underline; }
+    
     .hidden { display: none; }
-    .msg { margin-top: 14px; font-size: 13px; text-align: center; }
+    .msg { margin-top: 14px; font-size: 13px; text-align: center; font-weight: 500; }
   </style>
 </head>
 <body>
 
-<div class="card">
-  <h1>Clima Hogar</h1>
-  <div class="subtitle">Control de Accesos · CETis 116</div>
+<div class="container">
+  <!-- Barra de progreso superior visual -->
+  <div class="steps-bar">
+    <div class="step active"></div>
+    <div class="step"></div>
+    <div class="step"></div>
+  </div>
 
-  <div class="tabs">
-    <button type="button" class="tab active" id="btn-login" onclick="cambiarModo('login')">Iniciar Sesión</button>
-    <button type="button" class="tab" id="btn-reg" onclick="cambiarModo('registro')">Registrarse</button>
+  <h1 id="titulo-vista">Crea tu cuenta</h1>
+  <div class="subtitle" id="sub-vista">Ingresa tu correo y crea una contraseña para acceder al sistema.</div>
+
+  <!-- Selector de modo -->
+  <div class="mode-switch">
+    <button type="button" class="mode-btn active" id="tab-reg" onclick="cambiarModo('registro')">Registrarse</button>
+    <button type="button" class="mode-btn" id="tab-login" onclick="cambiarModo('login')">Iniciar Sesión</button>
   </div>
 
   <form id="auth-form" onsubmit="manejarAccion(event)">
     <div class="form-group">
-      <label>Correo Electrónico</label>
-      <input type="email" id="email" required placeholder="correo@dominio.com">
+      <div class="input-box">
+        <label>Correo electrónico</label>
+        <input type="email" id="email" required placeholder="tucorreo@dominio.com">
+      </div>
     </div>
 
-    <!-- Campo nuevo de Teléfono / WhatsApp (Solo visible en Registro) -->
-    <div class="form-group hidden" id="group-telefono">
-      <label>Número de WhatsApp (10 dígitos)</label>
-      <input type="tel" id="telefono" placeholder="7441234567">
+    <!-- Campo Teléfono / WhatsApp (Solo para Registro) -->
+    <div class="form-group" id="group-telefono">
+      <div class="input-box">
+        <label>Número de WhatsApp</label>
+        <input type="tel" id="telefono" placeholder="10 dígitos (ej. 7441234567)">
+      </div>
+      <div class="helper-text">Necesario para coordinar accesos operativos.</div>
     </div>
 
     <div class="form-group">
-      <label>Contraseña</label>
-      <input type="password" id="password" required placeholder="Mínimo 6 caracteres">
+      <div class="input-box">
+        <label>Contraseña</label>
+        <input type="password" id="password" required placeholder="••••••••">
+      </div>
+      <div class="helper-text">Usa al menos 6 caracteres.</div>
     </div>
 
-    <button type="submit" class="btn-submit" id="submit-btn">Iniciar Sesión</button>
+    <button type="submit" class="btn-submit" id="submit-btn">Crear cuenta y continuar</button>
   </form>
 
   <div class="msg" id="msg-status"></div>
+
+  <div class="footer-link">
+    <p id="footer-text">¿Ya tienes cuenta? <span onclick="cambiarModo('login')">Inicia sesión</span></p>
+  </div>
 </div>
 
 <!-- Firebase SDKs -->
@@ -80,15 +196,20 @@
   var auth = firebase.auth();
   var db = firebase.firestore();
 
-  var modoActual = 'login';
+  var modoActual = 'registro';
 
   window.cambiarModo = function(modo) {
     modoActual = modo;
-    var esLogin = (modo === 'login');
-    document.getElementById('btn-login').classList.toggle('active', esLogin);
-    document.getElementById('btn-reg').classList.toggle('active', !esLogin);
-    document.getElementById('submit-btn').textContent = esLogin ? 'Iniciar Sesión' : 'Registrarse y Entrar';
-    document.getElementById('group-telefono').classList.toggle('hidden', esLogin);
+    var esReg = (modo === 'registro');
+    
+    document.getElementById('tab-reg').classList.toggle('active', esReg);
+    document.getElementById('tab-login').classList.toggle('active', !esReg);
+    
+    document.getElementById('titulo-vista').textContent = esReg ? 'Crea tu cuenta' : 'Iniciar Sesión';
+    document.getElementById('sub-vista').textContent = esReg ? 'Ingresa tu correo y crea una contraseña para acceder al sistema.' : 'Introduce tus credenciales para ingresar a la plataforma.';
+    document.getElementById('submit-btn').textContent = esReg ? 'Crear cuenta y continuar' : 'Entrar al Sistema';
+    document.getElementById('group-telefono').classList.toggle('hidden', !esReg);
+    document.getElementById('footer-text').innerHTML = esReg ? '¿Ya tienes cuenta? <span onclick="cambiarModo(\'login\')">Inicia sesión</span>' : '¿No tienes cuenta? <span onclick="cambiarModo(\'registro\')">Regístrate aquí</span>';
     document.getElementById('msg-status').textContent = '';
   };
 
@@ -100,7 +221,7 @@
     var statusEl = document.getElementById('msg-status');
 
     statusEl.style.color = '#fff';
-    statusEl.textContent = 'Procesando...';
+    statusEl.textContent = 'Procesando solicitud...';
 
     try {
       if (modoActual === 'login') {
@@ -111,12 +232,12 @@
           window.location.href = 'index.html';
         } else {
           auth.signOut();
-          statusEl.style.color = 'var(--bad)';
+          statusEl.style.color = '#f87171';
           statusEl.textContent = 'Tu cuenta está pendiente de aprobación por el administrador.';
         }
       } else {
         if (!telefono) {
-          statusEl.style.color = 'var(--bad)';
+          statusEl.style.color = '#f87171';
           statusEl.textContent = 'Por favor ingresa tu número de WhatsApp.';
           return;
         }
@@ -128,12 +249,12 @@
           fechaRegistro: new Date().toISOString(),
           permisos: { addService: false, editService: false, facturar: false, dictamen: false }
         });
-        statusEl.style.color = 'var(--good)';
+        statusEl.style.color = '#34d399';
         statusEl.textContent = '¡Registro exitoso! Cuenta pendiente de aprobación.';
         setTimeout(function() { cambiarModo('login'); }, 2500);
       }
     } catch (err) {
-      statusEl.style.color = 'var(--bad)';
+      statusEl.style.color = '#f87171';
       statusEl.textContent = 'Error: ' + err.message;
     }
   };
