@@ -242,11 +242,12 @@
   </div>
 </div>
 
-<!-- MODAL PARA REGISTRAR SERVICIO -->
+<!-- MODAL PARA CREAR / EDITAR SERVICIO -->
 <div class="modal-overlay" id="modal-servicio">
   <div class="modal-card">
-    <h2>Registrar Mantenimiento / Servicio</h2>
+    <h2 id="modal-servicio-titulo">Registrar Mantenimiento / Servicio</h2>
     <form id="form-nuevo-servicio" onsubmit="guardarServicio(event)">
+      <input type="hidden" id="sv-id">
       <div class="form-group">
         <label>Aula o Equipo Atendido</label>
         <input type="text" id="sv-aula" required placeholder="Ej. Aula 101">
@@ -260,7 +261,7 @@
         <input type="date" id="sv-fecha" required>
       </div>
       <div class="modal-buttons">
-        <button type="submit" class="btn btn-primary" style="flex:1;">Registrar Servicio</button>
+        <button type="submit" class="btn btn-primary" style="flex:1;">Guardar Servicio</button>
         <button type="button" class="btn btn-secondary" onclick="cerrarModales()" style="flex:1;">Cancelar</button>
       </div>
     </form>
@@ -301,7 +302,6 @@
     }
     document.getElementById('user-email-display').textContent = user.email;
 
-    // Verificar si es admin o usuario regular para permisos
     if (user.email !== adminEmail) {
       try {
         var docUser = await db.collection('usuarios_registrados').doc(user.uid).get();
@@ -376,7 +376,6 @@
         var texto = ((eq.aula || '') + ' ' + (eq.marca || '') + ' ' + (eq.serie || '') + ' ' + (eq.toneladas || '')).toLowerCase();
         if (!texto.includes(busqueda)) return false;
 
-        // Filtros de Vencimiento (>2m, etc.)
         if (filtroActual !== 'todos') {
           if (!eq.ultimoServicio) return filtroActual === 'pendientes';
           var fechaServ = new Date(eq.ultimoServicio);
@@ -448,8 +447,15 @@
                     '<b>Descripción:</b> ' + esc(sv.descripcion || 'Mantenimiento preventivo') + '<br>' +
                     '<b>Fecha:</b> ' + (sv.fecha ? new Date(sv.fecha).toLocaleDateString() : 'N/D') + '<br>' +
                     '<b>Registrado por:</b> ' + esc(sv.registradoPor || 'N/D') +
-                  '</div>' +
-                '</div>';
+                  '</div>';
+
+        if (esAdmin || permisosUsuario.editService) {
+          html += '<div class="card-actions">' +
+                    '<button class="btn btn-warning" style="padding: 6px 12px; font-size: 11px;" onclick="editarServicio(\'' + sv.id + '\')">Editar</button>' +
+                    '<button class="btn btn-danger" style="padding: 6px 12px; font-size: 11px;" onclick="eliminarServicio(\'' + sv.id + '\')">Eliminar</button>' +
+                  '</div>';
+        }
+        html += '</div>';
       });
       container.innerHTML = html;
     }
@@ -484,8 +490,23 @@
   };
 
   window.abrirModalServicio = function() {
-    document.getElementById('modal-servicio').style.display = 'flex';
+    document.getElementById('modal-servicio-titulo').textContent = 'Registrar Mantenimiento / Servicio';
+    document.getElementById('sv-id').value = '';
+    document.getElementById('sv-aula').value = '';
+    document.getElementById('sv-desc').value = '';
     document.getElementById('sv-fecha').valueAsDate = new Date();
+    document.getElementById('modal-servicio').style.display = 'flex';
+  };
+
+  window.editarServicio = function(id) {
+    var sv = listaServiciosGlobal.find(s => s.id === id);
+    if (!sv) return;
+    document.getElementById('modal-servicio-titulo').textContent = 'Editar Servicio';
+    document.getElementById('sv-id').value = sv.id;
+    document.getElementById('sv-aula').value = sv.aula || '';
+    document.getElementById('sv-desc').value = sv.descripcion || '';
+    document.getElementById('sv-fecha').value = sv.fecha || '';
+    document.getElementById('modal-servicio').style.display = 'flex';
   };
 
   window.cerrarModales = function() {
@@ -519,17 +540,23 @@
 
   window.guardarServicio = async function(e) {
     e.preventDefault();
+    var id = document.getElementById('sv-id').value;
     var aula = document.getElementById('sv-aula').value;
     var descripcion = document.getElementById('sv-desc').value;
     var fecha = document.getElementById('sv-fecha').value;
 
     try {
-      await db.collection('servicios').add({ aula, descripcion, fecha, registradoPor: auth.currentUser.email });
+      if (id) {
+        await db.collection('servicios').doc(id).update({ aula, descripcion, fecha });
+        alert('¡Servicio actualizado con éxito!');
+      } else {
+        await db.collection('servicios').add({ aula, descripcion, fecha, registradoPor: auth.currentUser.email });
+        alert('¡Servicio registrado con éxito!');
+      }
       cerrarModales();
       cargarDatos();
-      alert('¡Servicio registrado con éxito!');
     } catch (err) {
-      alert('Error al registrar servicio: ' + err.message);
+      alert('Error al guardar servicio: ' + err.message);
     }
   };
 
@@ -537,6 +564,17 @@
     if (confirm('¿Estás seguro de eliminar este equipo?')) {
       try {
         await db.collection('equipos').doc(id).delete();
+        cargarDatos();
+      } catch (err) {
+        alert('Error al eliminar: ' + err.message);
+      }
+    }
+  };
+
+  window.eliminarServicio = async function(id) {
+    if (confirm('¿Estás seguro de eliminar este registro de servicio?')) {
+      try {
+        await db.collection('servicios').doc(id).delete();
         cargarDatos();
       } catch (err) {
         alert('Error al eliminar: ' + err.message);
