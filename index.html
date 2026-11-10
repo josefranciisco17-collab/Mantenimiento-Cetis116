@@ -30,7 +30,6 @@
     }
     .container { max-width: 800px; margin: 0 auto; padding-bottom: 40px; }
     
-    /* Cabecera Principal */
     .header-card {
       background: var(--surface);
       border: 1px solid var(--line);
@@ -43,7 +42,6 @@
     .header-title { font-family: 'Barlow Condensed', sans-serif; font-size: 24px; margin: 0 0 4px; color: #fff; text-transform: uppercase; letter-spacing: 0.5px; }
     .header-subtitle { font-size: 12px; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; font-weight: 700; margin-bottom: 16px; }
 
-    /* Botonera de Acciones */
     .actions-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 16px; }
     .btn { 
       padding: 12px 14px; 
@@ -65,7 +63,6 @@
     .btn-danger { background: rgba(239, 68, 68, 0.2); color: #f87171; border-color: rgba(239, 68, 68, 0.4); }
     .btn:hover { opacity: 0.9; transform: translateY(-1px); }
 
-    /* Barra de Búsqueda */
     .search-box {
       background: var(--surface-2);
       border: 1px solid var(--line);
@@ -87,7 +84,6 @@
     }
     .search-box input::placeholder { color: var(--ink-2); }
 
-    /* Pestañas Principales (Equipos / Servicios) */
     .main-tabs { display: flex; gap: 10px; margin-bottom: 16px; }
     .main-tab { 
       flex: 1; 
@@ -104,7 +100,6 @@
     }
     .main-tab.active { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
 
-    /* Tarjeta de Sesión e Info */
     .session-card {
       background: var(--surface-2);
       border: 1px solid var(--line);
@@ -117,7 +112,6 @@
       margin-bottom: 16px;
     }
 
-    /* Filtros de Estado */
     .filter-chips { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 20px; }
     .chip { 
       padding: 8px 14px; 
@@ -132,7 +126,6 @@
     }
     .chip.active { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
 
-    /* Tarjetas de Contenido (Equipos / Servicios) */
     .card-item {
       background: var(--surface);
       border: 1px solid var(--line);
@@ -150,7 +143,6 @@
 
     .card-body { font-size: 13px; color: var(--ink-2); line-height: 1.5; margin-bottom: 14px; }
     .card-actions { display: flex; gap: 8px; flex-wrap: wrap; border-top: 1px solid var(--line); padding-top: 12px; }
-
     .empty-state { text-align: center; padding: 40px; color: var(--ink-2); font-style: italic; }
   </style>
 </head>
@@ -158,44 +150,39 @@
 
 <div class="container">
   
-  <!-- Cabecera y Menú de Acciones -->
   <div class="header-card">
     <div class="header-title">Mantenimiento de Aires Acondicionados</div>
     <div class="header-subtitle">CETis 116 - Antonia Nava de Catalán</div>
 
     <div class="actions-grid" id="admin-actions-container">
-      <!-- Los botones de administrador y acciones se cargan dinámicamente -->
+      <!-- Se llena dinámicamente según el rol -->
     </div>
   </div>
 
-  <!-- Buscador -->
   <div class="search-box">
     <span>🔍</span>
-    <input type="text" id="input-buscar" placeholder="Buscar por equipo, aula, marca o serie..." oninput="filtrarDatos()">
+    <input type="text" id="input-buscar" placeholder="Buscar por equipo, aula, marca o serie..." oninput="renderizarDatos()">
   </div>
 
-  <!-- Pestañas de Vista -->
   <div class="main-tabs">
-    <button class="main-tab active" id="tab-equipos-btn" onclick="cambiarVistaTab('equipos')">📌 Equipos (<span id="count-equipos">0</span>)</button>
-    <button class="main-tab" id="tab-servicios-btn" onclick="cambiarVistaTab('servicios')">📋 Servicios (<span id="count-servicios">0</span>)</button>
+    <button class="main-tab active" id="tab-equipos-btn" onclick="cambiarTab('equipos')">📌 Equipos (<span id="count-equipos">0</span>)</button>
+    <button class="main-tab" id="tab-servicios-btn" onclick="cambiarTab('servicios')">📋 Servicios (<span id="count-servicios">0</span>)</button>
   </div>
 
-  <!-- Sesión y Filtros -->
   <div class="session-card">
     <span>Sesión: <strong id="user-email-display" style="color:#fff;">Cargando...</strong></span>
     <span style="color: var(--good); font-weight: 600;">● Seguro</span>
   </div>
 
-  <div class="filter-chips" id="filter-chips-container">
-    <button class="chip active" onclick="filtrarEstado('todos')">Todos</button>
-    <button class="chip" onclick="filtrarEstado('vencidos')">Vencidos (>2m)</button>
-    <button class="chip" onclick="filtrarEstado('proximos')">Próximos 30d</button>
-    <button class="chip" onclick="filtrarEstado('pendientes')">Pendientes</button>
+  <div class="filter-chips">
+    <button class="chip active" onclick="filtrarEstado('todos', event)">Todos</button>
+    <button class="chip" onclick="filtrarEstado('vencidos', event)">Vencidos (>2m)</button>
+    <button class="chip" onclick="filtrarEstado('proximos', event)">Próximos 30d</button>
+    <button class="chip" onclick="filtrarEstado('pendientes', event)">Pendientes</button>
   </div>
 
-  <!-- Contenedor Principal de Registros -->
   <div id="content-list-container">
-    <div class="empty-state">Cargando registros desde Firestore...</div>
+    <div class="empty-state">Sincronizando con Firestore...</div>
   </div>
 
 </div>
@@ -206,7 +193,6 @@
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
 <script>
-  // Configuración de Firebase y lógica principal conectada a tu base de datos
   var firebaseConfig = {
     apiKey: "AIzaSyA_JufV6ZSCICVuUrVZEJropD1VKA2bzQs",
     authDomain: "mantenimientocetis116.firebaseapp.com",
@@ -222,8 +208,10 @@
   var db = firebase.firestore();
   var adminEmail = 'josefranciisco17@gmail.com';
 
-  var vistaActual = 'equipos';
+  var tabActual = 'equipos';
   var filtroActual = 'todos';
+  var listaEquiposGlobal = [];
+  var listaServiciosGlobal = [];
 
   auth.onAuthStateChanged(function(user) {
     if (!user) {
@@ -232,7 +220,7 @@
     }
     document.getElementById('user-email-display').textContent = user.email;
     construirBotonera(user.email);
-    cargarDatosGlobales();
+    cargarDatos();
   });
 
   function construirBotonera(email) {
@@ -241,86 +229,112 @@
     if (email === adminEmail) {
       html += '<button class="btn btn-secondary" onclick="window.location.href=\'admin.html\'">⚙️ Aprobación</button>';
     }
-    html += '<button class="btn btn-primary" onclick="alert(\'Abrir modal nuevo equipo\')">+ Equipo</button>';
-    html += '<button class="btn btn-secondary" onclick="alert(\'Abrir modal nuevo servicio\')">+ Servicio</button>';
-    html += '<button class="btn btn-secondary" onclick="alert(\'Generar Facturas\')">📄 Facturas</button>';
-    html += '<button class="btn btn-secondary" onclick="alert(\'Generar Dictámenes\')">📋 Dictámenes</button>';
+    html += '<button class="btn btn-primary" onclick="abrirModalEquipo()">+ Equipo</button>';
+    html += '<button class="btn btn-secondary" onclick="abrirModalServicio()">+ Servicio</button>';
+    html += '<button class="btn btn-secondary" onclick="generarFacturas()">📄 Facturas</button>';
+    html += '<button class="btn btn-secondary" onclick="generarDictamenes()">📋 Dictámenes</button>';
     html += '<button class="btn btn-danger" onclick="auth.signOut().then(() => window.location.href=\'login.html\')">🚪 Salir</button>';
     container.innerHTML = html;
   }
 
-  function cambiarVistaTab(vista) {
-    vistaActual = vista;
-    document.getElementById('tab-equipos-btn').classList.toggle('active', vista === 'equipos');
-    document.getElementById('tab-servicios-btn').classList.toggle('active', vista === 'servicios');
-    cargarDatosGlobales();
+  function cambiarTab(tab) {
+    tabActual = tab;
+    document.getElementById('tab-equipos-btn').classList.toggle('active', tab === 'equipos');
+    document.getElementById('tab-servicios-btn').classList.toggle('active', tab === 'servicios');
+    renderizarDatos();
   }
 
-  function filtrarEstado(filtro) {
+  function filtrarEstado(filtro, e) {
     filtroActual = filtro;
-    var chips = document.querySelectorAll('.chip');
-    chips.forEach(c => c.classList.remove('active'));
-    event.target.classList.add('active');
-    cargarDatosGlobales();
+    document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+    e.target.classList.add('active');
+    renderizarDatos();
   }
 
-  async function cargarDatosGlobales() {
-    var container = document.getElementById('content-list-container');
-    container.innerHTML = '<div class="empty-state">Actualizando información...</div>';
+  async function cargarDatos() {
     try {
-      if (vistaActual === 'equipos') {
-        var snap = await db.collection('equipos').get();
-        document.getElementById('count-equipos').textContent = snap.size;
-        if (snap.empty) {
-          container.innerHTML = '<div class="empty-state">No hay equipos registrados en el sistema.</div>';
-          return;
-        }
-        var html = '';
-        snap.forEach(doc => {
-          var eq = doc.data();
-          html += '<div class="card-item">' +
-                    '<div class="card-header">' +
-                      '<div class="card-title">🏷️ ' + (eq.aula || 'Aula sin nombre') + '</div>' +
-                      '<span class="badge badge-good">Operativo</span>' +
-                    '</div>' +
-                    '<div class="card-body">' +
-                      '<b>Equipo:</b> ' + (eq.marca || 'Marca') + ' · ' + (eq.toneladas || '1.5') + ' Ton<br>' +
-                      '<b>Serie:</b> ' + (eq.serie || 'N/D') +
-                    '</div>' +
-                  '</div>';
-        });
-        container.innerHTML = html;
-      } else {
-        var snap = await db.collection('servicios').get();
-        document.getElementById('count-servicios').textContent = snap.size;
-        if (snap.empty) {
-          container.innerHTML = '<div class="empty-state">No hay servicios registrados en el historial.</div>';
-          return;
-        }
-        var html = '';
-        snap.forEach(doc => {
-          var sv = doc.data();
-          html += '<div class="card-item">' +
-                    '<div class="card-header">' +
-                      '<div class="card-title">📋 Servicio Técnico</div>' +
-                      '<span class="badge badge-good">Completado</span>' +
-                    '</div>' +
-                    '<div class="card-body">' +
-                      '<b>Descripción:</b> ' + (sv.descripcion || 'Mantenimiento preventivo') + '<br>' +
-                      '<b>Fecha:</b> ' + (sv.fecha ? new Date(sv.fecha).toLocaleDateString() : 'N/D') +
-                    '</div>' +
-                  '</div>';
-        });
-        container.innerHTML = html;
-      }
+      var eqSnap = await db.collection('equipos').get();
+      listaEquiposGlobal = [];
+      eqSnap.forEach(doc => { listaEquiposGlobal.push({ id: doc.id, ...doc.data() }); });
+      document.getElementById('count-equipos').textContent = listaEquiposGlobal.length;
+
+      var svSnap = await db.collection('servicios').get();
+      listaServiciosGlobal = [];
+      svSnap.forEach(doc => { listaServiciosGlobal.push({ id: doc.id, ...doc.data() }); });
+      document.getElementById('count-servicios').textContent = listaServiciosGlobal.length;
+
+      renderizarDatos();
     } catch (err) {
-      container.innerHTML = '<div class="empty-state" style="color:var(--bad);">Error al sincronizar con Firestore.</div>';
+      document.getElementById('content-list-container').innerHTML = '<div class="empty-state" style="color:var(--bad);">Error al cargar datos de Firestore.</div>';
     }
   }
 
-  function filtrarDatos() {
-    // Función de filtrado local por texto de búsqueda
+  function renderizarDatos() {
+    var container = document.getElementById('content-list-container');
+    var busqueda = document.getElementById('input-buscar').value.toLowerCase();
+
+    if (tabActual === 'equipos') {
+      var filtrados = listaEquiposGlobal.filter(eq => {
+        var texto = (eq.aula + ' ' + eq.marca + ' ' + eq.serie + ' ' + eq.notas).toLowerCase();
+        return texto.includes(busqueda);
+      });
+
+      if (filtrados.length === 0) {
+        container.innerHTML = '<div class="empty-state">No se encontraron equipos registrados.</div>';
+        return;
+      }
+
+      var html = '';
+      filtrados.forEach(eq => {
+        html += '<div class="card-item">' +
+                  '<div class="card-header">' +
+                    '<div class="card-title">🏷️ ' + esc(eq.aula || 'Aula sin nombre') + '</div>' +
+                    '<span class="badge badge-good">Operativo</span>' +
+                  '</div>' +
+                  '<div class="card-body">' +
+                    '<b>Marca:</b> ' + esc(eq.marca || 'N/D') + ' · <b>Capacidad:</b> ' + esc(eq.toneladas || '1.5') + ' Ton<br>' +
+                    '<b>Serie:</b> ' + esc(eq.serie || 'N/D') +
+                  '</div>' +
+                '</div>';
+      });
+      container.innerHTML = html;
+    } else {
+      var filtrados = listaServiciosGlobal.filter(sv => {
+        var texto = (sv.descripcion + ' ' + sv.aula + ' ' + sv.tecnico).toLowerCase();
+        return texto.includes(busqueda);
+      });
+
+      if (filtrados.length === 0) {
+        container.innerHTML = '<div class="empty-state">No hay servicios registrados en el historial.</div>';
+        return;
+      }
+
+      var html = '';
+      filtrados.forEach(sv => {
+        html += '<div class="card-item">' +
+                  '<div class="card-header">' +
+                    '<div class="card-title">📋 ' + esc(sv.aula || 'Servicio Técnico') + '</div>' +
+                    '<span class="badge badge-good">Completado</span>' +
+                  '</div>' +
+                  '<div class="card-body">' +
+                    '<b>Descripción:</b> ' + esc(sv.descripcion || 'Mantenimiento preventivo') + '<br>' +
+                    '<b>Fecha:</b> ' + (sv.fecha ? new Date(sv.fecha).toLocaleDateString() : 'N/D') +
+                  '</div>' +
+                '</div>';
+      });
+      container.innerHTML = html;
+    }
   }
+
+  function esc(str) {
+    return str ? String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') : '';
+  }
+
+  // Funciones de acción conectadas
+  window.abrirModalEquipo = function() { alert('Abriendo formulario para añadir nuevo equipo...'); };
+  window.abrirModalServicio = function() { alert('Abriendo formulario para registrar servicio...'); };
+  window.generarFacturas = function() { alert('Generando reporte de facturación...'); };
+  window.generarDictamenes = function() { alert('Generando dictámenes técnicos...'); };
 </script>
 
 </body>
