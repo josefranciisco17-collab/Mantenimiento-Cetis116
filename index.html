@@ -219,12 +219,23 @@
           <option value="Midea">Midea</option>
           <option value="Daikin">Daikin</option>
           <option value="Samsung">Samsung</option>
+          <option value="Hisense">Hisense</option>
+          <option value="Panasonic">Panasonic</option>
+          <option value="Prime">Prime</option>
+          <option value="Aux">Aux</option>
+          <option value="Lenox">Lenox</option>
           <option value="Otra">Otra</option>
         </select>
       </div>
       <div class="form-group">
-        <label>Capacidad (Toneladas)</label>
-        <input type="text" id="eq-toneladas" value="1.5" required>
+        <label>Capacidad (Toneladas y BTU)</label>
+        <select id="eq-toneladas" required>
+          <option value="1 Ton (12,000 BTU)">1 Ton (12,000 BTU)</option>
+          <option value="1.5 Ton (18,000 BTU)" selected>1.5 Ton (18,000 BTU)</option>
+          <option value="2 Ton (24,000 BTU)">2 Ton (24,000 BTU)</option>
+          <option value="3 Ton (36,000 BTU)">3 Ton (36,000 BTU)</option>
+          <option value="5 Ton (60,000 BTU)">5 Ton (60,000 BTU)</option>
+        </select>
       </div>
       <div class="form-group">
         <label>Número de Serie / Placa</label>
@@ -257,8 +268,16 @@
         <textarea id="sv-desc" rows="3" required placeholder="Mantenimiento preventivo, lavado de filtros, carga de gas..."></textarea>
       </div>
       <div class="form-group">
-        <label>Fecha de Servicio</label>
-        <input type="date" id="sv-fecha" required>
+        <label>Fecha en que se Realizó el Servicio</label>
+        <input type="date" id="sv-fecha" required onchange="calcularProximoServicio()">
+      </div>
+      <div class="form-group">
+        <label>Ciclo de Mantenimiento</label>
+        <input type="text" value="Cada 3 meses (Obligatorio)" readonly style="opacity: 0.7;">
+      </div>
+      <div class="form-group">
+        <label>Fecha Estimada para el Siguiente Servicio</label>
+        <input type="date" id="sv-proximo" required>
       </div>
       <div class="modal-buttons">
         <button type="submit" class="btn btn-primary" style="flex:1;">Guardar Servicio</button>
@@ -411,7 +430,7 @@
                     '<span class="badge ' + (esVencido ? 'badge-bad' : 'badge-good') + '">' + (esVencido ? 'Vencido (>2m)' : 'Operativo') + '</span>' +
                   '</div>' +
                   '<div class="card-body">' +
-                    '<b>Marca:</b> ' + esc(eq.marca || 'N/D') + ' · <b>Capacidad:</b> ' + esc(eq.toneladas || '1.5') + ' Ton<br>' +
+                    '<b>Marca:</b> ' + esc(eq.marca || 'N/D') + ' · <b>Capacidad:</b> ' + esc(eq.toneladas || '1.5 Ton') + '<br>' +
                     '<b>Serie:</b> ' + esc(eq.serie || 'N/D') + '<br>' +
                     '<b>Último Servicio:</b> ' + fechaServTxt +
                   '</div>';
@@ -445,7 +464,8 @@
                   '</div>' +
                   '<div class="card-body">' +
                     '<b>Descripción:</b> ' + esc(sv.descripcion || 'Mantenimiento preventivo') + '<br>' +
-                    '<b>Fecha:</b> ' + (sv.fecha ? new Date(sv.fecha).toLocaleDateString() : 'N/D') + '<br>' +
+                    '<b>Fecha de Servicio:</b> ' + (sv.fecha ? new Date(sv.fecha).toLocaleDateString() : 'N/D') + '<br>' +
+                    '<b>Próximo Servicio (3 meses):</b> <span style="color:var(--accent); font-weight:700;">' + (sv.proximoServicio ? new Date(sv.proximoServicio).toLocaleDateString() : 'N/D') + '</span><br>' +
                     '<b>Registrado por:</b> ' + esc(sv.registradoPor || 'N/D') +
                   '</div>';
 
@@ -470,7 +490,7 @@
     document.getElementById('eq-id').value = '';
     document.getElementById('eq-aula').value = '';
     document.getElementById('eq-marca').value = 'Carrier';
-    document.getElementById('eq-toneladas').value = '1.5';
+    document.getElementById('eq-toneladas').value = '1.5 Ton (18,000 BTU)';
     document.getElementById('eq-serie').value = '';
     document.getElementById('eq-ultimo-servicio').value = '';
     document.getElementById('modal-equipo').style.display = 'flex';
@@ -483,7 +503,7 @@
     document.getElementById('eq-id').value = eq.id;
     document.getElementById('eq-aula').value = eq.aula || '';
     document.getElementById('eq-marca').value = eq.marca || 'Carrier';
-    document.getElementById('eq-toneladas').value = eq.toneladas || '1.5';
+    document.getElementById('eq-toneladas').value = eq.toneladas || '1.5 Ton (18,000 BTU)';
     document.getElementById('eq-serie').value = eq.serie || '';
     document.getElementById('eq-ultimo-servicio').value = eq.ultimoServicio || '';
     document.getElementById('modal-equipo').style.display = 'flex';
@@ -494,8 +514,18 @@
     document.getElementById('sv-id').value = '';
     document.getElementById('sv-aula').value = '';
     document.getElementById('sv-desc').value = '';
-    document.getElementById('sv-fecha').valueAsDate = new Date();
+    var hoy = new Date();
+    document.getElementById('sv-fecha').valueAsDate = hoy;
+    calcularProximoServicio();
     document.getElementById('modal-servicio').style.display = 'flex';
+  };
+
+  window.calcularProximoServicio = function() {
+    var fechaStr = document.getElementById('sv-fecha').value;
+    if (!fechaStr) return;
+    var f = new Date(fechaStr);
+    f.setMonth(f.getMonth() + 3); // Sumar 3 meses automáticos
+    document.getElementById('sv-proximo').value = f.toISOString().split('T')[0];
   };
 
   window.editarServicio = function(id) {
@@ -506,6 +536,7 @@
     document.getElementById('sv-aula').value = sv.aula || '';
     document.getElementById('sv-desc').value = sv.descripcion || '';
     document.getElementById('sv-fecha').value = sv.fecha || '';
+    document.getElementById('sv-proximo').value = sv.proximoServicio || '';
     document.getElementById('modal-servicio').style.display = 'flex';
   };
 
@@ -544,13 +575,14 @@
     var aula = document.getElementById('sv-aula').value;
     var descripcion = document.getElementById('sv-desc').value;
     var fecha = document.getElementById('sv-fecha').value;
+    var proximoServicio = document.getElementById('sv-proximo').value;
 
     try {
       if (id) {
-        await db.collection('servicios').doc(id).update({ aula, descripcion, fecha });
+        await db.collection('servicios').doc(id).update({ aula, descripcion, fecha, proximoServicio });
         alert('¡Servicio actualizado con éxito!');
       } else {
-        await db.collection('servicios').add({ aula, descripcion, fecha, registradoPor: auth.currentUser.email });
+        await db.collection('servicios').add({ aula, descripcion, fecha, proximoServicio, registradoPor: auth.currentUser.email });
         alert('¡Servicio registrado con éxito!');
       }
       cerrarModales();
